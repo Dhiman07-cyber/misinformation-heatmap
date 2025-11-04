@@ -1,0 +1,253 @@
+# Docker Compose configuration for Real-Time Misinformation Heatmap
+# Supports both development and production environments
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Main Application Service
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
+    container_name: misinformation-heatmap-app
+    ports:
+      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    environment:
+      # Application Configuration
+      - MODE=${MODE:-local}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - API_HOST=0.0.0.0
+      - API_PORT=${API_PORT:-8000}
+      
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/heatmap.db}
+      - DATABASE_TYPE=${DATABASE_TYPE:-sqlite}
+      
+      # Google Cloud Configuration (for production)
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET:-misinformation_heatmap}
+      - BIGQUERY_LOCATION=${BIGQUERY_LOCATION:-US}
+      
+      # Pub/Sub Configuration
+      - PUBSUB_EMULATOR_HOST=${PUBSUB_EMULATOR_HOST}
+      - PUBSUB_EVENTS_RAW_TOPIC=${PUBSUB_EVENTS_RAW_TOPIC:-events-raw}
+      - PUBSUB_EVENTS_PROCESSED_TOPIC=${PUBSUB_EVENTS_PROCESSED_TOPIC:-events-processed}
+      
+      # External Services
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY}
+      
+      # Security Configuration
+      - API_KEY_ENABLED=${API_KEY_ENABLED:-false}
+      - API_KEYS=${API_KEYS}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000"]}
+      
+      # Performance Configuration
+      - CACHE_TYPE=${CACHE_TYPE:-memory}
+      - CACHE_TTL=${CACHE_TTL:-300}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      
+      # Monitoring Configuration
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - ENABLE_TRACING=${ENABLE_TRACING:-false}
+      
+      # Data Sources Configuration
+      - DATA_SOURCES_CONFIG_PATH=${DATA_SOURCES_CONFIG_PATH:-/app/config/data_sources.yaml}
+      
+    volumes:
+      # Application code (for development)
+      - ${PWD}/backend:/app/backend:${VOLUME_MODE:-ro}
+      - ${PWD}/frontend:/app/frontend:${VOLUME_MODE:-ro}
+      - ${PWD}/config:/app/config:${VOLUME_MODE:-ro}
+      - ${PWD}/data:/app/data
+      - ${PWD}/logs:/app/logs
+      
+      # Google Cloud credentials (if using service account file)
+      - ${GOOGLE_APPLICATION_CREDENTIALS_FILE:-./credentials.json}:${GOOGLE_APPLICATION_CREDENTIALS:-/app/credentials.json}:ro
+      
+    depends_on:
+      - pubsub-emulator
+      - frontend
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${API_PORT:-8000}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ============================================================================
+  # Frontend Service (Static File Server)
+  # ============================================================================
+  frontend:
+    image: nginx:alpine
+    container_name: misinformation-heatmap-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    volumes:
+      - ${PWD}/frontend:/usr/share/nginx/html:ro
+      - ${PWD}/docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # Pub/Sub Emulator (for local development)
+  # ============================================================================
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
+    container_name: misinformation-heatmap-pubsub
+    ports:
+      - "${PUBSUB_PORT:-8085}:8085"
+    command: >
+      sh -c "
+        gcloud beta emulators pubsub start 
+        --host-port=0.0.0.0:8085 
+        --project=${GOOGLE_CLOUD_PROJECT:-misinformation-heatmap-local}
+      "
+    environment:
+      - PUBSUB_EMULATOR_HOST=0.0.0.0:8085
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    profiles:
+      - local
+      - development
+
+  # ============================================================================
+  # Redis Cache (for production caching)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: misinformation-heatmap-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    profiles:
+      - production
+      - staging
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # Monitoring Services
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: misinformation-heatmap-prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ${PWD}/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: misinformation-heatmap-grafana
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ${PWD}/docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - misinformation-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # Testing Services
+  # ============================================================================
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: misinformation-heatmap-tests
+    environment:
+      - MODE=local
+      - ENVIRONMENT=test
+      - LOG_LEVEL=DEBUG
+      - DATABASE_URL=sqlite:///./data/test_heatmap.db
+      - PUBSUB_EMULATOR_HOST=pubsub-emulator:8085
+    volumes:
+      - ${PWD}:/app
+      - test-results:/app/test-results
+    networks:
+      - misinformation-network
+    profiles:
+      - testing
+    depends_on:
+      - pubsub-emulator
+    command: >
+      sh -c "
+        echo 'Waiting for services to start...' &&
+        sleep 10 &&
+        echo 'Running tests...' &&
+        python -m pytest tests/ -v --cov=backend --cov-report=html --cov-report=term &&
+        echo 'Running integration tests...' &&
+        python tests/test_data_sources_integration.py &&
+        echo 'Running E2E tests...' &&
+        cd tests/e2e && python test_end_to_end.py --mode local
+      "
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  misinformation-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  test-results:
+    driver: local

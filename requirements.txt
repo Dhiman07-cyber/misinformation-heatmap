@@ -1,0 +1,43 @@
+# Enhanced Fake News Detection System Requirements
+
+# Core Framework
+fastapi
+uvicorn[standard]
+
+# Data Processing
+pandas
+numpy
+requests
+feedparser
+
+# Machine Learning (lightweight versions)
+scikit-learn
+# transformers  # Large package - install separately if needed
+# torch  # Large package - install separately if needed
+
+# NLP and Text Processing
+nltk
+textblob
+
+# Geospatial and Maps
+geopy
+
+# Database
+sqlalchemy
+
+# Web and API
+aiofiles
+python-multipart
+jinja2
+
+# Utilities
+python-dotenv
+pydantic
+
+# Development and Testing
+pytest
+pytest-asyncio
+httpx
+
+# Optional: For production deployment
+gunicorn

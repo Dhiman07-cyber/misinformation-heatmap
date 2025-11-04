@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced India Fake News Heatmap</title>
+    <style>
+        :root {
+            --bg: #0f1720;
+            --panel: #0b1220;
+            --accent: #3b82f6;
+            --high-risk: #dc3545;
+            --medium-risk: #ffc107;
+            --low-risk: #28a745;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: #e6eef8;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        #left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            padding: 16px 20px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent);
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        header h1 {
+            font-size: 24px;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .status-bar {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.02);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        #mapwrap {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #svgroot {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: grab;
+            background: linear-gradient(180deg, #071027, #082035);
+            transition: transform 0.2s ease;
+        }
+        
+        #svgroot:active {
+            cursor: grabbing;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+        }
+        
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .zoom-level {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        #live-feed {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+        
+        #live-feed::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        #live-feed::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #live-feed::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        
+        #live-feed::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes newItem {
+            0% { background: rgba(103, 126, 234, 0.3); }
+            100% { background: rgba(255,255,255,0.03); }
+        }
+        
+        #tooltip {
+            position: absolute;
+            pointer-events: none;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #041026;
+            border-radius: 8px;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(4,8,16,0.6);
+            display: none;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+        }
+        
+        aside {
+            width: 380px;
+            background: var(--panel);
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        .state-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .state-stats {
+            background: rgba(255,255,255,0.05);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+        }
+        
+        .risk-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .risk-high { background: var(--high-risk); color: white; }
+        .risk-medium { background: var(--medium-risk); color: #212529; }
+        .risk-low { background: var(--low-risk); color: white; }
+        
+        .trending-topics {
+            margin: 16px 0;
+        }
+        
+        .topic-tag {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+        }
+        
+        .recent-headlines {
+            margin: 16px 0;
+        }
+        
+        .headline {
+            background: rgba(255,255,255,0.03);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid var(--accent);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        
+        .legend h4 {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        /* Map styling */
+        .map-path {
+            fill: #88A4BC;
+            stroke: #ffffff;
+            stroke-width: 0.6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .map-path:hover {
+            stroke-width: 1.2;
+            filter: brightness(1.2);
+        }
+        
+        .selected {
+            stroke: #ffffff;
+            stroke-width: 2;
+            filter: brightness(1.3);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="left">
+        <header>
+            <h1>🛡️ Enhanced India Fake News Heatmap</h1>
+            <div style="flex: 1;"></div>
+            <button onclick="debugMapData()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🐛 Debug</button>
+            <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🔄 Refresh</button>
+            <div style="font-size: 14px; opacity: 0.8;">
+                Real-time AI-powered fake news detection
+            </div>
+        </header>
+        
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-dot"></div>
+                <span>Live Processing</span>
+            </div>
+            <div class="status-item">
+                <strong id="total-events">Loading...</strong> Total Events
+            </div>
+            <div class="status-item">
+                <strong id="active-states">Loading...</strong> Active States
+            </div>
+            <div class="status-item">
+                Last Update: <strong id="last-update">Loading...</strong>
+            </div>
+            <div class="status-item">
+                Accuracy: <strong id="classification-accuracy">Loading...</strong>
+            </div>
+        </div>
+        
+        <div id="mapwrap">
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                <div class="zoom-level" id="zoom-level">100%</div>
+                <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                <button class="zoom-btn" onclick="resetZoom()" title="Reset View">⌂</button>
+            </div>
+            <div id="svgroot">
+                <div class="loading">
+                    <div>🗺️ Loading Enhanced India Map...</div>
+                    <div style="font-size: 12px; margin-top: 8px;">Fetching real-time fake news data</div>
+                </div>
+            </div>
+            <div id="tooltip"></div>
+        </div>
+    </div>
+    
+    <aside>
+        <div class="state-name" id="stateName">Select a State</div>
+        <div id="stateContent">
+            <div style="margin-top: 20px;">
+                <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Risk Levels</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
+                        <span>High Risk (≥60%)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
+                        <span>Medium Risk (40-59%)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 16px; height: 16px; background: #28a745; border-radius: 2px;"></div>
+                        <span>Low Risk (<40%)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
+                Click on a state to view detailed fake news analysis
+            </div>
+            
+            <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: #667eea; display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #dc3545; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                    Live Classification Feed
+                </h3>
+                <div id="live-feed" style="max-height: 300px; overflow-y: auto; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; background: rgba(255,255,255,0.02);">
+                    <div style="opacity: 0.7; text-align: center; padding: 20px;">
+                        Loading live events...
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <h4>🎯 Risk Levels</h4>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--high-risk);"></div>
+                High Risk (0.7+)
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--medium-risk);"></div>
+                Medium Risk (0.4-0.7)
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: var(--low-risk);"></div>
+                Low Risk (0-0.4)
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        // Global variables
+        let heatmapData = [];
+        let selectedState = null;
+        let svgMap = null;
+        
+        // Zoom and pan variables
+        let currentZoom = 1;
+        let currentX = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        const minZoom = 0.5;
+        const maxZoom = 5;
+        const zoomStep = 0.2;
+        
+        // Initialize the enhanced heatmap
+        async function initializeEnhancedHeatmap() {
+            try {
+                // Load the SVG map
+                await loadSVGMap();
+                
+                // Load heatmap data
+                await loadHeatmapData();
+                
+                // Update status bar and live feed
+                await updateStatusBar();
+                await updateLiveFeed();
+                
+                // Set up auto-refresh
+                setInterval(async () => {
+                    await loadHeatmapData();
+                    await updateStatusBar();
+                }, 30000); // Update map and status every 30 seconds
+                
+                // Frequent live feed updates for real-time feel
+                setInterval(updateLiveFeed, 5000); // Update live feed every 5 seconds
+                
+                // Very frequent status updates
+                setInterval(updateStatusBar, 15000); // Update status every 15 seconds
+                
+            } catch (error) {
+                console.error('Failed to initialize heatmap:', error);
+                document.getElementById('svgroot').innerHTML = 
+                    '<div class="error">Failed to load heatmap data. Please refresh the page.</div>';
+            }
+        }
+        
+        async function loadSVGMap() {
+            try {
+                const response = await fetch('./in.svg');
+                const svgText = await response.text();
+                
+                const svgRoot = document.getElementById('svgroot');
+                svgRoot.innerHTML = svgText;
+                
+                svgMap = svgRoot.querySelector('svg');
+                if (svgMap) {
+                    svgMap.style.width = '100%';
+                    svgMap.style.height = '100%';
+                    
+                    // Add click handlers to all paths
+                    const paths = svgMap.querySelectorAll('path');
+                    paths.forEach(path => {
+                        path.classList.add('map-path');
+                        path.addEventListener('click', handleStateClick);
+                        path.addEventListener('mouseenter', handleStateHover);
+                        path.addEventListener('mouseleave', handleStateLeave);
+                    });
+                    
+                    // Setup zoom and pan functionality
+                    setupZoomAndPan();
+                }
+            } catch (error) {
+                console.error('Failed to load SVG map:', error);
+                throw error;
+            }
+        }
+        
+        async function loadHeatmapData() {
+            try {
+                const response = await fetch('/api/v1/heatmap/data');
+                const data = await response.json();
+                
+                heatmapData = data.heatmap_data || [];
+                
+                // Apply colors to map
+                applyHeatmapColors();
+                
+            } catch (error) {
+                console.error('Failed to load heatmap data:', error);
+            }
+        }
+        
+        function applyHeatmapColors() {
+            if (!svgMap || !heatmapData.length) {
+                console.log('Cannot apply colors:', { svgMap: !!svgMap, dataLength: heatmapData.length });
+                return;
+            }
+            
+            const paths = svgMap.querySelectorAll('path');
+            console.log(`Applying colors to ${paths.length} paths with ${heatmapData.length} data points`);
+            
+            let matchedCount = 0;
+            let unmatchedPaths = [];
+            
+            paths.forEach(path => {
+                const stateData = findStateData(path);
+                
+                if (stateData) {
+                    const color = getColorForRisk(stateData.avg_fake_score);
+                    path.style.fill = color;
+                    path.style.stroke = '#ffffff';
+                    path.style.strokeWidth = '0.5';
+                    path.setAttribute('data-state', stateData.state);
+                    path.setAttribute('data-events', stateData.total_events);
+                    path.setAttribute('data-risk', stateData.risk_level);
+                    matchedCount++;
+                } else {
+                    path.style.fill = '#88A4BC'; // Default color for unmatched states
+                    path.style.stroke = '#ffffff';
+                    path.style.strokeWidth = '0.5';
+                    const pathName = path.getAttribute('name') || path.id || 'unknown';
+                    unmatchedPaths.push(pathName);
+                }
+            });
+            
+            console.log(`Matched ${matchedCount} states, unmatched: ${unmatchedPaths.length}`);
+            if (unmatchedPaths.length > 0) {
+                console.log('Unmatched paths:', unmatchedPaths);
+            }
+        }
+        
+        // State name mapping for better matching
+        const stateNameMapping = {
+            'andaman and nicobar': 'Andaman and Nicobar Islands',
+            'andhra pradesh': 'Andhra Pradesh',
+            'arunachal pradesh': 'Arunachal Pradesh',
+            'assam': 'Assam',
+            'bihar': 'Bihar',
+            'chandigarh': 'Chandigarh',
+            'chhattisgarh': 'Chhattisgarh',
+            'dādra and nagar haveli and damān and diu': 'Dadra and Nagar Haveli and Daman and Diu',
+            'delhi': 'Delhi',
+            'goa': 'Goa',
+            'gujarat': 'Gujarat',
+            'haryana': 'Haryana',
+            'himachal pradesh': 'Himachal Pradesh',
+            'jharkhand': 'Jharkhand',
+            'karnataka': 'Karnataka',
+            'kerala': 'Kerala',
+            'lakshadweep': 'Lakshadweep',
+            'madhya pradesh': 'Madhya Pradesh',
+            'maharashtra': 'Maharashtra',
+            'manipur': 'Manipur',
+            'meghalaya': 'Meghalaya',
+            'mizoram': 'Mizoram',
+            'nagaland': 'Nagaland',
+            'orissa': 'Odisha',
+            'punjab': 'Punjab',
+            'puducherry': 'Puducherry',
+            'rajasthan': 'Rajasthan',
+            'sikkim': 'Sikkim',
+            'tamil nadu': 'Tamil Nadu',
+            'telangana': 'Telangana',
+            'tripura': 'Tripura',
+            'uttar pradesh': 'Uttar Pradesh',
+            'uttaranchal': 'Uttarakhand',
+            'west bengal': 'West Bengal',
+            'jammu and kashmir': 'Jammu and Kashmir',
+            'ladakh': 'Ladakh'
+        };
+
+        function findStateData(pathElement) {
+            // Try to match state by various attributes
+            const pathId = pathElement.id;
+            const pathTitle = pathElement.getAttribute('title');
+            const pathName = pathElement.getAttribute('name');
+            
+            // Get the SVG state name (usually from name attribute)
+            let svgStateName = pathName || pathTitle || pathId;
+            if (!svgStateName) return null;
+            
+            svgStateName = svgStateName.toLowerCase();
+            
+            // Try direct mapping first
+            const mappedName = stateNameMapping[svgStateName];
+            if (mappedName) {
+                const found = heatmapData.find(state => state.state === mappedName);
+                if (found) return found;
+            }
+            
+            // Fallback to fuzzy matching
+            return heatmapData.find(state => {
+                const stateName = state.state.toLowerCase();
+                return (
+                    svgStateName.includes(stateName) ||
+                    stateName.includes(svgStateName) ||
+                    svgStateName.replace(/\s+/g, '') === stateName.replace(/\s+/g, '') ||
+                    // Handle common variations
+                    (svgStateName === 'orissa' && stateName === 'odisha') ||
+                    (svgStateName === 'uttaranchal' && stateName === 'uttarakhand')
+                );
+            });
+        }
+        
+        function getColorForRisk(riskScore) {
+            // Real data thresholds
+            if (riskScore >= 0.6) return '#dc3545'; // High risk - red (60%+ fake probability)
+            if (riskScore >= 0.4) return '#ffc107'; // Medium risk - yellow (40-59% fake probability)
+            return '#28a745'; // Low risk - green (<40% fake probability)
+        }
+        
+        function handleStateClick(event) {
+            const path = event.target;
+            const stateData = findStateData(path);
+            
+            if (stateData) {
+                // Remove previous selection
+                svgMap.querySelectorAll('.selected').forEach(p => p.classList.remove('selected'));
+                
+                // Select current state
+                path.classList.add('selected');
+                selectedState = stateData.state;
+                
+                // Show state details
+                showStateDetails(stateData);
+                
+                // Load state-specific events
+                loadStateEvents(stateData.state);
+            }
+        }
+        
+        function handleStateHover(event) {
+            const path = event.target;
+            const stateData = findStateData(path);
+            
+            if (stateData) {
+                showTooltip(event, stateData);
+            }
+        }
+        
+        function handleStateLeave(event) {
+            hideTooltip();
+        }
+        
+        function showTooltip(event, stateData) {
+            const tooltip = document.getElementById('tooltip');
+            
+            tooltip.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
+                <div>Capital: ${stateData.capital}</div>
+                <div>Total Events: ${stateData.total_events}</div>
+                <div>Fake News: ${stateData.fake_news_count}</div>
+                <div>Risk Level: <span class="risk-badge risk-${stateData.risk_level.toLowerCase()}">${stateData.risk_level}</span></div>
+                <div>Avg Score: ${stateData.avg_fake_score}</div>
+            `;
+            
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 10 + 'px';
+        }
+        
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+        
+        function showStateDetails(stateData) {
+            document.getElementById('stateName').textContent = stateData.state;
+            
+            const trendingTopics = stateData.trending_topics.map(topic => 
+                `<span class="topic-tag">${topic}</span>`
+            ).join('');
+            
+            const headlines = stateData.recent_headlines.map(headline => 
+                `<div class="headline">${headline}</div>`
+            ).join('');
+            
+            document.getElementById('stateContent').innerHTML = `
+                <div class="state-stats">
+                    <div class="stat-row">
+                        <span>Capital:</span>
+                        <span class="stat-value">${stateData.capital}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Total Events:</span>
+                        <span class="stat-value">${stateData.total_events}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Fake News:</span>
+                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_news_count}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Real News:</span>
+                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_news_count}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Uncertain:</span>
+                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.uncertain_count}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Risk Level:</span>
+                        <span class="risk-badge risk-${stateData.risk_level.toLowerCase()}">${stateData.risk_level}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Avg Score:</span>
+                        <span class="stat-value">${stateData.avg_fake_score}</span>
+                    </div>
+                </div>
+                
+                ${stateData.trending_topics.length > 0 ? `
+                    <div class="trending-topics">
+                        <h4>📈 Trending Topics</h4>
+                        ${trendingTopics}
+                    </div>
+                ` : ''}
+                
+                ${stateData.recent_headlines.length > 0 ? `
+                    <div class="recent-headlines">
+                        <h4>📰 Recent Headlines</h4>
+                        ${headlines}
+                    </div>
+                ` : ''}
+            `;
+        }
+        
+        async function loadStateEvents(state) {
+            try {
+                const response = await fetch(`/api/v1/events/state/${encodeURIComponent(state)}`);
+                const data = await response.json();
+                
+                if (data.events && data.events.length > 0) {
+                    const eventsHtml = data.events.map(event => `
+                        <div class="headline">
+                            <div style="font-weight: bold; margin-bottom: 4px;">${event.title}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">
+                                ${event.source} • ${event.verdict.toUpperCase()} (${(event.confidence * 100).toFixed(0)}%)
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('stateContent').innerHTML += `
+                        <div style="margin-top: 20px;">
+                            <h4>🔍 Recent Analysis</h4>
+                            ${eventsHtml}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load state events:', error);
+            }
+        }
+        
+        async function updateStatusBar() {
+            try {
+                const response = await fetch('/api/v1/dashboard/stats');
+                const data = await response.json();
+                
+                document.getElementById('total-events').textContent = data.total_events || 0;
+                document.getElementById('active-states').textContent = heatmapData.length || 0;
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                
+                // Update processing status
+                const processingResponse = await fetch('/api/v1/stats');
+                const processingData = await processingResponse.json();
+                
+                const statusDot = document.querySelector('.status-dot');
+                const statusText = document.querySelector('.status-bar .status-item span');
+                
+                if (processingData.processing_active) {
+                    statusDot.style.background = '#28a745';
+                    statusText.textContent = 'Live Processing';
+                    statusDot.style.animation = 'pulse 2s infinite';
+                } else {
+                    statusDot.style.background = '#ffc107';
+                    statusText.textContent = 'Standby';
+                    statusDot.style.animation = 'none';
+                }
+                
+                // Update classification accuracy
+                const accuracy = processingData.recent_hour_stats?.classification_accuracy || 0;
+                const accuracyPercent = Math.round(accuracy * 100);
+                document.getElementById('classification-accuracy').textContent = `${accuracyPercent}%`;
+                
+                // Color code accuracy
+                const accuracyElement = document.getElementById('classification-accuracy');
+                if (accuracyPercent >= 80) {
+                    accuracyElement.style.color = '#28a745';
+                } else if (accuracyPercent >= 60) {
+                    accuracyElement.style.color = '#ffc107';
+                } else {
+                    accuracyElement.style.color = '#dc3545';
+                }
+                
+            } catch (error) {
+                console.error('Failed to update status bar:', error);
+                const statusDot = document.querySelector('.status-dot');
+                const statusText = document.querySelector('.status-bar .status-item span');
+                if (statusDot && statusText) {
+                    statusDot.style.background = '#dc3545';
+                    statusText.textContent = 'Connection Error';
+                    statusDot.style.animation = 'none';
+                }
+            }
+        }
+        
+        // Zoom and Pan Functions
+        function updateTransform() {
+            if (svgMap) {
+                svgMap.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
+                document.getElementById('zoom-level').textContent = Math.round(currentZoom * 100) + '%';
+            }
+        }
+        
+        function zoomIn() {
+            if (currentZoom < maxZoom) {
+                currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
+                updateTransform();
+            }
+        }
+        
+        function zoomOut() {
+            if (currentZoom > minZoom) {
+                currentZoom = Math.max(minZoom, currentZoom - zoomStep);
+                updateTransform();
+            }
+        }
+        
+        function resetZoom() {
+            currentZoom = 1;
+            currentX = 0;
+            currentY = 0;
+            updateTransform();
+        }
+        
+        function setupZoomAndPan() {
+            const svgRoot = document.getElementById('svgroot');
+            
+            // Mouse wheel zoom
+            svgRoot.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const rect = svgRoot.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const oldZoom = currentZoom;
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else {
+                    zoomOut();
+                }
+                
+                // Zoom towards mouse position
+                if (currentZoom !== oldZoom) {
+                    const zoomRatio = currentZoom / oldZoom;
+                    currentX = mouseX - (mouseX - currentX) * zoomRatio;
+                    currentY = mouseY - (mouseY - currentY) * zoomRatio;
+                    updateTransform();
+                }
+            });
+            
+            // Mouse drag pan
+            svgRoot.addEventListener('mousedown', (e) => {
+                if (e.button === 0) { // Left mouse button
+                    isDragging = true;
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    svgRoot.style.cursor = 'grabbing';
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - lastMouseX;
+                    const deltaY = e.clientY - lastMouseY;
+                    
+                    currentX += deltaX;
+                    currentY += deltaY;
+                    
+                    lastMouseX = e.clientX;
+                    lastMouseY = e.clientY;
+                    
+                    updateTransform();
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    svgRoot.style.cursor = 'grab';
+                }
+            });
+            
+            // Touch support for mobile
+            let lastTouchDistance = 0;
+            let lastTouchX = 0;
+            let lastTouchY = 0;
+            
+            svgRoot.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    // Single touch - pan
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    // Two touches - zoom
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    lastTouchDistance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) +
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+                }
+                e.preventDefault();
+            });
+            
+            svgRoot.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    // Single touch - pan
+                    const deltaX = e.touches[0].clientX - lastTouchX;
+                    const deltaY = e.touches[0].clientY - lastTouchY;
+                    
+                    currentX += deltaX;
+                    currentY += deltaY;
+                    
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                    
+                    updateTransform();
+                } else if (e.touches.length === 2) {
+                    // Two touches - zoom
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const currentDistance = Math.sqrt(
+                        Math.pow(touch2.clientX - touch1.clientX, 2) +
+                        Math.pow(touch2.clientY - touch1.clientY, 2)
+                    );
+                    
+                    if (lastTouchDistance > 0) {
+                        const zoomRatio = currentDistance / lastTouchDistance;
+                        const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom * zoomRatio));
+                        
+                        if (newZoom !== currentZoom) {
+                            currentZoom = newZoom;
+                            updateTransform();
+                        }
+                    }
+                    
+                    lastTouchDistance = currentDistance;
+                }
+                e.preventDefault();
+            });
+        }
+
+        // Debug functions
+        function debugMapData() {
+            console.log('=== MAP DEBUG INFO ===');
+            console.log('SVG Map loaded:', !!svgMap);
+            console.log('Heatmap data length:', heatmapData.length);
+            console.log('Sample heatmap data:', heatmapData.slice(0, 3));
+            
+            if (svgMap) {
+                const paths = svgMap.querySelectorAll('path');
+                console.log('SVG paths found:', paths.length);
+                
+                const pathNames = [];
+                paths.forEach((path, index) => {
+                    if (index < 10) { // Show first 10
+                        pathNames.push({
+                            id: path.id,
+                            name: path.getAttribute('name'),
+                            title: path.getAttribute('title')
+                        });
+                    }
+                });
+                console.log('Sample path names:', pathNames);
+            }
+            
+            alert('Debug info logged to console. Press F12 to view.');
+        }
+        
+        function forceRefresh() {
+            console.log('Force refreshing map data...');
+            loadHeatmapData().then(() => {
+                console.log('Data reloaded, applying colors...');
+                applyHeatmapColors();
+                updateStatusBar();
+                updateLiveFeed();
+            });
+        }
+        
+        // Enhanced live feed with better real-time updates
+        let lastEventId = null;
+        let feedUpdateCount = 0;
+        
+        async function updateLiveFeed() {
+            try {
+                const response = await fetch('/api/v1/events/live?limit=15');
+                const data = await response.json();
+                
+                const liveFeed = document.getElementById('live-feed');
+                if (data.events && data.events.length > 0) {
+                    feedUpdateCount++;
+                    
+                    const feedHtml = data.events.map((event, index) => {
+                        const verdictColor = event.verdict === 'fake' ? '#dc3545' : 
+                                           event.verdict === 'real' ? '#28a745' : '#ffc107';
+                        const confidencePercent = Math.round(event.confidence * 100);
+                        
+                        // Calculate realistic time ago based on timestamp
+                        const now = new Date();
+                        const eventTime = new Date(event.timestamp);
+                        const diffMinutes = Math.floor((now - eventTime) / (1000 * 60));
+                        const timeAgo = diffMinutes < 1 ? 'Just now' : 
+                                       diffMinutes < 60 ? `${diffMinutes}m ago` : 
+                                       diffMinutes < 1440 ? `${Math.floor(diffMinutes/60)}h ago` : 
+                                       `${Math.floor(diffMinutes/1440)}d ago`;
+                        
+                        // Add animation for new items
+                        const isNew = index < 3 && feedUpdateCount > 1;
+                        const animationStyle = isNew ? 'animation: slideIn 0.5s ease-out;' : '';
+                        
+                        return `
+                            <div style="border-left: 3px solid ${verdictColor}; padding: 10px 12px; margin-bottom: 1px; background: ${index % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'}; transition: all 0.3s ease; ${animationStyle}" 
+                                 onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.transform='translateX(2px)'" 
+                                 onmouseout="this.style.background='${index % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'}'; this.style.transform='translateX(0)'">
+                                <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; line-height: 1.3;">
+                                    ${event.title.substring(0, 75)}${event.title.length > 75 ? '...' : ''}
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; opacity: 0.8; margin-bottom: 4px;">
+                                    <span style="color: #667eea; font-weight: 500;">${event.source}</span>
+                                    <span style="color: ${verdictColor}; font-weight: bold; font-size: 9px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                                        ${event.verdict.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9px; opacity: 0.6;">
+                                    <span>${timeAgo}</span>
+                                    <span style="color: ${confidencePercent >= 70 ? '#28a745' : confidencePercent >= 50 ? '#ffc107' : '#dc3545'};">
+                                        ${confidencePercent}% confidence
+                                    </span>
+                                </div>
+                                ${event.state ? `<div style="font-size: 8px; opacity: 0.5; margin-top: 2px;">📍 ${event.state}</div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    liveFeed.innerHTML = feedHtml;
+                    
+                    // Update feed header with count
+                    const feedHeader = document.querySelector('h3');
+                    if (feedHeader && feedHeader.textContent.includes('Live Classification Feed')) {
+                        feedHeader.innerHTML = `
+                            <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                            Live Classification Feed (${data.events.length})
+                        `;
+                    }
+                    
+                } else {
+                    liveFeed.innerHTML = `
+                        <div style="opacity: 0.7; text-align: center; padding: 30px;">
+                            <div style="font-size: 24px; margin-bottom: 10px;">📡</div>
+                            <div>Processing news feeds...</div>
+                            <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;">Waiting for new events</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Failed to update live feed:', error);
+                document.getElementById('live-feed').innerHTML = `
+                    <div style="opacity: 0.7; text-align: center; padding: 30px; color: #dc3545;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                        <div>Feed temporarily unavailable</div>
+                        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;">Retrying connection...</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeEnhancedHeatmap);
+    </script>
+</body>
+</html>

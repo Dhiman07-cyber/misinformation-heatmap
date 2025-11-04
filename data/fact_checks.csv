@@ -1,0 +1,26 @@
+event_id,source,original_text,lang,region_hint,lat,lon,category,virality_score,reality_score,fact_check_status,timestamp
+fc001,news,Breaking: Major infrastructure collapse reported in Mumbai due to heavy monsoon rains affecting thousands of residents,en,Maharashtra,19.0760,72.8777,infrastructure,0.7,0.8,verified,2025-10-25T10:30:00Z
+fc002,social,Urgent: Fake currency notes being distributed in Delhi markets - police advisory issued,hi,Delhi,28.6139,77.2090,economic,0.6,0.3,debunked,2025-10-25T11:15:00Z
+fc003,news,Health Ministry confirms new vaccination drive in Karnataka starting next week,en,Karnataka,15.3173,75.7139,health,0.4,0.9,verified,2025-10-25T12:00:00Z
+fc004,social,Alert: WhatsApp message claims free gold distribution in Tamil Nadu - government denies,ta,Tamil Nadu,11.1271,78.6569,social,0.8,0.1,debunked,2025-10-25T13:45:00Z
+fc005,news,Agricultural reforms announced for Punjab farmers with new subsidy schemes,pa,Punjab,31.1471,75.3412,economic,0.5,0.8,verified,2025-10-25T14:20:00Z
+fc006,social,Viral video shows alleged police brutality in West Bengal - investigation ordered,bn,West Bengal,22.9868,87.8550,social,0.9,0.4,disputed,2025-10-25T15:10:00Z
+fc007,news,Cyclone warning issued for Odisha coast - evacuation procedures activated,en,Odisha,20.9517,85.0985,environmental,0.6,0.9,verified,2025-10-25T16:00:00Z
+fc008,social,False claim about water contamination in Gujarat industrial areas spreads on social media,gu,Gujarat,23.0225,72.5714,environmental,0.7,0.2,debunked,2025-10-25T17:30:00Z
+fc009,news,Education policy changes announced for Rajasthan schools effective next academic year,hi,Rajasthan,27.0238,74.2179,social,0.3,0.8,verified,2025-10-25T18:15:00Z
+fc010,social,Misleading information about Aadhaar data breach affects millions - UIDAI clarifies,en,Telangana,17.1232,79.2088,technology,0.8,0.3,debunked,2025-10-25T19:00:00Z
+fc011,news,Traditional festival celebrations in Kerala proceed with COVID protocols,ml,Kerala,10.8505,76.2711,social,0.2,0.9,verified,2025-10-25T20:30:00Z
+fc012,social,Fake job recruitment scam targeting youth in Uttar Pradesh - police warning issued,hi,Uttar Pradesh,26.8467,80.9462,economic,0.6,0.2,debunked,2025-10-25T21:45:00Z
+fc013,news,Renewable energy project inaugurated in Haryana with international collaboration,en,Haryana,29.0588,76.0856,environmental,0.4,0.9,verified,2025-10-26T08:00:00Z
+fc014,social,Doctored images of flood damage in Assam circulate online during dry season,as,Assam,26.2006,92.9376,environmental,0.7,0.1,debunked,2025-10-26T09:30:00Z
+fc015,news,Medical college expansion approved for Madhya Pradesh with increased seat allocation,hi,Madhya Pradesh,23.4734,77.9479,health,0.3,0.8,verified,2025-10-26T10:15:00Z
+fc016,social,Conspiracy theory about 5G towers causing health issues spreads in Himachal Pradesh,hi,Himachal Pradesh,31.1048,77.1734,health,0.8,0.2,debunked,2025-10-26T11:00:00Z
+fc017,news,Archaeological discovery in Chhattisgarh reveals ancient temple complex,en,Chhattisgarh,21.2787,81.8661,cultural,0.4,0.9,verified,2025-10-26T12:30:00Z
+fc018,social,False information about government scheme eligibility criteria confuses beneficiaries in Jharkhand,hi,Jharkhand,23.6102,85.2799,economic,0.6,0.3,debunked,2025-10-26T13:15:00Z
+fc019,news,Wildlife conservation efforts show positive results in Uttarakhand national parks,en,Uttarakhand,30.0668,79.0193,environmental,0.3,0.9,verified,2025-10-26T14:45:00Z
+fc020,social,Manipulated video of political rally in Manipur spreads false narrative about attendance,mni,Manipur,24.6637,93.9063,politics,0.9,0.1,debunked,2025-10-26T15:30:00Z
+fc021,news,Infrastructure development project connects remote villages in Meghalaya,en,Meghalaya,25.4670,91.3662,infrastructure,0.4,0.8,verified,2025-10-26T16:20:00Z
+fc022,social,Misinformation about traditional medicine cures spreads in Mizoram communities,lus,Mizoram,23.1645,92.9376,health,0.7,0.2,debunked,2025-10-26T17:00:00Z
+fc023,news,Sustainable tourism initiative launched in Nagaland with community participation,en,Nagaland,26.1584,94.5624,economic,0.3,0.9,verified,2025-10-26T18:10:00Z
+fc024,social,Fake emergency alert about natural disaster causes panic in Sikkim,ne,Sikkim,27.5330,88.5122,environmental,0.8,0.1,debunked,2025-10-26T19:45:00Z
+fc025,news,Digital literacy program expansion reaches rural areas in Tripura,bn,Tripura,23.9408,91.9882,technology,0.4,0.8,verified,2025-10-26T20:30:00Z

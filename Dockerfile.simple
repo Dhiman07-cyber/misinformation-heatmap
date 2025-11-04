@@ -1,0 +1,31 @@
+# Simple Dockerfile for testing
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install basic dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+COPY map/ ./map/
+COPY data/ ./data/
+
+# Set environment variables
+ENV PYTHONPATH=/app/backend
+ENV PORT=8080
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT}/health || exit 1
+
+# Run application
+CMD ["python", "-m", "uvicorn", "backend.main_application:app", "--host", "0.0.0.0", "--port", "8080"]

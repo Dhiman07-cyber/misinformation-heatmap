@@ -1,0 +1,318 @@
+# Production Docker Compose configuration
+# Optimized for production deployment with security and performance
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Production Application Service
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: misinformation-heatmap:${VERSION:-latest}
+    container_name: misinformation-heatmap-prod
+    ports:
+      - "8080:8080"
+    environment:
+      # Production Configuration
+      - MODE=cloud
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - API_HOST=0.0.0.0
+      - API_PORT=8080
+      
+      # Security
+      - API_KEY_ENABLED=true
+      - API_KEYS=${API_KEYS}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      
+      # Google Cloud Production
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - BIGQUERY_DATASET=${BIGQUERY_DATASET:-misinformation_heatmap}
+      - BIGQUERY_LOCATION=${BIGQUERY_LOCATION:-US}
+      
+      # Pub/Sub Production
+      - PUBSUB_EVENTS_RAW_TOPIC=${PUBSUB_EVENTS_RAW_TOPIC:-events-raw}
+      - PUBSUB_EVENTS_PROCESSED_TOPIC=${PUBSUB_EVENTS_PROCESSED_TOPIC:-events-processed}
+      - PUBSUB_EVENTS_VALIDATED_TOPIC=${PUBSUB_EVENTS_VALIDATED_TOPIC:-events-validated}
+      
+      # External Services
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY}
+      
+      # Performance & Caching
+      - CACHE_TYPE=redis
+      - CACHE_TTL=300
+      - REDIS_URL=redis://redis:6379/0
+      - RATE_LIMIT_ENABLED=true
+      - RATE_LIMIT_REQUESTS_PER_MINUTE=100
+      
+      # Monitoring
+      - ENABLE_METRICS=true
+      - ENABLE_TRACING=true
+      - TRACING_SAMPLE_RATE=0.1
+      
+      # Data Sources
+      - DATA_SOURCES_CONFIG_PATH=/app/config/data_sources.yaml
+      
+    volumes:
+      # Production data persistence
+      - app-data:/app/data
+      - app-logs:/app/logs
+      - app-cache:/app/cache
+      
+      # Google Cloud credentials
+      - ${GOOGLE_APPLICATION_CREDENTIALS_FILE}:/app/credentials.json:ro
+      
+      # Configuration (read-only)
+      - ${PWD}/config:/app/config:ro
+      
+    depends_on:
+      - redis
+      - nginx
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # ============================================================================
+  # Production Nginx Reverse Proxy
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: misinformation-heatmap-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Nginx configuration
+      - ${PWD}/docker/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ${PWD}/docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      
+      # SSL certificates
+      - ${SSL_CERT_PATH}:/etc/nginx/ssl/cert.pem:ro
+      - ${SSL_KEY_PATH}:/etc/nginx/ssl/key.pem:ro
+      
+      # Static files
+      - ${PWD}/frontend:/usr/share/nginx/html:ro
+      
+      # Logs
+      - nginx-logs:/var/log/nginx
+      
+    depends_on:
+      - app
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================================
+  # Production Redis Cache
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: misinformation-heatmap-redis-prod
+    command: >
+      redis-server 
+      --appendonly yes 
+      --maxmemory 1gb 
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    volumes:
+      - redis-prod-data:/data
+      - ${PWD}/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.2'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================================
+  # Production Monitoring Stack
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: misinformation-heatmap-prometheus-prod
+    ports:
+      - "9090:9090"
+    volumes:
+      - ${PWD}/docker/prometheus-prod.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-prod-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.2'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: misinformation-heatmap-grafana-prod
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+    volumes:
+      - grafana-prod-data:/var/lib/grafana
+      - ${PWD}/docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ${PWD}/docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          cpus: '0.1'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================================================
+  # Log Aggregation (Optional)
+  # ============================================================================
+  fluentd:
+    image: fluent/fluentd:v1.16-debian-1
+    container_name: misinformation-heatmap-fluentd
+    volumes:
+      - ${PWD}/docker/fluentd.conf:/fluentd/etc/fluent.conf:ro
+      - app-logs:/app/logs:ro
+      - nginx-logs:/nginx/logs:ro
+    networks:
+      - misinformation-prod-network
+    restart: unless-stopped
+    profiles:
+      - logging
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+# ============================================================================
+# Production Networks
+# ============================================================================
+networks:
+  misinformation-prod-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: misinformation-prod
+
+# ============================================================================
+# Production Volumes
+# ============================================================================
+volumes:
+  app-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}
+  app-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_PATH:-./logs}
+  app-cache:
+    driver: local
+  redis-prod-data:
+    driver: local
+  prometheus-prod-data:
+    driver: local
+  grafana-prod-data:
+    driver: local
+  nginx-logs:
+    driver: local

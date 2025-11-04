@@ -1,0 +1,57 @@
+# Core FastAPI and web framework dependencies
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+
+# Database and storage
+sqlalchemy>=2.0.0,<3.0.0
+alembic>=1.12.0,<2.0.0
+
+# Optional cloud dependencies (install separately if needed)
+# google-cloud-bigquery>=3.38.0
+# google-cloud-pubsub>=2.31.0
+# google-cloud-storage>=2.10.0
+# google-auth>=2.23.0
+# earthengine-api>=1.6.0
+# ibm-watson>=11.0.0
+# ibm-cloud-sdk-core>=3.24.0
+
+# NLP and ML dependencies
+# transformers  # Large package - install separately if needed
+# torch  # Large package - install separately if needed
+numpy
+pandas
+scikit-learn
+nltk
+textblob
+langdetect
+
+# HTTP clients and utilities
+httpx>=0.25.0,<1.0.0
+requests>=2.31.0,<3.0.0
+aiofiles>=23.0.0,<24.0.0
+
+# Data processing and validation
+pydantic>=2.5.0,<3.0.0
+python-dateutil>=2.8.0,<3.0.0
+
+# RSS and web scraping
+feedparser>=6.0.0,<7.0.0
+beautifulsoup4>=4.12.0,<5.0.0
+
+# Testing framework
+pytest>=7.4.0,<8.0.0
+pytest-asyncio>=0.21.0,<1.0.0
+
+# Development and debugging
+python-dotenv>=1.0.0,<2.0.0
+
+# Geospatial processing
+geopy>=2.4.0,<3.0.0
+
+# Caching and performance (optional)
+# redis>=5.0.0,<6.0.0
+
+# Security
+passlib[bcrypt]>=1.7.0,<2.0.0

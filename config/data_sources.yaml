@@ -1,0 +1,349 @@
+# Data Sources Configuration
+# Production-ready configuration for real-time misinformation heatmap
+
+# Global settings
+global:
+  enabled: true
+  max_concurrent_sources: 10
+  default_fetch_interval: 300  # 5 minutes
+  batch_size: 100
+  fetch_timeout: 300  # 5 minutes per source
+  
+  # Data validation settings
+  validation:
+    min_content_length: 10
+    max_content_length: 50000
+    min_word_count: 3
+    require_india_relevance: true
+    allowed_languages: ["en", "hi", "bn", "te", "ta", "mr", "gu", "kn", "ml", "or", "pa", "as"]
+
+# RSS Feed Sources
+rss_feeds:
+  enabled: true
+  
+  # National English News (High Priority)
+  national_english:
+    times_of_india:
+      source_type: "rss"
+      feed_url: "https://timesofindia.indiatimes.com/rssfeedstopstories.cms"
+      feed_title: "Times of India - Top Stories"
+      category: "news"
+      language: "en"
+      reliability_score: 0.8
+      fetch_interval: 300
+      enabled: true
+      priority: "high"
+    
+    hindu_national:
+      source_type: "rss"
+      feed_url: "https://www.thehindu.com/news/national/feeder/default.rss"
+      feed_title: "The Hindu - National News"
+      category: "news"
+      language: "en"
+      reliability_score: 0.9
+      fetch_interval: 300
+      enabled: true
+      priority: "high"
+    
+    indian_express:
+      source_type: "rss"
+      feed_url: "https://indianexpress.com/section/india/feed/"
+      feed_title: "Indian Express - India News"
+      category: "news"
+      language: "en"
+      reliability_score: 0.85
+      fetch_interval: 300
+      enabled: true
+      priority: "high"
+    
+    ndtv_news:
+      source_type: "rss"
+      feed_url: "https://feeds.feedburner.com/NDTV-LatestNews"
+      feed_title: "NDTV Latest News"
+      category: "news"
+      language: "en"
+      reliability_score: 0.8
+      fetch_interval: 300
+      enabled: true
+      priority: "high"
+    
+    hindustan_times:
+      source_type: "rss"
+      feed_url: "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml"
+      feed_title: "Hindustan Times - India News"
+      category: "news"
+      language: "en"
+      reliability_score: 0.8
+      fetch_interval: 300
+      enabled: true
+      priority: "high"
+
+  # Regional English News (Medium Priority)
+  regional_english:
+    deccan_herald:
+      source_type: "rss"
+      feed_url: "https://www.deccanherald.com/rss-feed"
+      feed_title: "Deccan Herald"
+      category: "news"
+      language: "en"
+      reliability_score: 0.8
+      fetch_interval: 600
+      enabled: true
+      priority: "medium"
+    
+    telegraph_india:
+      source_type: "rss"
+      feed_url: "https://www.telegraphindia.com/rss.xml"
+      feed_title: "The Telegraph India"
+      category: "news"
+      language: "en"
+      reliability_score: 0.85
+      fetch_interval: 600
+      enabled: true
+      priority: "medium"
+
+  # Hindi News Sources
+  hindi_news:
+    dainik_bhaskar:
+      source_type: "rss"
+      feed_url: "https://www.bhaskar.com/rss-feed/1061/"
+      feed_title: "Dainik Bhaskar"
+      category: "news"
+      language: "hi"
+      reliability_score: 0.75
+      fetch_interval: 600
+      enabled: true
+      priority: "medium"
+    
+    amar_ujala:
+      source_type: "rss"
+      feed_url: "https://www.amarujala.com/rss/breaking-news.xml"
+      feed_title: "Amar Ujala"
+      category: "news"
+      language: "hi"
+      reliability_score: 0.75
+      fetch_interval: 600
+      enabled: true
+      priority: "medium"
+
+  # Fact-checking Sources (Critical Priority)
+  fact_checking:
+    alt_news:
+      source_type: "rss"
+      feed_url: "https://www.altnews.in/feed/"
+      feed_title: "Alt News"
+      category: "fact_check"
+      language: "en"
+      reliability_score: 0.95
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+    
+    boom_live:
+      source_type: "rss"
+      feed_url: "https://www.boomlive.in/feed"
+      feed_title: "BOOM Live"
+      category: "fact_check"
+      language: "en"
+      reliability_score: 0.9
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+    
+    factly:
+      source_type: "rss"
+      feed_url: "https://factly.in/feed/"
+      feed_title: "Factly"
+      category: "fact_check"
+      language: "en"
+      reliability_score: 0.9
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+
+# Government Sources (Critical Priority)
+government_feeds:
+  enabled: true
+  
+  central_government:
+    pib_national:
+      source_type: "rss"
+      feed_url: "https://pib.gov.in/rss/leng.aspx"
+      feed_title: "Press Information Bureau - National"
+      category: "government"
+      language: "en"
+      reliability_score: 0.95
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+      authority: "central_government"
+    
+    pib_hindi:
+      source_type: "rss"
+      feed_url: "https://pib.gov.in/rss/lhindi.aspx"
+      feed_title: "Press Information Bureau - Hindi"
+      category: "government"
+      language: "hi"
+      reliability_score: 0.95
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+      authority: "central_government"
+    
+    mha_india:
+      source_type: "rss"
+      feed_url: "https://www.mha.gov.in/rss.xml"
+      feed_title: "Ministry of Home Affairs"
+      category: "government"
+      language: "en"
+      reliability_score: 0.95
+      fetch_interval: 600
+      enabled: true
+      priority: "critical"
+      authority: "central_government"
+      ministry: "home_affairs"
+    
+    mohfw_india:
+      source_type: "rss"
+      feed_url: "https://www.mohfw.gov.in/rss.xml"
+      feed_title: "Ministry of Health and Family Welfare"
+      category: "government"
+      language: "en"
+      reliability_score: 0.95
+      fetch_interval: 300
+      enabled: true
+      priority: "critical"
+      authority: "central_government"
+      ministry: "health"
+
+  state_governments:
+    maharashtra_gov:
+      source_type: "rss"
+      feed_url: "https://www.maharashtra.gov.in/rss.xml"
+      feed_title: "Government of Maharashtra"
+      category: "government"
+      language: "en"
+      reliability_score: 0.9
+      fetch_interval: 900
+      enabled: true
+      priority: "high"
+      authority: "state_government"
+      state: "Maharashtra"
+    
+    karnataka_gov:
+      source_type: "rss"
+      feed_url: "https://www.karnataka.gov.in/rss.xml"
+      feed_title: "Government of Karnataka"
+      category: "government"
+      language: "en"
+      reliability_score: 0.9
+      fetch_interval: 900
+      enabled: true
+      priority: "high"
+      authority: "state_government"
+      state: "Karnataka"
+
+# Web Crawlers (Future - Day 2 implementation)
+web_crawlers:
+  enabled: false  # Will enable after implementation
+  
+  news_sites:
+    news18_crawler:
+      source_type: "crawler"
+      base_url: "https://www.news18.com"
+      target_urls:
+        - "https://www.news18.com/india/"
+        - "https://www.news18.com/politics/"
+      selectors:
+        title: "h1.story-title, h1.article-title"
+        content: ".story-content, .article-content"
+        timestamp: ".publish-date, .story-date"
+      fetch_interval: 900
+      enabled: false
+      priority: "medium"
+      rate_limit: 30  # requests per minute
+
+# API Sources (Future expansion)
+api_sources:
+  enabled: false  # Will enable when API keys are available
+  
+  social_media:
+    reddit_india:
+      source_type: "api"
+      api_endpoint: "https://www.reddit.com/r/india/new.json"
+      headers:
+        User-Agent: "MisinformationHeatmap/1.0"
+      fetch_interval: 600
+      enabled: false
+      priority: "medium"
+      rate_limit: 60
+
+# Priority-based scheduling
+priority_scheduling:
+  critical:
+    fetch_interval: 300  # 5 minutes
+    max_concurrent: 5
+    sources: ["alt_news", "boom_live", "factly", "pib_national", "pib_hindi", "mha_india", "mohfw_india"]
+  
+  high:
+    fetch_interval: 300  # 5 minutes
+    max_concurrent: 8
+    sources: ["times_of_india", "hindu_national", "indian_express", "ndtv_news", "hindustan_times"]
+  
+  medium:
+    fetch_interval: 600  # 10 minutes
+    max_concurrent: 6
+    sources: ["deccan_herald", "telegraph_india", "dainik_bhaskar", "amar_ujala"]
+  
+  low:
+    fetch_interval: 900  # 15 minutes
+    max_concurrent: 4
+    sources: []
+
+# Monitoring and alerting
+monitoring:
+  health_check_interval: 300  # 5 minutes
+  alert_thresholds:
+    source_failure_rate: 0.2  # 20% failure rate triggers alert
+    no_data_timeout: 1800  # 30 minutes without data triggers alert
+    validation_failure_rate: 0.5  # 50% validation failures triggers alert
+  
+  notifications:
+    email: "admin@your-domain.com"
+    slack_webhook: "${SLACK_WEBHOOK_URL}"
+
+# Performance settings
+performance:
+  cache:
+    enabled: true
+    ttl: 300  # 5 minutes
+    max_size: 1000
+  
+  rate_limiting:
+    global_rate_limit: 300  # requests per minute across all sources
+    per_source_rate_limit: 60  # requests per minute per source
+    adaptive_rate_limiting: true
+  
+  batch_processing:
+    batch_size: 50
+    max_batch_wait_time: 30  # seconds
+    parallel_processing: true
+
+# Data quality settings
+data_quality:
+  deduplication:
+    enabled: true
+    similarity_threshold: 0.8
+    time_window: 3600  # 1 hour
+  
+  content_filtering:
+    min_reliability_score: 0.6
+    spam_detection: true
+    language_filtering: true
+    geographic_filtering: true
+  
+  validation_rules:
+    require_title: false
+    require_url: false
+    require_timestamp: true
+    max_age_hours: 72  # 3 days

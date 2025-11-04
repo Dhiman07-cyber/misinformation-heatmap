@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Interactive India Map</title>
+  <style>
+    :root{--bg:#0f1720;--panel:#0b1220;--accent:#3b82f6}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:var(--bg);color:#e6eef8;display:flex;min-height:100vh}
+    #left{flex:1;display:flex;flex-direction:column}
+    header{padding:12px 16px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);display:flex;gap:12px;align-items:center}
+    header h1{font-size:18px;margin:0}
+    #mapwrap{flex:1;overflow:hidden;position:relative}
+    #svgroot{width:100%;height:100%;touch-action:none;cursor:grab;background:linear-gradient(180deg,#071027, #082035)}
+    #tooltip{position:absolute;pointer-events:none;padding:8px 10px;background:#fff;color:#041026;border-radius:6px;font-size:13px;box-shadow:0 6px 18px rgba(4,8,16,0.6);display:none}
+    aside{width:320px;background:var(--panel);border-left:1px solid rgba(255,255,255,0.03);padding:18px;box-sizing:border-box}
+    .state-name{font-size:20px;font-weight:600;margin-bottom:6px}
+    .meta{font-size:13px;opacity:0.85}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 8px;border-radius:8px;color:inherit;cursor:pointer}
+    input[type=search]{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit}
+    .legend{margin-top:12px;font-size:13px}
+    .hint{margin-top:18px;opacity:0.7;font-size:13px}
+    /* highlight style for svg paths */
+    .map-path{fill:#88A4BC;stroke:#ffffff;stroke-width:0.6}
+    .map-path:hover{fill:#3B729F}
+    .selected{fill:var(--accent) !important}
+    footer{padding-top:12px;font-size:12px;opacity:0.8}
+  </style>
+</head>
+<body>
+  <div id="left">
+    <header>
+      <h1>Interactive India Map</h1>
+      <div class="controls" style="flex:1">
+        <input id="search" type="search" placeholder="Search state (e.g. Karnataka)" />
+        <button id="reset" class="btn">Reset</button>
+      </div>
+    </header>
+    <div id="mapwrap">
+      <div id="svgroot">Loading map...</div>
+      <div id="tooltip"></div>
+    </div>
+  </div>
+  <aside>
+    <div class="state-name" id="stateName">Click a state</div>
+    <div class="meta" id="stateDesc">State description will appear here. Hover or click a state on the map.</div>
+    <div class="legend" id="legend"></div>
+    <div class="hint">Use mouse wheel to zoom, drag to pan. On mobile: pinch to zoom (if supported).</div>
+    <footer>Files required: <code>in.svg</code> and <code>mapdata.js</code> in same folder.</footer>
+  </aside>
+
+  <script>
+    // Basic utility and UI
+    const svgRoot = document.getElementById('svgroot');
+    const tooltip = document.getElementById('tooltip');
+    const stateNameEl = document.getElementById('stateName');
+    const stateDescEl = document.getElementById('stateDesc');
+    const searchInput = document.getElementById('search');
+    const resetBtn = document.getElementById('reset');
+
+    // We'll load the SVG file (in.svg) and inject it so we can attach listeners
+    async function loadSVG(){
+      try{
+        const res = await fetch('in.svg');
+        if(!res.ok) throw new Error('SVG not found. Put in.svg beside this HTML file.');
+        const text = await res.text();
+        svgRoot.innerHTML = text;
+        initMap();
+      }catch(e){
+        svgRoot.innerHTML = '<div style="padding:18px;color:salmon">Error loading in.svg: '+e.message+'</div>';
+      }
+    }
+
+    // Load optional mapdata.js (user provided). It should define simplemaps_countrymap_mapdata
+    function loadMapData(){
+      return new Promise((resolve)=>{
+        if(window.simplemaps_countrymap_mapdata){
+          resolve(window.simplemaps_countrymap_mapdata);
+        }else{
+          // try to dynamically load mapdata.js
+          const s = document.createElement('script');
+          s.src = 'mapdata.js';
+          s.onload = ()=> resolve(window.simplemaps_countrymap_mapdata || {});
+          s.onerror = ()=> resolve({});
+          document.head.appendChild(s);
+        }
+      })
+    }
+
+    // Map interaction state (pan/zoom)
+    let scale = 1, tx = 0, ty = 0;
+    let isPanning = false, startX=0, startY=0;
+    let svgEl;
+    let mapData = {};
+    let selectedEl = null;
+
+    function initMap(){
+      // find the actual <svg>
+      svgEl = svgRoot.querySelector('svg');
+      if(!svgEl){ svgRoot.innerHTML = '<div style="padding:18px;color:salmon">in.svg does not contain an &lt;svg&gt; root.</div>'; return; }
+      // wrap paths with class map-path for styling
+      const paths = svgEl.querySelectorAll('path, polygon, rect, circle');
+      paths.forEach(p => {
+        if(!p.id) return;
+        p.classList.add('map-path');
+      });
+
+      // initial transform group
+      let g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      // move all children into g
+      while(svgEl.firstChild){ g.appendChild(svgEl.firstChild); }
+      svgEl.appendChild(g);
+      svgEl.dataset.viewbox = svgEl.getAttribute('viewBox') || '';
+
+      // pan/zoom handlers
+      svgRoot.addEventListener('wheel', e=>{
+        e.preventDefault();
+        const delta = -e.deltaY * 0.001;
+        const oldScale = scale;
+        scale = Math.min(8, Math.max(0.5, scale * (1 + delta)));
+        // zoom towards cursor
+        const rect = svgRoot.getBoundingClientRect();
+        const cx = e.clientX - rect.left;
+        const cy = e.clientY - rect.top;
+        tx -= (cx/oldScale - cx/scale);
+        ty -= (cy/oldScale - cy/scale);
+        updateTransform();
+      }, {passive:false});
+
+      svgRoot.addEventListener('mousedown', e=>{
+        isPanning = true; startX = e.clientX; startY = e.clientY; svgRoot.style.cursor='grabbing';
+      });
+      window.addEventListener('mousemove', e=>{
+        if(!isPanning) return;
+        tx += (e.clientX - startX)/scale; ty += (e.clientY - startY)/scale; startX = e.clientX; startY = e.clientY; updateTransform();
+      });
+      window.addEventListener('mouseup', ()=>{ isPanning=false; svgRoot.style.cursor='grab'; });
+
+      // load map data and attach state listeners
+      loadMapData().then(md=>{
+        mapData = md || {};
+        attachStateHandlers();
+      });
+
+      // pointer hover for tooltip
+      svgRoot.addEventListener('mousemove', e=>{
+        const t = e.target;
+        if(t && t.classList && t.classList.contains('map-path')){
+          const id = t.id;
+          const info = lookupStateInfo(id);
+          showTooltip(e.clientX, e.clientY, info.name+(info.desc?('\n'+info.desc):''));
+        } else { hideTooltip(); }
+      });
+
+      svgRoot.addEventListener('mouseleave', hideTooltip);
+
+      // click to select
+      svgRoot.addEventListener('click', e=>{
+        const t = e.target;
+        if(t && t.classList && t.classList.contains('map-path')){
+          selectState(t.id, t);
+        }
+      });
+
+      // search
+      searchInput.addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
+      resetBtn.addEventListener('click', resetView);
+    }
+
+    function updateTransform(){
+      const g = svgEl.querySelector('g');
+      g.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
+    }
+
+    function showTooltip(cx, cy, html){
+      tooltip.style.display='block';
+      tooltip.innerText = html;
+      const mapRect = svgRoot.getBoundingClientRect();
+      const left = Math.min(mapRect.width - 180, Math.max(8, cx - mapRect.left + 12));
+      const top = Math.max(8, cy - mapRect.top + 12);
+      tooltip.style.left = left+'px'; tooltip.style.top = top+'px';
+    }
+    function hideTooltip(){ tooltip.style.display='none'; }
+
+    function lookupStateInfo(id){
+      const empty = {name:id || 'Unknown', desc:''};
+      if(!id) return empty;
+      if(mapData && mapData.state_specific && mapData.state_specific[id]){
+        const s = mapData.state_specific[id];
+        return {name: s.name || id, desc: (s.description && s.description!=='default')?s.description:''};
+      }
+      // fallback: try matching by common names
+      return {name: id, desc:''};
+    }
+
+    function selectState(id, el){
+      if(selectedEl) selectedEl.classList.remove('selected');
+      selectedEl = el;
+      selectedEl.classList.add('selected');
+      const info = lookupStateInfo(id);
+      stateNameEl.innerText = info.name || id;
+      stateDescEl.innerText = info.desc || (mapData.main_settings && mapData.main_settings.state_description) || 'No description available.';
+    }
+
+    function attachStateHandlers(){
+      // populate legend from mapData if available
+      if(mapData && mapData.legend && Array.isArray(mapData.legend.entries) && mapData.legend.entries.length){
+        const legend = document.getElementById('legend');
+        legend.innerHTML = '<strong>Legend</strong><br>' + mapData.legend.entries.join(', ');
+      }
+
+      // add pointer cursors
+      const paths = svgEl.querySelectorAll('.map-path');
+      paths.forEach(p=>{
+        p.style.cursor='pointer';
+        // attempt to set title attribute for accessibility
+        const info = lookupStateInfo(p.id);
+        p.setAttribute('data-name', info.name||p.id);
+        // if SVG path has no fill set or fill=none, set a default fill
+        if(!p.getAttribute('fill') || p.getAttribute('fill')==='none'){
+          p.setAttribute('fill','#88A4BC');
+        }
+      });
+    }
+
+    function doSearch(){
+      const q = searchInput.value.trim().toLowerCase();
+      if(!q) return;
+      // try to find a state in mapdata
+      const m = mapData.state_specific || {};
+      for(const k of Object.keys(m)){
+        const name = (m[k].name||'').toLowerCase();
+        if(name.includes(q) || k.toLowerCase()===q){
+          // find element with id k
+          const el = svgEl.querySelector('#'+CSS.escape(k));
+          if(el){
+            // center view on bbox
+            const bbox = el.getBBox();
+            // simple centering: move translate so bbox is roughly center
+            const rect = svgRoot.getBoundingClientRect();
+            const cx = bbox.x + bbox.width/2; const cy = bbox.y + bbox.height/2;
+            // compute desired tx/ty so that cx,cy appear near center of container
+            const targetScreenX = rect.width/2; const targetScreenY = rect.height/2;
+            tx = targetScreenX/scale - cx; ty = targetScreenY/scale - cy;
+            updateTransform();
+            selectState(k, el);
+            return;
+          }
+        }
+      }
+      alert('No state found for "'+q+'"');
+    }
+
+    function resetView(){ scale = 1; tx = 0; ty = 0; updateTransform(); if(selectedEl) { selectedEl.classList.remove('selected'); selectedEl=null; stateNameEl.innerText='Click a state'; stateDescEl.innerText='State description will appear here.'} }
+
+    // initial load
+    loadSVG();
+  </script>
+</body>
+</html>
