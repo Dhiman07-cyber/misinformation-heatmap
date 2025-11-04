@@ -1,7 +1,8 @@
 # Docker Compose configuration for Real-Time Misinformation Heatmap
 # Supports both development and production environments
 
-version: '3.8'
+# Docker Compose configuration for Real-Time Misinformation Heatmap
+# Supports both development and production environments
 
 services:
   # ============================================================================
@@ -27,24 +28,24 @@ services:
       - DATABASE_URL=${DATABASE_URL:-sqlite:///./data/heatmap.db}
       - DATABASE_TYPE=${DATABASE_TYPE:-sqlite}
       
-      # Google Cloud Configuration (for production)
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      # Google Cloud Configuration (optional)
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-}
       - BIGQUERY_DATASET=${BIGQUERY_DATASET:-misinformation_heatmap}
       - BIGQUERY_LOCATION=${BIGQUERY_LOCATION:-US}
       
-      # Pub/Sub Configuration
-      - PUBSUB_EMULATOR_HOST=${PUBSUB_EMULATOR_HOST}
+      # Pub/Sub Configuration (optional)
+      - PUBSUB_EMULATOR_HOST=${PUBSUB_EMULATOR_HOST:-}
       - PUBSUB_EVENTS_RAW_TOPIC=${PUBSUB_EVENTS_RAW_TOPIC:-events-raw}
       - PUBSUB_EVENTS_PROCESSED_TOPIC=${PUBSUB_EVENTS_PROCESSED_TOPIC:-events-processed}
       
-      # External Services
-      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
-      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY}
+      # External Services (optional)
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY:-}
       
       # Security Configuration
       - API_KEY_ENABLED=${API_KEY_ENABLED:-false}
-      - API_KEYS=${API_KEYS}
+      - API_KEYS=${API_KEYS:-}
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:3000"]}
       
       # Performance Configuration
@@ -68,10 +69,9 @@ services:
       - ${PWD}/logs:/app/logs
       
       # Google Cloud credentials (if using service account file)
-      - ${GOOGLE_APPLICATION_CREDENTIALS_FILE:-./credentials.json}:${GOOGLE_APPLICATION_CREDENTIALS:-/app/credentials.json}:ro
+      # - ${GOOGLE_APPLICATION_CREDENTIALS_FILE:-./credentials.json}:${GOOGLE_APPLICATION_CREDENTIALS:-/app/credentials.json}:ro
       
     depends_on:
-      - pubsub-emulator
       - frontend
     networks:
       - misinformation-network
