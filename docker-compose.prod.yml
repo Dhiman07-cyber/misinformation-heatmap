@@ -27,12 +27,12 @@ services:
       
       # Security
       - API_KEY_ENABLED=true
-      - API_KEYS=${API_KEYS}
-      - CORS_ORIGINS=${CORS_ORIGINS}
+      - API_KEYS=${API_KEYS:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["*"]}
       
-      # Google Cloud Production
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      # Google Cloud Production (optional)
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS:-}
       - BIGQUERY_DATASET=${BIGQUERY_DATASET:-misinformation_heatmap}
       - BIGQUERY_LOCATION=${BIGQUERY_LOCATION:-US}
       
@@ -41,9 +41,9 @@ services:
       - PUBSUB_EVENTS_PROCESSED_TOPIC=${PUBSUB_EVENTS_PROCESSED_TOPIC:-events-processed}
       - PUBSUB_EVENTS_VALIDATED_TOPIC=${PUBSUB_EVENTS_VALIDATED_TOPIC:-events-validated}
       
-      # External Services
-      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
-      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY}
+      # External Services (optional)
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+      - WATSON_DISCOVERY_API_KEY=${WATSON_DISCOVERY_API_KEY:-}
       
       # Performance & Caching
       - CACHE_TYPE=redis
@@ -66,15 +66,14 @@ services:
       - app-logs:/app/logs
       - app-cache:/app/cache
       
-      # Google Cloud credentials
-      - ${GOOGLE_APPLICATION_CREDENTIALS_FILE}:/app/credentials.json:ro
+      # Google Cloud credentials (uncomment if using service account file)
+      # - ${GOOGLE_APPLICATION_CREDENTIALS_FILE:-./credentials.json}:/app/credentials.json:ro
       
       # Configuration (read-only)
       - ${PWD}/config:/app/config:ro
       
     depends_on:
       - redis
-      - nginx
     networks:
       - misinformation-prod-network
     restart: unless-stopped
@@ -112,9 +111,9 @@ services:
       - ${PWD}/docker/nginx-prod.conf:/etc/nginx/nginx.conf:ro
       - ${PWD}/docker/nginx/conf.d:/etc/nginx/conf.d:ro
       
-      # SSL certificates
-      - ${SSL_CERT_PATH}:/etc/nginx/ssl/cert.pem:ro
-      - ${SSL_KEY_PATH}:/etc/nginx/ssl/key.pem:ro
+      # SSL certificates (uncomment for HTTPS)
+      # - ${SSL_CERT_PATH:-./ssl/cert.pem}:/etc/nginx/ssl/cert.pem:ro
+      # - ${SSL_KEY_PATH:-./ssl/key.pem}:/etc/nginx/ssl/key.pem:ro
       
       # Static files
       - ${PWD}/frontend:/usr/share/nginx/html:ro
@@ -227,7 +226,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SECURITY_ALLOW_EMBEDDING=true
       - GF_AUTH_ANONYMOUS_ENABLED=false
