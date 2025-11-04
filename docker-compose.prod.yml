@@ -1,7 +1,8 @@
 # Production Docker Compose configuration
 # Optimized for production deployment with security and performance
 
-version: '3.8'
+# Production Docker Compose configuration
+# Optimized for production deployment with security and performance
 
 services:
   # ============================================================================
