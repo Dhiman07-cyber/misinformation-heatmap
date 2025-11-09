@@ -60,15 +60,18 @@ async def startup_event():
     """Start high-volume processing"""
     asyncio.create_task(high_volume_processing_loop())
 
-# Mount static files (map folder)
+# Mount static files (map folder only)
 import os
 map_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "map")
-frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
 if os.path.exists(map_dir):
     app.mount("/map", StaticFiles(directory=map_dir), name="map")
-if os.path.exists(frontend_dir):
-    app.mount("/static", StaticFiles(directory=frontend_dir), name="static")
+
+@app.get("/frontend")
+async def frontend_redirect():
+    """Frontend redirect page"""
+    with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "index.html"), 'r') as f:
+        return HTMLResponse(f.read())
 
 @app.get("/")
 async def root():

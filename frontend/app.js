@@ -1,1 +1,0 @@
-// Placeholder for frontend JavaScript - will be implemented in task 7
