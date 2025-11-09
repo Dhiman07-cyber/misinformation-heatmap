@@ -125,6 +125,9 @@ pytest tests/
 # Run with coverage
 pytest --cov=backend tests/
 
+# Use test script (recommended)
+./scripts/run_tests.sh
+
 # Test specific component
 pytest tests/test_ml_classifier.py -v
 ```
@@ -138,6 +141,7 @@ Complete documentation is available in the [`docs/`](docs/) folder:
 - **[🔧 Backend Architecture](docs/BACKEND_ARCHITECTURE.md)** - System design and components
 - **[🤖 ML Model Documentation](docs/ML_MODEL_DOCUMENTATION.md)** - AI model specifications
 - **[🛡️ System Overview](docs/SYSTEM_OVERVIEW.md)** - Complete feature overview
+- **[🛠️ Scripts Guide](scripts/README.md)** - Development and deployment scripts
 
 ## 🌐 Deployment
 
@@ -148,6 +152,10 @@ docker-compose up --build
 
 # Production deployment
 docker-compose -f docker-compose.prod.yml up -d
+
+# Or use Docker management scripts
+./scripts/docker-dev.sh start      # Development
+./scripts/docker-prod.sh deploy    # Production
 ```
 
 ### Manual Setup
@@ -157,6 +165,9 @@ pip install -r requirements.txt
 
 # Run application
 cd backend && python main_application.py
+
+# Or use local development script
+./scripts/run_local.sh
 ```
 
 ## 🤝 Contributing
