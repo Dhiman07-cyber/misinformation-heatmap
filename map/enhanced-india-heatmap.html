@@ -98,6 +98,9 @@
         #svgroot {
             width: 100%;
             height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             touch-action: none;
             cursor: grab;
             background: linear-gradient(180deg, #071027, #082035);
@@ -201,6 +204,66 @@
         @keyframes newItem {
             0% { background: rgba(103, 126, 234, 0.3); }
             100% { background: rgba(255,255,255,0.03); }
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #e6eef8;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 153, 51, 0.3);
+            border-top: 4px solid #FF9933;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #FF9933;
+        }
+        
+        .loading-subtext {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-bottom: 20px;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF9933, #138808);
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progress 3s ease-in-out infinite;
+        }
+        
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
         }
         
         #tooltip {
@@ -396,9 +459,13 @@
                 <button class="zoom-btn" onclick="resetZoom()" title="Reset View">⌂</button>
             </div>
             <div id="svgroot">
-                <div class="loading">
-                    <div>🗺️ Loading Enhanced India Map...</div>
-                    <div style="font-size: 12px; margin-top: 8px;">Fetching real-time fake news data</div>
+                <div class="loading" id="loading-screen">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">🗺️ Loading Enhanced India Map...</div>
+                    <div class="loading-subtext">Fetching real-time misinformation data</div>
+                    <div class="loading-progress">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
                 </div>
             </div>
             <div id="tooltip"></div>
@@ -466,6 +533,11 @@
         let selectedState = null;
         let svgMap = null;
         
+        // Caching variables for performance
+        let dataCache = new Map();
+        let lastDataFetch = 0;
+        const CACHE_DURATION = 30000; // 30 seconds cache
+        
         // Zoom and pan variables
         let currentZoom = 1;
         let currentX = 0;
@@ -490,17 +562,16 @@
                 await updateStatusBar();
                 await updateLiveFeed();
                 
-                // Set up auto-refresh
+                // Optimized refresh intervals for better performance
                 setInterval(async () => {
                     await loadHeatmapData();
+                }, 60000); // Update map every 60 seconds (less frequent)
+                
+                setInterval(async () => {
                     await updateStatusBar();
-                }, 30000); // Update map and status every 30 seconds
+                }, 30000); // Update status every 30 seconds
                 
-                // Frequent live feed updates for real-time feel
-                setInterval(updateLiveFeed, 5000); // Update live feed every 5 seconds
-                
-                // Very frequent status updates
-                setInterval(updateStatusBar, 15000); // Update status every 15 seconds
+                setInterval(updateLiveFeed, 15000); // Update live feed every 15 seconds (less frequent)
                 
             } catch (error) {
                 console.error('Failed to initialize heatmap:', error);
@@ -546,16 +617,51 @@
         
         async function loadHeatmapData() {
             try {
+                const now = Date.now();
+                
+                // Check cache first
+                if (dataCache.has('heatmap') && (now - lastDataFetch) < CACHE_DURATION) {
+                    heatmapData = dataCache.get('heatmap');
+                    applyHeatmapColors();
+                    return;
+                }
+                
+                // Show loading progress
+                updateLoadingProgress(30);
+                
                 const response = await fetch('/api/v1/heatmap/data');
                 const data = await response.json();
                 
+                updateLoadingProgress(70);
+                
                 heatmapData = data.heatmap_data || [];
+                
+                // Cache the data
+                dataCache.set('heatmap', heatmapData);
+                lastDataFetch = now;
+                
+                updateLoadingProgress(90);
                 
                 // Apply colors to map
                 applyHeatmapColors();
                 
+                updateLoadingProgress(100);
+                
+                // Hide loading screen after first load
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+                
             } catch (error) {
                 console.error('Failed to load heatmap data:', error);
+            }
+        }
+        
+        function updateLoadingProgress(percent) {
+            const progressBar = document.getElementById('progress-bar');
+            if (progressBar) {
+                progressBar.style.width = percent + '%';
             }
         }
         

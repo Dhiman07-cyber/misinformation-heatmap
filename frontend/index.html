@@ -165,10 +165,10 @@
         
         .stats-preview {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
         
@@ -188,11 +188,13 @@
         }
         
         .stat-number {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
             font-weight: 800;
             color: #FF9933;
             margin-bottom: 0.5rem;
             line-height: 1;
+            word-break: break-all;
+            overflow-wrap: break-word;
         }
         
         .stat-label {
@@ -425,13 +427,23 @@
     </section>
 
     <script>
+        // Format large numbers for display
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+        
         // Update live stats
         async function updateStats() {
             try {
                 const response = await fetch('/api/v1/stats');
                 const data = await response.json();
                 
-                document.getElementById('live-events').textContent = data.total_events || 0;
+                document.getElementById('live-events').textContent = formatNumber(data.total_events || 0);
                 
                 const statusText = document.getElementById('system-status');
                 if (data.processing_active) {

@@ -87,23 +87,22 @@ async def get_stats():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Get total events from database
-        cursor.execute("SELECT COUNT(*) FROM events")
-        total_events = cursor.fetchone()[0]
-        
-        # Get classification counts
+        # Optimized single query to get all stats
         cursor.execute("""
             SELECT 
+                COUNT(*) as total_events,
                 SUM(CASE WHEN fake_news_verdict = 'fake' THEN 1 ELSE 0 END) as fake_count,
                 SUM(CASE WHEN fake_news_verdict = 'real' THEN 1 ELSE 0 END) as real_count,
                 SUM(CASE WHEN fake_news_verdict = 'uncertain' THEN 1 ELSE 0 END) as uncertain_count
             FROM events
+            LIMIT 1
         """)
         
         result = cursor.fetchone()
-        fake_events = result[0] or 0
-        real_events = result[1] or 0
-        uncertain_events = result[2] or 0
+        total_events = result[0] or 0
+        fake_events = result[1] or 0
+        real_events = result[2] or 0
+        uncertain_events = result[3] or 0
         
         conn.close()
         
@@ -146,12 +145,12 @@ async def get_stats():
 
 @app.get("/api/v1/heatmap/data")
 async def get_heatmap_data():
-    """Get heatmap data for the map"""
+    """Get heatmap data for the map - optimized for performance"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Get state-wise statistics using actual fake/real ratios
+        # Optimized query with indexes and limits
         cursor.execute("""
             SELECT state, COUNT(*) as event_count, 
                    AVG(fake_news_confidence) as avg_ai_confidence,
@@ -160,6 +159,8 @@ async def get_heatmap_data():
             FROM events 
             WHERE state IS NOT NULL 
             GROUP BY state
+            ORDER BY event_count DESC
+            LIMIT 50
         """)
         
         results = cursor.fetchall()
@@ -188,10 +189,10 @@ async def get_heatmap_data():
                 "state": state,
                 "event_count": count,
                 "fake_probability": display_ratio,  # Now using actual fake ratio
-                "ai_confidence": avg_confidence or 0.0,  # Separate AI confidence
+                "ai_confidence": round(avg_confidence or 0.0, 3),  # Rounded for smaller payload
                 "fake_count": fake_count,
                 "real_count": real_count,
-                "fake_ratio": fake_ratio,
+                "fake_ratio": round(fake_ratio, 4),
                 "risk_level": risk_level
             })
         
@@ -203,16 +204,18 @@ async def get_heatmap_data():
         return {"heatmap_data": [], "total_states": 0}
 
 @app.get("/api/v1/events/live")
-async def get_live_events(limit: int = 20):
-    """Get live events from database"""
+async def get_live_events(limit: int = 10):
+    """Get live events from database - optimized for performance"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         
+        # Optimized query with smaller limit and recent events only
         cursor.execute("""
             SELECT title, content, source, state, fake_news_confidence, 
                    fake_news_verdict, timestamp
             FROM events 
+            WHERE timestamp > datetime('now', '-1 hour')
             ORDER BY timestamp DESC 
             LIMIT ?
         """, (limit,))
@@ -222,14 +225,14 @@ async def get_live_events(limit: int = 20):
         
         for row in results:
             events.append({
-                "title": row[0] or "Processing event...",
-                "content": row[1][:200] + "..." if row[1] and len(row[1]) > 200 else row[1],
+                "title": (row[0] or "Processing event...")[:100],  # Truncate title
+                "content": (row[1] or "")[:150] + "..." if row[1] and len(row[1]) > 150 else row[1],  # Shorter content
                 "source": row[2] or "Unknown source",
                 "state": row[3] or "Unknown location",
-                "fake_probability": row[4] or 0.5,
+                "fake_probability": round(row[4] or 0.5, 2),  # Round for smaller payload
                 "classification": row[5] or "uncertain",
                 "verdict": row[5] or "uncertain",
-                "confidence": row[4] or 0.5,
+                "confidence": round(row[4] or 0.5, 2),
                 "timestamp": row[6]
             })
         
