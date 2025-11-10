@@ -3,21 +3,33 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced India Fake News Heatmap</title>
+    <title>Misinformation Heatmap - India</title>
     <style>
         :root {
-            --bg: #0f1720;
-            --panel: #0b1220;
-            --accent: #3b82f6;
+            --bg: #1a1a1a;
+            --panel: #2d1810;
+            --accent: #FF9933;
             --high-risk: #dc3545;
             --medium-risk: #ffc107;
-            --low-risk: #28a745;
+            --low-risk: #138808;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            /* Indian Tricolor inspired dark theme */
+            background: linear-gradient(135deg, 
+                #1a1a1a 0%,    /* Dark base */
+                #2d1810 25%,   /* Dark saffron tone */
+                #1a1a1a 50%,   /* Dark base */
+                #0d1a0d 75%,   /* Dark green tone */
+                #1a1a1a 100%   /* Dark base */
+            );
             color: #e6eef8;
             display: flex;
             min-height: 100vh;
@@ -31,17 +43,17 @@
         
         header {
             padding: 16px 20px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent);
+            background: linear-gradient(90deg, rgba(255, 153, 51, 0.1), transparent);
             display: flex;
             gap: 16px;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid rgba(255, 153, 51, 0.3);
         }
         
         header h1 {
             font-size: 24px;
             margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -146,6 +158,16 @@
         #live-feed {
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.3) transparent;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        #live-feed .activity-title {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            line-height: 1.3;
         }
         
         #live-feed::-webkit-scrollbar {
@@ -196,12 +218,13 @@
         }
         
         aside {
-            width: 380px;
+            width: 320px;
             background: var(--panel);
             border-left: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
+            padding: 16px;
             box-sizing: border-box;
             overflow-y: auto;
+            max-height: 100vh;
         }
         
         .state-name {
@@ -329,12 +352,20 @@
 <body>
     <div id="left">
         <header>
-            <h1>🛡️ Enhanced India Fake News Heatmap</h1>
+            <h1>🇮🇳 Misinformation Heatmap</h1>
+            <div style="display: flex; gap: 2rem; margin-left: 2rem;">
+                <a href="/" style="color: #a0a0a0; text-decoration: none; font-weight: 500; transition: color 0.3s ease;">Home</a>
+                <a href="/dashboard" style="color: #a0a0a0; text-decoration: none; font-weight: 500; transition: color 0.3s ease;">Dashboard</a>
+                <a href="/map/enhanced-india-heatmap.html" style="color: #FF9933; text-decoration: none; font-weight: 500;">Heatmap</a>
+            </div>
             <div style="flex: 1;"></div>
-            <button onclick="debugMapData()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🐛 Debug</button>
-            <button onclick="forceRefresh()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;">🔄 Refresh</button>
-            <div style="font-size: 14px; opacity: 0.8;">
-                Real-time AI-powered fake news detection
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button onclick="testMapColors()" style="background: rgba(255, 153, 51, 0.2); border: 1px solid rgba(255, 153, 51, 0.4); color: #FF9933; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">🎨 Test Colors</button>
+                <button onclick="showDataSummary()" style="background: rgba(19, 136, 8, 0.2); border: 1px solid rgba(19, 136, 8, 0.4); color: #138808; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">📊 Data Summary</button>
+                <div class="status-indicator" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(19, 136, 8, 0.1); border: 1px solid rgba(19, 136, 8, 0.3); border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.9rem; color: #138808;">
+                    <div style="width: 8px; height: 8px; background: #138808; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    <span>Live Processing</span>
+                </div>
             </div>
         </header>
         
@@ -493,6 +524,8 @@
                     
                     // Add click handlers to all paths
                     const paths = svgMap.querySelectorAll('path');
+                    console.log(`SVG loaded successfully with ${paths.length} paths`);
+                    
                     paths.forEach(path => {
                         path.classList.add('map-path');
                         path.addEventListener('click', handleStateClick);
@@ -502,6 +535,8 @@
                     
                     // Setup zoom and pan functionality
                     setupZoomAndPan();
+                } else {
+                    console.error('SVG element not found in loaded content');
                 }
             } catch (error) {
                 console.error('Failed to load SVG map:', error);
@@ -536,17 +571,23 @@
             let matchedCount = 0;
             let unmatchedPaths = [];
             
-            paths.forEach(path => {
+            paths.forEach((path, index) => {
                 const stateData = findStateData(path);
                 
                 if (stateData) {
-                    const color = getColorForRisk(stateData.avg_fake_score);
+                    const color = getColorForRisk(stateData.fake_probability, stateData.risk_level);
                     path.style.fill = color;
                     path.style.stroke = '#ffffff';
                     path.style.strokeWidth = '0.5';
                     path.setAttribute('data-state', stateData.state);
-                    path.setAttribute('data-events', stateData.total_events);
+                    path.setAttribute('data-events', stateData.event_count);
                     path.setAttribute('data-risk', stateData.risk_level);
+                    
+                    // Debug logging for first few matches
+                    if (index < 5) {
+                        console.log(`State: ${stateData.state}, Fake Ratio: ${(stateData.fake_probability * 100).toFixed(2)}%, Risk: ${stateData.risk_level}, Color: ${color}`);
+                    }
+                    
                     matchedCount++;
                 } else {
                     path.style.fill = '#88A4BC'; // Default color for unmatched states
@@ -636,11 +677,17 @@
             });
         }
         
-        function getColorForRisk(riskScore) {
-            // Real data thresholds
-            if (riskScore >= 0.6) return '#dc3545'; // High risk - red (60%+ fake probability)
-            if (riskScore >= 0.4) return '#ffc107'; // Medium risk - yellow (40-59% fake probability)
-            return '#28a745'; // Low risk - green (<40% fake probability)
+        function getColorForRisk(fakeRatio, riskLevel) {
+            // Use actual fake news ratios for meaningful colors
+            if (riskLevel === 'insufficient_data') {
+                return '#88A4BC'; // Gray for insufficient data
+            }
+            
+            if (fakeRatio > 0.1) return '#dc3545'; // High risk - red (>10% fake)
+            if (fakeRatio > 0.05) return '#ff6b35'; // Medium risk - orange (5-10% fake)
+            if (fakeRatio > 0.02) return '#ffc107'; // Low-medium risk - yellow (2-5% fake)
+            if (fakeRatio > 0.001) return '#FF9933'; // Low risk - saffron (0.1-2% fake)
+            return '#138808'; // Very low risk - green (<0.1% fake)
         }
         
         function handleStateClick(event) {
@@ -677,15 +724,37 @@
         }
         
         function showTooltip(event, stateData) {
-            const tooltip = document.getElementById('tooltip');
+            let tooltip = document.getElementById('tooltip');
+            
+            // Create tooltip if it doesn't exist
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'tooltip';
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: rgba(0, 0, 0, 0.9);
+                    color: white;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    max-width: 200px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                `;
+                document.body.appendChild(tooltip);
+            }
+            
+            const fakePercentage = (stateData.fake_probability * 100).toFixed(2);
+            const aiConfidence = stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A';
             
             tooltip.innerHTML = `
                 <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
-                <div>Capital: ${stateData.capital}</div>
-                <div>Total Events: ${stateData.total_events}</div>
-                <div>Fake News: ${stateData.fake_news_count}</div>
-                <div>Risk Level: <span class="risk-badge risk-${stateData.risk_level.toLowerCase()}">${stateData.risk_level}</span></div>
-                <div>Avg Score: ${stateData.avg_fake_score}</div>
+                <div>Total Events: ${stateData.event_count || 0}</div>
+                <div>Fake News: ${stateData.fake_count || 0} (${fakePercentage}%)</div>
+                <div>Real News: ${stateData.real_count || 0}</div>
+                <div>AI Confidence: ${aiConfidence}%</div>
+                <div>Risk Level: <span style="color: ${stateData.risk_level === 'high' ? '#dc3545' : stateData.risk_level === 'medium' ? '#ffc107' : '#138808'};">${stateData.risk_level || 'low'}</span></div>
             `;
             
             tooltip.style.display = 'block';
@@ -694,65 +763,79 @@
         }
         
         function hideTooltip() {
-            document.getElementById('tooltip').style.display = 'none';
+            const tooltip = document.getElementById('tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
         }
         
         function showStateDetails(stateData) {
             document.getElementById('stateName').textContent = stateData.state;
             
-            const trendingTopics = stateData.trending_topics.map(topic => 
-                `<span class="topic-tag">${topic}</span>`
-            ).join('');
-            
-            const headlines = stateData.recent_headlines.map(headline => 
-                `<div class="headline">${headline}</div>`
-            ).join('');
+            // Get state info from INDIAN_STATES if available
+            const stateInfo = Object.values(window.INDIAN_STATES || {}).find(s => s.name === stateData.state) || {};
             
             document.getElementById('stateContent').innerHTML = `
                 <div class="state-stats">
                     <div class="stat-row">
-                        <span>Capital:</span>
-                        <span class="stat-value">${stateData.capital}</span>
-                    </div>
-                    <div class="stat-row">
                         <span>Total Events:</span>
-                        <span class="stat-value">${stateData.total_events}</span>
+                        <span class="stat-value">${stateData.event_count || 0}</span>
                     </div>
                     <div class="stat-row">
                         <span>Fake News:</span>
-                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_news_count}</span>
+                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_count || 0}</span>
                     </div>
                     <div class="stat-row">
                         <span>Real News:</span>
-                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_news_count}</span>
+                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_count || 0}</span>
                     </div>
                     <div class="stat-row">
-                        <span>Uncertain:</span>
-                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.uncertain_count}</span>
+                        <span>Fake News Ratio:</span>
+                        <span class="stat-value" style="color: var(--high-risk);">${(stateData.fake_probability * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>AI Confidence:</span>
+                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A'}%</span>
                     </div>
                     <div class="stat-row">
                         <span>Risk Level:</span>
-                        <span class="risk-badge risk-${stateData.risk_level.toLowerCase()}">${stateData.risk_level}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Avg Score:</span>
-                        <span class="stat-value">${stateData.avg_fake_score}</span>
+                        <span class="stat-value" style="color: ${stateData.risk_level === 'high' ? 'var(--high-risk)' : stateData.risk_level === 'medium' ? 'var(--medium-risk)' : 'var(--low-risk)'};">${stateData.risk_level || 'low'}</span>
                     </div>
                 </div>
                 
-                ${stateData.trending_topics.length > 0 ? `
-                    <div class="trending-topics">
-                        <h4>📈 Trending Topics</h4>
-                        ${trendingTopics}
+                <div style="margin-top: 20px;">
+                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Fake News Ratio Legend</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
+                            <span>High Risk (>10% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #ff6b35; border-radius: 2px;"></div>
+                            <span>Medium Risk (5-10% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
+                            <span>Low-Medium Risk (2-5% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #FF9933; border-radius: 2px;"></div>
+                            <span>Low Risk (0.1-2% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #138808; border-radius: 2px;"></div>
+                            <span>Very Low Risk (<0.1% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #88A4BC; border-radius: 2px;"></div>
+                            <span>Insufficient Data (<50 events)</span>
+                        </div>
                     </div>
-                ` : ''}
+                </div>
                 
-                ${stateData.recent_headlines.length > 0 ? `
-                    <div class="recent-headlines">
-                        <h4>📰 Recent Headlines</h4>
-                        ${headlines}
-                    </div>
-                ` : ''}
+                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
+                    Click on a state to view detailed analysis
+                </div>
             `;
         }
         
@@ -763,10 +846,14 @@
                 
                 if (data.events && data.events.length > 0) {
                     const eventsHtml = data.events.map(event => `
-                        <div class="headline">
-                            <div style="font-weight: bold; margin-bottom: 4px;">${event.title}</div>
-                            <div style="font-size: 12px; opacity: 0.8;">
-                                ${event.source} • ${event.verdict.toUpperCase()} (${(event.confidence * 100).toFixed(0)}%)
+                        <div class="headline" style="margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
+                            <div style="font-weight: bold; margin-bottom: 4px; font-size: 13px; line-height: 1.3;">${event.title || 'Processing event...'}</div>
+                            <div style="font-size: 11px; opacity: 0.8; color: #a0a0a0;">
+                                ${event.source || 'Unknown source'} • 
+                                <span style="color: ${event.classification === 'fake' ? '#dc3545' : event.classification === 'real' ? '#138808' : '#ffc107'};">
+                                    ${(event.classification || 'uncertain').toUpperCase()}
+                                </span> 
+                                (${((event.fake_probability || 0.5) * 100).toFixed(0)}%)
                             </div>
                         </div>
                     `).join('');
@@ -785,32 +872,28 @@
         
         async function updateStatusBar() {
             try {
-                const response = await fetch('/api/v1/dashboard/stats');
+                const response = await fetch('/api/v1/stats');
                 const data = await response.json();
                 
                 document.getElementById('total-events').textContent = data.total_events || 0;
-                document.getElementById('active-states').textContent = heatmapData.length || 0;
+                document.getElementById('active-states').textContent = data.total_states || 36;
                 document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
-                
-                // Update processing status
-                const processingResponse = await fetch('/api/v1/stats');
-                const processingData = await processingResponse.json();
                 
                 const statusDot = document.querySelector('.status-dot');
                 const statusText = document.querySelector('.status-bar .status-item span');
                 
-                if (processingData.processing_active) {
-                    statusDot.style.background = '#28a745';
+                if (data.processing_active) {
+                    statusDot.style.background = '#138808';
                     statusText.textContent = 'Live Processing';
                     statusDot.style.animation = 'pulse 2s infinite';
                 } else {
-                    statusDot.style.background = '#ffc107';
-                    statusText.textContent = 'Standby';
-                    statusDot.style.animation = 'none';
+                    statusDot.style.background = '#FF9933';
+                    statusText.textContent = 'System Ready';
+                    statusDot.style.animation = 'pulse 2s infinite';
                 }
                 
                 // Update classification accuracy
-                const accuracy = processingData.recent_hour_stats?.classification_accuracy || 0;
+                const accuracy = data.recent_hour_stats?.classification_accuracy || data.classification_accuracy || 0;
                 const accuracyPercent = Math.round(accuracy * 100);
                 document.getElementById('classification-accuracy').textContent = `${accuracyPercent}%`;
                 
@@ -983,42 +1066,53 @@
             });
         }
 
-        // Debug functions
-        function debugMapData() {
-            console.log('=== MAP DEBUG INFO ===');
-            console.log('SVG Map loaded:', !!svgMap);
-            console.log('Heatmap data length:', heatmapData.length);
-            console.log('Sample heatmap data:', heatmapData.slice(0, 3));
-            
-            if (svgMap) {
-                const paths = svgMap.querySelectorAll('path');
-                console.log('SVG paths found:', paths.length);
-                
-                const pathNames = [];
-                paths.forEach((path, index) => {
-                    if (index < 10) { // Show first 10
-                        pathNames.push({
-                            id: path.id,
-                            name: path.getAttribute('name'),
-                            title: path.getAttribute('title')
-                        });
-                    }
-                });
-                console.log('Sample path names:', pathNames);
+        // Utility functions for map interaction
+        
+        // Test function to force colors on map
+        function testMapColors() {
+            if (!svgMap) {
+                console.log('SVG map not loaded yet');
+                return;
             }
             
-            alert('Debug info logged to console. Press F12 to view.');
+            const paths = svgMap.querySelectorAll('path');
+            console.log(`Testing colors on ${paths.length} paths`);
+            
+            paths.forEach((path, index) => {
+                // Apply different colors to test
+                const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
+                const color = colors[index % colors.length];
+                path.style.fill = color;
+                path.style.stroke = '#ffffff';
+                path.style.strokeWidth = '1';
+            });
+            
+            console.log('Test colors applied');
         }
         
-        function forceRefresh() {
-            console.log('Force refreshing map data...');
-            loadHeatmapData().then(() => {
-                console.log('Data reloaded, applying colors...');
-                applyHeatmapColors();
-                updateStatusBar();
-                updateLiveFeed();
-            });
+        // Function to show data summary
+        function showDataSummary() {
+            console.log('=== HEATMAP DATA SUMMARY ===');
+            console.log(`Total states in data: ${heatmapData.length}`);
+            
+            if (heatmapData.length > 0) {
+                const probabilities = heatmapData.map(d => d.fake_probability);
+                const min = Math.min(...probabilities);
+                const max = Math.max(...probabilities);
+                const avg = probabilities.reduce((a, b) => a + b, 0) / probabilities.length;
+                
+                console.log(`Fake probability range: ${min.toFixed(3)} - ${max.toFixed(3)}`);
+                console.log(`Average fake probability: ${avg.toFixed(3)}`);
+                
+                // Show first 5 states
+                console.log('First 5 states:');
+                heatmapData.slice(0, 5).forEach(state => {
+                    console.log(`  ${state.state}: ${state.fake_probability.toFixed(3)} (${state.event_count} events)`);
+                });
+            }
         }
+        
+
         
         // Enhanced live feed with better real-time updates
         let lastEventId = null;
