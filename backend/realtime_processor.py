@@ -41,8 +41,8 @@ RSS_SOURCES = [
 
 # Indian states for location mapping
 INDIAN_STATES = {
-    "Andhra Pradesh": {"lat": 15.9129, "lng": 79.7400, "population": 49386799, "capital": "Amaravati"},
-    "Arunachal Pradesh": {"lat": 28.2180, "lng": 94.7278, "population": 1382611, "capital": "Itanagar"},
+    "Andhra Pradesh": {"lat": 15.9129, "lng": 79.7400, "population": 49386799, "capital": "Amaravati", "type": "state"},
+    "Arunachal Pradesh": {"lat": 28.2180, "lng": 94.7278, "population": 1382611, "capital": "Itanagar", "type": "state"},
     "Assam": {"lat": 26.2006, "lng": 92.9376, "population": 31169272, "capital": "Dispur"},
     "Bihar": {"lat": 25.0961, "lng": 85.3131, "population": 103804637, "capital": "Patna"},
     "Chhattisgarh": {"lat": 21.2787, "lng": 81.8661, "population": 25540196, "capital": "Raipur"},
@@ -69,7 +69,17 @@ INDIAN_STATES = {
     "Tripura": {"lat": 23.9408, "lng": 91.9882, "population": 3671032, "capital": "Agartala"},
     "Uttar Pradesh": {"lat": 26.8467, "lng": 80.9462, "population": 199581477, "capital": "Lucknow"},
     "Uttarakhand": {"lat": 30.0668, "lng": 79.0193, "population": 10116752, "capital": "Dehradun"},
-    "West Bengal": {"lat": 22.9868, "lng": 87.8550, "population": 91347736, "capital": "Kolkata"},
+    "West Bengal": {"lat": 22.9868, "lng": 87.8550, "population": 91347736, "capital": "Kolkata", "type": "state"},
+    
+    # Union Territories (8)
+    "Andaman and Nicobar Islands": {"lat": 11.7401, "lng": 92.6586, "population": 380581, "capital": "Port Blair", "type": "ut"},
+    "Chandigarh": {"lat": 30.7333, "lng": 76.7794, "population": 1055450, "capital": "Chandigarh", "type": "ut"},
+    "Dadra and Nagar Haveli and Daman and Diu": {"lat": 20.3974, "lng": 72.8328, "population": 615724, "capital": "Daman", "type": "ut"},
+    "Delhi": {"lat": 28.7041, "lng": 77.1025, "population": 32941309, "capital": "New Delhi", "type": "ut"},
+    "Jammu and Kashmir": {"lat": 34.0837, "lng": 74.7973, "population": 12267032, "capital": "Srinagar (Summer), Jammu (Winter)", "type": "ut"},
+    "Ladakh": {"lat": 34.1526, "lng": 77.5771, "population": 290492, "capital": "Leh", "type": "ut"},
+    "Lakshadweep": {"lat": 10.5667, "lng": 72.6417, "population": 64473, "capital": "Kavaratti", "type": "ut"},
+    "Puducherry": {"lat": 11.9416, "lng": 79.8083, "population": 1247953, "capital": "Puducherry", "type": "ut"}
 }
 
 # Global variables
