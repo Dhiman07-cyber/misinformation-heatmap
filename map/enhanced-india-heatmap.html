@@ -498,33 +498,33 @@
             </div>
             
             <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <h3 style="font-size: 16px; margin-bottom: 15px; color: #667eea; display: flex; align-items: center; gap: 8px;">
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: #dc3545; display: flex; align-items: center; gap: 8px;">
                     <span style="width: 8px; height: 8px; background: #dc3545; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                    Live Classification Feed
+                    🚨 Misinformation Alerts
                 </h3>
-                <div id="live-feed" style="max-height: 300px; overflow-y: auto; font-size: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; background: rgba(255,255,255,0.02);">
-                    <div style="opacity: 0.7; text-align: center; padding: 20px;">
-                        Loading live events...
+                <div id="misinformation-feed" style="max-height: 300px; overflow-y: auto; font-size: 13px; border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 8px; background: rgba(220, 53, 69, 0.05); margin-bottom: 20px; padding: 8px;">
+                    <div style="opacity: 0.7; text-align: center; padding: 40px;">
+                        <div style="font-size: 20px; margin-bottom: 10px;">🚨</div>
+                        <div style="font-size: 14px;">Loading misinformation alerts...</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Scanning for fake news</div>
+                    </div>
+                </div>
+                
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: #138808; display: flex; align-items: center; gap: 8px;">
+                    <span style="width: 8px; height: 8px; background: #138808; border-radius: 50%; animation: pulse 2s infinite;"></span>
+                    ✅ Verified Real News
+                </h3>
+                <div id="real-news-feed" style="max-height: 350px; overflow-y: auto; font-size: 13px; border: 1px solid rgba(19, 136, 8, 0.3); border-radius: 8px; background: rgba(19, 136, 8, 0.05); padding: 8px;">
+                    <div style="opacity: 0.7; text-align: center; padding: 40px;">
+                        <div style="font-size: 20px; margin-bottom: 10px;">📰</div>
+                        <div style="font-size: 14px;">Loading verified news...</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Fetching latest real news updates</div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="legend">
-            <h4>🎯 Risk Levels</h4>
-            <div class="legend-item">
-                <div class="legend-color" style="background: var(--high-risk);"></div>
-                High Risk (0.7+)
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: var(--medium-risk);"></div>
-                Medium Risk (0.4-0.7)
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background: var(--low-risk);"></div>
-                Low Risk (0-0.4)
-            </div>
-        </div>
+
     </aside>
 
     <script>
@@ -558,9 +558,9 @@
                 // Load heatmap data
                 await loadHeatmapData();
                 
-                // Update status bar and live feed
+                // Update status bar and live feeds
                 await updateStatusBar();
-                await updateLiveFeed();
+                await updateLiveFeeds();
                 
                 // Optimized refresh intervals for better performance
                 setInterval(async () => {
@@ -571,7 +571,7 @@
                     await updateStatusBar();
                 }, 30000); // Update status every 30 seconds
                 
-                setInterval(updateLiveFeed, 15000); // Update live feed every 15 seconds (less frequent)
+                setInterval(updateLiveFeeds, 15000); // Update live feeds every 15 seconds (less frequent)
                 
             } catch (error) {
                 console.error('Failed to initialize heatmap:', error);
@@ -1220,10 +1220,123 @@
         
 
         
-        // Enhanced live feed with better real-time updates
+        // Enhanced live feed with separate misinformation and real news feeds
         let lastEventId = null;
         let feedUpdateCount = 0;
         
+        async function updateLiveFeeds() {
+            await updateMisinformationFeed();
+            await updateRealNewsFeed();
+        }
+        
+        async function updateMisinformationFeed() {
+            try {
+                const response = await fetch('/api/v1/events/live?limit=20');
+                const data = await response.json();
+                
+                const misinformationFeed = document.getElementById('misinformation-feed');
+                if (data.events && data.events.length > 0) {
+                    // Filter for fake/uncertain news
+                    const fakeEvents = data.events.filter(event => 
+                        event.verdict === 'fake' || event.verdict === 'uncertain'
+                    );
+                    
+                    if (fakeEvents.length > 0) {
+                        const feedHtml = fakeEvents.slice(0, 10).map((event, index) => {
+                            const verdictColor = event.verdict === 'fake' ? '#dc3545' : '#ffc107';
+                            const confidencePercent = Math.round(event.confidence * 100);
+                            
+                            return `
+                                <div style="border-left: 4px solid ${verdictColor}; padding: 12px 14px; margin-bottom: 10px; background: rgba(220, 53, 69, 0.1); border-radius: 6px; transition: all 0.3s ease;" 
+                                     onmouseover="this.style.background='rgba(220, 53, 69, 0.2)'" 
+                                     onmouseout="this.style.background='rgba(220, 53, 69, 0.1)'">
+                                    <div style="font-weight: bold; margin-bottom: 6px; font-size: 13px; line-height: 1.4; color: #dc3545;">
+                                        🚨 ${event.title.substring(0, 80)}${event.title.length > 80 ? '...' : ''}
+                                    </div>
+                                    <div style="font-size: 11px; opacity: 0.8; margin-bottom: 6px; color: #a0a0a0;">
+                                        ${event.source} • ${event.state || 'Unknown location'}
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px;">
+                                        <span style="color: ${verdictColor}; font-weight: bold; padding: 3px 8px; background: rgba(220, 53, 69, 0.2); border-radius: 12px;">
+                                            ${event.verdict.toUpperCase()}
+                                        </span>
+                                        <span style="color: #dc3545; font-weight: 500;">
+                                            ${confidencePercent}% confidence
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        misinformationFeed.innerHTML = feedHtml;
+                    } else {
+                        misinformationFeed.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: #138808;">
+                                <div style="font-size: 24px; margin-bottom: 10px;">✅</div>
+                                <div style="font-size: 14px; font-weight: 600;">No misinformation detected recently!</div>
+                                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">All news sources are showing verified content</div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to update misinformation feed:', error);
+            }
+        }
+        
+        async function updateRealNewsFeed() {
+            try {
+                const response = await fetch('/api/v1/events/live?limit=20');
+                const data = await response.json();
+                
+                const realNewsFeed = document.getElementById('real-news-feed');
+                if (data.events && data.events.length > 0) {
+                    // Filter for real news
+                    const realEvents = data.events.filter(event => event.verdict === 'real');
+                    
+                    if (realEvents.length > 0) {
+                        const feedHtml = realEvents.slice(0, 10).map((event, index) => {
+                            const confidencePercent = Math.round(event.confidence * 100);
+                            
+                            return `
+                                <div style="border-left: 4px solid #138808; padding: 12px 14px; margin-bottom: 10px; background: rgba(19, 136, 8, 0.1); border-radius: 6px; transition: all 0.3s ease;" 
+                                     onmouseover="this.style.background='rgba(19, 136, 8, 0.2)'" 
+                                     onmouseout="this.style.background='rgba(19, 136, 8, 0.1)'">
+                                    <div style="font-weight: bold; margin-bottom: 6px; font-size: 13px; line-height: 1.4; color: #138808;">
+                                        ✅ ${event.title.substring(0, 80)}${event.title.length > 80 ? '...' : ''}
+                                    </div>
+                                    <div style="font-size: 11px; opacity: 0.8; margin-bottom: 6px; color: #a0a0a0;">
+                                        ${event.source} • ${event.state || 'Unknown location'}
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px;">
+                                        <span style="color: #138808; font-weight: bold; padding: 3px 8px; background: rgba(19, 136, 8, 0.2); border-radius: 12px;">
+                                            VERIFIED
+                                        </span>
+                                        <span style="color: #138808; font-weight: 500;">
+                                            ${confidencePercent}% confidence
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        realNewsFeed.innerHTML = feedHtml;
+                    } else {
+                        realNewsFeed.innerHTML = `
+                            <div style="text-align: center; padding: 40px; opacity: 0.7;">
+                                <div style="font-size: 20px; margin-bottom: 10px;">📰</div>
+                                <div style="font-size: 14px;">Loading verified news...</div>
+                                <div style="font-size: 12px; margin-top: 5px;">Fetching latest real news updates</div>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to update real news feed:', error);
+            }
+        }
+        
+        // Legacy function for compatibility
         async function updateLiveFeed() {
             try {
                 const response = await fetch('/api/v1/events/live?limit=15');
@@ -1307,9 +1420,251 @@
                 `;
             }
         }
+        
+        // State interaction functions
+        function handleStateClick(event) {
+            const path = event.target;
+            const stateData = findStateData(path);
+            
+            if (stateData) {
+                // Check if this state is already selected
+                if (selectedState === stateData.state) {
+                    // Unselect the state
+                    unselectState();
+                    return;
+                }
+                
+                // Remove previous selection
+                const previousSelected = svgMap.querySelector('.selected');
+                if (previousSelected) {
+                    previousSelected.classList.remove('selected');
+                    previousSelected.style.strokeWidth = '0.5';
+                }
+                
+                // Select current state
+                path.classList.add('selected');
+                path.style.strokeWidth = '2';
+                selectedState = stateData.state;
+                
+                // Show state details
+                showStateDetails(stateData);
+                
+                // Load state-specific events
+                loadStateEvents(stateData.state);
+            }
+        }
+        
+        function unselectState() {
+            // Remove selection from map
+            const selectedPath = svgMap.querySelector('.selected');
+            if (selectedPath) {
+                selectedPath.classList.remove('selected');
+                selectedPath.style.strokeWidth = '0.5';
+            }
+            
+            // Reset state
+            selectedState = null;
+            
+            // Reset sidebar to default view
+            document.getElementById('stateName').textContent = 'Select a State';
+            document.getElementById('stateContent').innerHTML = `
+                <div style="margin-top: 20px;">
+                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Risk Levels</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
+                            <span>High Risk (≥60%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
+                            <span>Medium Risk (40-59%)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #28a745; border-radius: 2px;"></div>
+                            <span>Low Risk (<40%)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
+                    Click on a state to view detailed fake news analysis
+                </div>
+            `;
+        }
+        
+        function handleStateHover(event) {
+            const path = event.target;
+            const stateData = findStateData(path);
+            
+            if (stateData) {
+                showTooltip(event, stateData);
+            }
+        }
+        
+        function handleStateLeave(event) {
+            hideTooltip();
+        }
+        
+        function showTooltip(event, stateData) {
+            let tooltip = document.getElementById('tooltip');
+            
+            // Create tooltip if it doesn't exist
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'tooltip';
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: rgba(0, 0, 0, 0.9);
+                    color: white;
+                    padding: 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    z-index: 1000;
+                    pointer-events: none;
+                    max-width: 200px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                `;
+                document.body.appendChild(tooltip);
+            }
+            
+            const fakePercentage = (stateData.fake_probability * 100).toFixed(2);
+            const aiConfidence = stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A';
+            
+            tooltip.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
+                <div>Total Events: ${stateData.event_count || 0}</div>
+                <div>Fake News: ${stateData.fake_count || 0} (${fakePercentage}%)</div>
+                <div>Real News: ${stateData.real_count || 0}</div>
+                <div>AI Confidence: ${aiConfidence}%</div>
+                <div>Risk Level: <span style="color: ${stateData.risk_level === 'high' ? '#dc3545' : stateData.risk_level === 'medium' ? '#ffc107' : '#138808'};">${stateData.risk_level || 'low'}</span></div>
+            `;
+            
+            tooltip.style.display = 'block';
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 10 + 'px';
+        }
+        
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+        
+        function showStateDetails(stateData) {
+            document.getElementById('stateName').textContent = stateData.state;
+            
+            document.getElementById('stateContent').innerHTML = `
+                <div class="state-stats">
+                    <div class="stat-row">
+                        <span>Total Events:</span>
+                        <span class="stat-value">${stateData.event_count || 0}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Fake News:</span>
+                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_count || 0}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Real News:</span>
+                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_count || 0}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Fake News Ratio:</span>
+                        <span class="stat-value" style="color: var(--high-risk);">${(stateData.fake_probability * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>AI Confidence:</span>
+                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A'}%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Risk Level:</span>
+                        <span class="stat-value" style="color: ${stateData.risk_level === 'high' ? 'var(--high-risk)' : stateData.risk_level === 'medium' ? 'var(--medium-risk)' : 'var(--low-risk)'};">${stateData.risk_level || 'low'}</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; text-align: center;">
+                    <button onclick="unselectState()" style="background: rgba(255, 153, 51, 0.2); border: 1px solid #FF9933; color: #FF9933; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 153, 51, 0.3)'" onmouseout="this.style.background='rgba(255, 153, 51, 0.2)'">
+                        ✕ Unselect State
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Fake News Ratio Legend</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
+                            <span>High Risk (>10% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #ff6b35; border-radius: 2px;"></div>
+                            <span>Medium Risk (5-10% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
+                            <span>Low-Medium Risk (2-5% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #FF9933; border-radius: 2px;"></div>
+                            <span>Low Risk (0.1-2% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #138808; border-radius: 2px;"></div>
+                            <span>Very Low Risk (<0.1% fake)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 16px; height: 16px; background: #88A4BC; border-radius: 2px;"></div>
+                            <span>Insufficient Data (<50 events)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
+                    Click on another state or use the unselect button above
+                </div>
+            `;
+        }
+        
+        // Test Colors Debug Function
+        function testMapColors() {
+            if (!svgMap) {
+                console.log('SVG map not loaded yet');
+                return;
+            }
+            
+            const paths = svgMap.querySelectorAll('path');
+            console.log(`Testing colors on ${paths.length} paths`);
+            
+            paths.forEach((path, index) => {
+                // Apply different colors to test
+                const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
+                const color = colors[index % colors.length];
+                path.style.fill = color;
+                path.style.stroke = '#ffffff';
+                path.style.strokeWidth = '1';
+            });
+            
+            console.log('Test colors applied - click states to see interaction');
+        }
+        
+        // Add test colors button to zoom controls
+        function addTestColorsButton() {
+            const zoomControls = document.querySelector('.zoom-controls');
+            if (zoomControls) {
+                const testButton = document.createElement('button');
+                testButton.className = 'zoom-btn';
+                testButton.onclick = testMapColors;
+                testButton.title = 'Test Colors';
+                testButton.textContent = '🎨';
+                zoomControls.appendChild(testButton);
+            }
+        }
 
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initializeEnhancedHeatmap);
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeEnhancedHeatmap();
+            // Add test colors button after a short delay
+            setTimeout(addTestColorsButton, 1000);
+        });
     </script>
 </body>
 </html>
