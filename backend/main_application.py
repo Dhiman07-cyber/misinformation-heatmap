@@ -10,6 +10,7 @@ import asyncio
 import logging
 import sqlite3
 import json
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -87,7 +88,15 @@ async def get_stats():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Optimized single query to get all stats
+        # Use cached stats if available (cache for 30 seconds)
+        cache_key = "stats_cache"
+        current_time = time.time()
+        
+        if hasattr(get_stats, 'cache') and hasattr(get_stats, 'cache_time'):
+            if current_time - get_stats.cache_time < 30:  # 30 second cache
+                return get_stats.cache
+        
+        # Optimized single query to get all stats with recent data focus
         cursor.execute("""
             SELECT 
                 COUNT(*) as total_events,
@@ -95,6 +104,7 @@ async def get_stats():
                 SUM(CASE WHEN fake_news_verdict = 'real' THEN 1 ELSE 0 END) as real_count,
                 SUM(CASE WHEN fake_news_verdict = 'uncertain' THEN 1 ELSE 0 END) as uncertain_count
             FROM events
+            WHERE timestamp > datetime('now', '-24 hours')
             LIMIT 1
         """)
         
@@ -115,7 +125,7 @@ async def get_stats():
         # Get processing status
         stats = get_processing_stats()
         
-        return {
+        result = {
             "total_events": total_events,
             "processing_active": stats['processing_active'],
             "fake_events": fake_events,
@@ -126,6 +136,12 @@ async def get_stats():
             "last_updated": datetime.now().isoformat(),
             "total_states": len(INDIAN_STATES)
         }
+        
+        # Cache the result
+        get_stats.cache = result
+        get_stats.cache_time = current_time
+        
+        return result
         
     except Exception as e:
         logger.error(f"Stats error: {e}")
@@ -150,7 +166,15 @@ async def get_heatmap_data():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # Optimized query with indexes and limits
+        # Use cached heatmap data if available (cache for 60 seconds)
+        cache_key = "heatmap_cache"
+        current_time = time.time()
+        
+        if hasattr(get_heatmap_data, 'cache') and hasattr(get_heatmap_data, 'cache_time'):
+            if current_time - get_heatmap_data.cache_time < 60:  # 60 second cache
+                return get_heatmap_data.cache
+        
+        # Optimized query focusing on recent data with indexes
         cursor.execute("""
             SELECT state, COUNT(*) as event_count, 
                    AVG(fake_news_confidence) as avg_ai_confidence,
@@ -158,9 +182,10 @@ async def get_heatmap_data():
                    SUM(CASE WHEN fake_news_verdict = 'real' THEN 1 ELSE 0 END) as real_count
             FROM events 
             WHERE state IS NOT NULL 
+            AND timestamp > datetime('now', '-7 days')
             GROUP BY state
             ORDER BY event_count DESC
-            LIMIT 50
+            LIMIT 40
         """)
         
         results = cursor.fetchall()
@@ -197,7 +222,14 @@ async def get_heatmap_data():
             })
         
         conn.close()
-        return {"heatmap_data": heatmap_data, "total_states": len(heatmap_data)}
+        
+        result = {"heatmap_data": heatmap_data, "total_states": len(heatmap_data)}
+        
+        # Cache the result
+        get_heatmap_data.cache = result
+        get_heatmap_data.cache_time = current_time
+        
+        return result
         
     except Exception as e:
         logger.error(f"Heatmap data error: {e}")
