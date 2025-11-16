@@ -13,27 +13,29 @@
         
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            /* Indian Tricolor inspired dark theme */
+            /* Indian Tricolor inspired gradient - using saffron, white, green tones */
             background: linear-gradient(135deg, 
-                #1a1a1a 0%,    /* Dark base */
-                #2d1810 25%,   /* Dark saffron tone */
-                #1a1a1a 50%,   /* Dark base */
-                #0d1a0d 75%,   /* Dark green tone */
-                #1a1a1a 100%   /* Dark base */
+                #FF9933 0%,    /* Saffron */
+                #FFFFFF 25%,   /* White */
+                #FFFFFF 50%,   /* White */
+                #FFFFFF 75%,   /* White */
+                #138808 100%   /* Green */
             );
-            color: #ffffff;
             min-height: 100vh;
+            color: #2d3748;
+            overflow-x: hidden;
             line-height: 1.6;
         }
         
         .navbar {
-            background: rgba(10, 10, 10, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-bottom: 2px solid rgba(255, 153, 51, 0.3);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             padding: 1rem 2rem;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
         
         .nav-content {
@@ -48,10 +50,18 @@
             font-size: 1.3rem;
             font-weight: 700;
             color: #FF9933;
-            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
         }
         
         .nav-links {
@@ -61,31 +71,35 @@
         }
         
         .nav-link {
-            color: #a0a0a0;
+            color: #4a5568;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
         }
         
         .nav-link:hover, .nav-link.active {
-            color: #ffffff;
+            color: #FF9933;
+            background: rgba(255, 153, 51, 0.1);
         }
         
-        .status-indicator {
+        .nav-status {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(19, 136, 8, 0.1);
+            border: 1px solid rgba(19, 136, 8, 0.3);
             border-radius: 20px;
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
+            color: #138808;
         }
         
         .status-dot {
             width: 8px;
             height: 8px;
-            background: #10b981;
+            background: #138808;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -110,14 +124,14 @@
             font-size: 2.5rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+            background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
         .dashboard-subtitle {
-            color: #a0a0a0;
+            color: #718096;
             font-size: 1.1rem;
         }
         
@@ -129,19 +143,21 @@
         }
         
         .stat-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 153, 51, 0.2);
             border-radius: 16px;
             padding: 2rem;
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         
         .stat-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 153, 51, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 153, 51, 0.2);
         }
         
         .stat-card::before {
@@ -168,7 +184,7 @@
         
         .stat-title {
             font-size: 0.9rem;
-            color: #a0a0a0;
+            color: #4a5568;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 600;
@@ -182,14 +198,14 @@
         .stat-value {
             font-size: 3rem;
             font-weight: 800;
-            color: #ffffff;
+            color: #FF9933;
             margin-bottom: 0.5rem;
             line-height: 1;
         }
         
         .stat-change {
             font-size: 0.9rem;
-            color: #a0a0a0;
+            color: #4a5568;
         }
         
         .charts-section {
@@ -200,10 +216,12 @@
         }
         
         .chart-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 153, 51, 0.2);
             border-radius: 16px;
             padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         
         .chart-header {
@@ -216,17 +234,17 @@
         .chart-title {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #ffffff;
+            color: #2d3748;
         }
         
         .chart-subtitle {
             font-size: 0.9rem;
-            color: #a0a0a0;
+            color: #718096;
             margin-top: 0.25rem;
         }
         
         .view-map-btn {
-            background: #6366f1;
+            background: linear-gradient(135deg, #FF9933 0%, #B45309 100%);
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -239,11 +257,12 @@
             align-items: center;
             gap: 0.5rem;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3);
         }
         
         .view-map-btn:hover {
-            background: #5855eb;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
         }
         
         .activity-feed {
@@ -256,7 +275,7 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .activity-item:last-child {
@@ -286,7 +305,7 @@
         .activity-title {
             font-size: 0.9rem;
             font-weight: 600;
-            color: #ffffff;
+            color: #2d3748;
             margin-bottom: 0.25rem;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -295,7 +314,7 @@
         
         .activity-meta {
             font-size: 0.8rem;
-            color: #a0a0a0;
+            color: #718096;
         }
         
         .accuracy-display {
@@ -313,14 +332,14 @@
         
         .accuracy-label {
             font-size: 1rem;
-            color: #a0a0a0;
+            color: #718096;
             margin-bottom: 1rem;
         }
         
         .accuracy-bar {
             width: 100%;
             height: 8px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 4px;
             overflow: hidden;
         }
@@ -339,7 +358,7 @@
             align-items: center;
             justify-content: center;
             height: 200px;
-            color: #a0a0a0;
+            color: #718096;
         }
         
         .empty-icon {
@@ -371,16 +390,17 @@
     <nav class="navbar">
         <div class="nav-content">
             <a href="/" class="logo">
-                🇮🇳 Misinformation Heatmap
+                <img src="/assets/indian-flag.png" alt="Indian Flag" class="flag-icon">
+                Misinformation Heatmap
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
                 <a href="/dashboard" class="nav-link active">Dashboard</a>
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
-            <div class="status-indicator">
+            <div class="nav-status">
                 <div class="status-dot"></div>
-                <span id="system-status">Live Processing</span>
+                <span id="system-status">System Ready</span>
             </div>
         </div>
     </nav>
@@ -449,15 +469,15 @@
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; text-align: center;">
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: #6366f1;" id="precision">94.2%</div>
-                        <div style="font-size: 0.8rem; color: #a0a0a0;">Precision</div>
+                        <div style="font-size: 0.8rem; color: #718096;">Precision</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;" id="recall">91.7%</div>
-                        <div style="font-size: 0.8rem; color: #a0a0a0;">Recall</div>
+                        <div style="font-size: 0.8rem; color: #718096;">Recall</div>
                     </div>
                     <div>
                         <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="f1-score">92.9%</div>
-                        <div style="font-size: 0.8rem; color: #a0a0a0;">F1-Score</div>
+                        <div style="font-size: 0.8rem; color: #718096;">F1-Score</div>
                     </div>
                 </div>
             </div>
@@ -493,15 +513,15 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
                 <div style="text-align: center; padding: 1rem;">
                     <div style="font-size: 2rem; font-weight: 700; color: #6366f1;" id="total-states">36</div>
-                    <div style="font-size: 0.9rem; color: #a0a0a0;">States & UTs Covered</div>
+                    <div style="font-size: 0.9rem; color: #718096;">States & UTs Covered</div>
                 </div>
                 <div style="text-align: center; padding: 1rem;">
                     <div style="font-size: 2rem; font-weight: 700; color: #10b981;" id="active-sources">34+</div>
-                    <div style="font-size: 0.9rem; color: #a0a0a0;">News Sources</div>
+                    <div style="font-size: 0.9rem; color: #718096;">News Sources</div>
                 </div>
                 <div style="text-align: center; padding: 1rem;">
                     <div style="font-size: 2rem; font-weight: 700; color: #f59e0b;" id="processing-speed">100+</div>
-                    <div style="font-size: 0.9rem; color: #a0a0a0;">Articles/Second</div>
+                    <div style="font-size: 0.9rem; color: #718096;">Articles/Second</div>
                 </div>
             </div>
         </div>
