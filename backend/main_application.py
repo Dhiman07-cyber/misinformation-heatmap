@@ -59,11 +59,15 @@ async def startup_event():
     """Start high-volume processing"""
     asyncio.create_task(high_volume_processing_loop())
 
-# Mount static files (map folder only)
+# Mount static files
 map_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "map")
+frontend_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
 
 if os.path.exists(map_dir):
     app.mount("/map", StaticFiles(directory=map_dir), name="map")
+
+if os.path.exists(frontend_dir):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dir, "assets")), name="assets")
 
 # Web Routes
 
