@@ -6,12 +6,27 @@
     <title>Misinformation Heatmap - India</title>
     <style>
         :root {
-            --bg: #1a1a1a;
-            --panel: #2d1810;
+            --bg: #0a0a0a;
+            --panel: #1a1a1a;
+            --panel-light: #2a2a2a;
             --accent: #FF9933;
+            --accent-light: #ffb366;
+            --accent-dark: #cc7a29;
+            --saffron: #FF9933;
+            --white: #ffffff;
+            --green: #138808;
+            --green-light: #1ea50e;
+            --green-dark: #0f6606;
             --high-risk: #dc3545;
             --medium-risk: #ffc107;
             --low-risk: #138808;
+            --text-primary: #ffffff;
+            --text-secondary: #b8c5d1;
+            --text-muted: #8a9ba8;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(255, 153, 51, 0.3);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
         
         @keyframes pulse {
@@ -19,21 +34,71 @@
             50% { opacity: 0.5; }
         }
         
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 5px rgba(255, 153, 51, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 20px rgba(255, 153, 51, 0.6), 0 0 30px rgba(255, 153, 51, 0.4);
+            }
+        }
+        
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         body {
             margin: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            /* Indian Tricolor inspired dark theme */
-            background: linear-gradient(135deg, 
-                #1a1a1a 0%,    /* Dark base */
-                #2d1810 25%,   /* Dark saffron tone */
-                #1a1a1a 50%,   /* Dark base */
-                #0d1a0d 75%,   /* Dark green tone */
-                #1a1a1a 100%   /* Dark base */
-            );
-            color: #e6eef8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            /* Enhanced Tricolor inspired dark theme with depth */
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 153, 51, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.1) 0%, transparent 50%),
+                linear-gradient(135deg, 
+                    #0a0a0a 0%,
+                    #1a1a1a 25%,
+                    #0f0f0f 50%,
+                    #1a1a1a 75%,
+                    #0a0a0a 100%
+                );
+            color: var(--text-primary);
             display: flex;
             min-height: 100vh;
             overflow: hidden;
+            position: relative;
+        }
+        
+        /* Add subtle pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255, 153, 51, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(19, 136, 8, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         #left {
@@ -45,45 +110,90 @@
         }
         
         header {
-            padding: 16px 20px;
-            background: linear-gradient(90deg, rgba(255, 153, 51, 0.1), transparent);
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            border-bottom: 2px solid rgba(255, 153, 51, 0.3);
-        }
-        
-        header h1 {
-            font-size: 24px;
-            margin: 0;
-            background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .status-bar {
-            padding: 12px 20px;
-            background: rgba(255,255,255,0.02);
+            padding: 20px 24px;
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 153, 51, 0.15) 0%, 
+                    rgba(255, 255, 255, 0.05) 50%, 
+                    rgba(19, 136, 8, 0.15) 100%
+                );
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-accent);
+            box-shadow: var(--shadow);
             display: flex;
             gap: 20px;
             align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, 
+                var(--saffron) 0%, 
+                var(--white) 50%, 
+                var(--green) 100%
+            );
+        }
+        
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+        
+        .status-bar {
+            padding: 16px 24px;
+            background: 
+                linear-gradient(90deg, 
+                    rgba(255, 153, 51, 0.08) 0%, 
+                    rgba(255, 255, 255, 0.03) 50%, 
+                    rgba(19, 136, 8, 0.08) 100%
+                );
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 24px;
+            align-items: center;
             font-size: 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-weight: 500;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
         
         .status-item {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .status-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
         }
         
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #28a745;
-            animation: pulse 2s infinite;
+            background: var(--green);
+            animation: glow 2s infinite;
+            box-shadow: 0 0 10px rgba(19, 136, 8, 0.5);
         }
         
         @keyframes pulse {
@@ -107,8 +217,47 @@
             justify-content: center;
             touch-action: none;
             cursor: grab;
-            background: linear-gradient(180deg, #071027, #082035);
+            background: 
+                radial-gradient(ellipse at center, rgba(255, 153, 51, 0.05) 0%, transparent 70%),
+                linear-gradient(180deg, 
+                    rgba(7, 16, 39, 0.8) 0%, 
+                    rgba(8, 32, 53, 0.9) 50%,
+                    rgba(5, 20, 35, 0.8) 100%
+                );
             transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            margin: 12px;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                var(--shadow-lg);
+        }
+        
+        #svgroot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(255, 153, 51, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(19, 136, 8, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        #svgroot svg {
+            max-width: 90%;
+            max-height: 90%;
+            width: auto;
+            height: auto;
+            transform-origin: center center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
         
         #svgroot:active {
@@ -117,49 +266,87 @@
         
         .zoom-controls {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 24px;
+            right: 24px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             z-index: 1000;
+            transition: all 0.3s ease;
+            animation: slideInFromRight 0.5s ease-out;
+        }
+        
+        /* Enhanced zoom control styling */
+        .center-btn {
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.2), rgba(255, 153, 51, 0.3));
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            box-shadow: 0 2px 8px rgba(255, 153, 51, 0.2);
+        }
+        
+        .center-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.3), rgba(255, 153, 51, 0.4));
+            box-shadow: 0 4px 12px rgba(255, 153, 51, 0.3);
+            transform: scale(1.05) translateY(-1px);
         }
         
         .zoom-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 44px;
+            height: 44px;
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.15) 0%, 
+                    rgba(255, 255, 255, 0.05) 100%
+                );
             border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            border-radius: 6px;
+            color: var(--text-primary);
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            font-weight: bold;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(15px);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
         
         .zoom-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.25) 0%, 
+                    rgba(255, 255, 255, 0.15) 100%
+                );
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 
+                0 6px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         
         .zoom-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98) translateY(0px);
         }
         
         .zoom-level {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 153, 51, 0.2) 0%, 
+                    rgba(255, 153, 51, 0.1) 100%
+                );
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
             text-align: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            box-shadow: 
+                0 4px 12px rgba(255, 153, 51, 0.2),
+                inset 0 1px 0 rgba(255, 153, 51, 0.3);
         }
         
         #live-feed {
@@ -270,34 +457,173 @@
             100% { width: 100%; }
         }
         
-        /* Responsive layout for smaller screens */
-        @media (max-width: 1200px) {
+        /* Ultra-wide screens (>1920px) */
+        @media (min-width: 1921px) {
+            aside {
+                width: 600px;
+                min-width: 600px;
+                max-width: 600px;
+                padding: 32px 24px;
+            }
+            
+            .state-name {
+                font-size: 28px;
+            }
+            
+            .stat-row {
+                font-size: 16px;
+                margin: 14px 0;
+            }
+            
+            header h1 {
+                font-size: 28px;
+            }
+        }
+        
+        /* Large screens (1440px - 1920px) */
+        @media (min-width: 1441px) and (max-width: 1920px) {
+            aside {
+                width: 560px;
+                min-width: 560px;
+                max-width: 560px;
+            }
+        }
+        
+        /* Medium-large screens (1200px - 1440px) */
+        @media (min-width: 1201px) and (max-width: 1440px) {
+            aside {
+                width: 480px;
+                min-width: 480px;
+                max-width: 480px;
+                padding: 20px 16px;
+            }
+            
+            .state-name {
+                font-size: 24px;
+            }
+        }
+        
+        /* Tablet landscape (768px - 1200px) */
+        @media (max-width: 1200px) and (min-width: 769px) {
             body {
                 flex-direction: column;
             }
             
             #left {
                 width: 100%;
-                height: 40vh; /* Less space for map on smaller screens */
+                height: 45vh;
             }
             
             aside {
                 width: 100%;
                 min-width: 100%;
                 max-width: 100%;
-                height: 60vh; /* More space for news feeds */
+                height: 55vh;
                 border-left: none;
-                border-top: 1px solid rgba(255,255,255,0.1);
+                border-top: 2px solid rgba(255,153,51,0.3);
+                padding: 20px;
+            }
+            
+            .zoom-controls {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .zoom-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
             }
         }
         
+        /* Mobile portrait (max 768px) */
         @media (max-width: 768px) {
-            aside {
-                height: 65vh; /* Even more space for news on mobile */
+            header {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+            }
+            
+            header h1 {
+                font-size: 20px;
+            }
+            
+            .status-bar {
+                padding: 8px 16px;
+                flex-wrap: wrap;
+                gap: 12px;
+                font-size: 12px;
             }
             
             #left {
-                height: 35vh; /* Less space for map on mobile */
+                height: 40vh;
+            }
+            
+            aside {
+                height: 60vh;
+                padding: 16px;
+            }
+            
+            .state-name {
+                font-size: 22px;
+            }
+            
+            .state-stats {
+                padding: 16px;
+                margin: 16px 0;
+            }
+            
+            .stat-row {
+                font-size: 14px;
+                margin: 10px 0;
+            }
+            
+            .zoom-controls {
+                top: 8px;
+                right: 8px;
+            }
+            
+            .zoom-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .zoom-level {
+                padding: 6px 8px;
+                font-size: 10px;
+            }
+        }
+        
+        /* Small mobile (max 480px) */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 18px;
+            }
+            
+            .status-bar {
+                font-size: 11px;
+                gap: 8px;
+            }
+            
+            #left {
+                height: 35vh;
+            }
+            
+            aside {
+                height: 65vh;
+                padding: 12px;
+            }
+            
+            .state-name {
+                font-size: 20px;
+            }
+            
+            .state-stats {
+                padding: 12px;
+            }
+            
+            .stat-row {
+                font-size: 13px;
             }
         }
         
@@ -316,56 +642,257 @@
         }
         
         aside {
-            width: 520px; /* Increased from 450px to 520px */
-            min-width: 520px; /* Prevents shrinking */
-            max-width: 520px; /* Prevents growing */
-            background: var(--panel);
-            border-left: 1px solid rgba(255,255,255,0.1);
-            padding: 20px 18px; /* Slightly more padding */
+            width: 520px;
+            min-width: 520px;
+            max-width: 520px;
+            background: 
+                linear-gradient(180deg, 
+                    rgba(26, 26, 26, 0.95) 0%, 
+                    rgba(20, 20, 20, 0.98) 100%
+                );
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border-accent);
+            padding: 28px 24px;
             box-sizing: border-box;
             overflow-y: auto;
-            height: 100vh; /* Full viewport height */
+            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: stretch;
-            flex-shrink: 0; /* Prevents the sidebar from shrinking */
+            flex-shrink: 0;
+            position: relative;
+            box-shadow: 
+                -4px 0 20px rgba(0, 0, 0, 0.3),
+                inset 1px 0 0 rgba(255, 255, 255, 0.1);
+            /* Enhanced scrollbar for better UX */
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
+        }
+        
+        aside::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, 
+                var(--saffron) 0%, 
+                var(--white) 50%, 
+                var(--green) 100%
+            );
+        }
+        
+        aside::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        aside::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        aside::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+            border-radius: 4px;
+            border: 1px solid rgba(255, 153, 51, 0.3);
+        }
+        
+        aside::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, var(--accent-light), var(--accent));
         }
         
         .state-name {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            padding: 16px 0;
+            border-bottom: 2px solid var(--border-accent);
+            position: relative;
+            animation: fadeInUp 0.6s ease-out;
+            letter-spacing: -0.5px;
+        }
+        
+        .state-name::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--saffron), var(--green));
+            border-radius: 1px;
         }
         
         .state-stats {
-            background: rgba(255,255,255,0.05);
-            padding: 16px;
-            border-radius: 8px;
-            margin: 16px 0;
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.12) 0%, 
+                    rgba(255, 255, 255, 0.06) 100%
+                );
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            margin: 24px 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .state-stats::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--saffron), var(--white), var(--green));
+            border-radius: 16px 16px 0 0;
         }
         
         .stat-row {
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
+            align-items: center;
+            margin: 16px 0;
+            font-size: 15px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .stat-row:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+            border-color: rgba(255, 153, 51, 0.2);
+        }
+        
+        .stat-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--saffron), var(--green));
+            border-radius: 10px 0 0 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-row:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-label {
+            font-weight: 600;
+            color: var(--text-secondary);
             font-size: 14px;
         }
         
         .stat-value {
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .risk-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
+            padding: 6px 12px;
+            border-radius: 16px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
-        .risk-high { background: var(--high-risk); color: white; }
-        .risk-medium { background: var(--medium-risk); color: #212529; }
-        .risk-low { background: var(--low-risk); color: white; }
+        .risk-high { 
+            background: linear-gradient(135deg, var(--high-risk), #b02a37);
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        .risk-medium { 
+            background: linear-gradient(135deg, var(--medium-risk), #e0a800);
+            color: #1a1a1a;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+        .risk-low { 
+            background: linear-gradient(135deg, var(--low-risk), var(--green-light));
+            color: white;
+            box-shadow: 0 2px 8px rgba(19, 136, 8, 0.3);
+        }
+        
+        /* Enhanced news feed sections */
+        .news-section {
+            margin: 28px 0;
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .news-section h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .news-feed {
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 255, 255, 0.08) 0%, 
+                    rgba(255, 255, 255, 0.04) 100%
+                );
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 153, 51, 0.3) transparent;
+        }
+        
+        .news-feed::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .news-feed::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .news-feed::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+            border-radius: 3px;
+        }
+        
+        .misinformation-feed {
+            border-left: 4px solid var(--high-risk);
+        }
+        
+        .real-news-feed {
+            border-left: 4px solid var(--green);
+        }
         
         .trending-topics {
             margin: 16px 0;
@@ -421,24 +948,34 @@
             margin-right: 10px;
         }
         
-        /* Map styling */
+        /* Enhanced Map styling */
         .map-path {
             fill: #88A4BC;
             stroke: #ffffff;
-            stroke-width: 0.6;
-            transition: all 0.3s ease;
+            stroke-width: 0.8;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         }
         
         .map-path:hover {
-            stroke-width: 1.2;
-            filter: brightness(1.2);
+            stroke-width: 2;
+            stroke: var(--accent);
+            filter: 
+                brightness(1.2) 
+                drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))
+                drop-shadow(0 0 12px rgba(255, 153, 51, 0.4));
+            transform: scale(1.02);
         }
         
         .selected {
-            stroke: #ffffff;
-            stroke-width: 2;
-            filter: brightness(1.3);
+            stroke: var(--accent);
+            stroke-width: 3;
+            filter: 
+                brightness(1.3) 
+                drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4))
+                drop-shadow(0 0 20px rgba(255, 153, 51, 0.6));
+            animation: glow 2s infinite;
         }
         
         .loading {
@@ -465,10 +1002,10 @@
             </div>
             <div style="flex: 1;"></div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <button onclick="testMapColors()" style="background: rgba(255, 153, 51, 0.2); border: 1px solid rgba(255, 153, 51, 0.4); color: #FF9933; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">🎨 Test Colors</button>
-                <button onclick="showDataSummary()" style="background: rgba(19, 136, 8, 0.2); border: 1px solid rgba(19, 136, 8, 0.4); color: #138808; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">📊 Data Summary</button>
-                <div class="status-indicator" style="display: flex; align-items: center; gap: 0.5rem; background: rgba(19, 136, 8, 0.1); border: 1px solid rgba(19, 136, 8, 0.3); border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.9rem; color: #138808;">
-                    <div style="width: 8px; height: 8px; background: #138808; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                <button onclick="testMapColors()" style="background: linear-gradient(135deg, rgba(255, 153, 51, 0.2), rgba(255, 153, 51, 0.3)); border: 1px solid var(--accent); color: var(--accent); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 153, 51, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">🎨 Test Colors</button>
+                <button onclick="showDataSummary()" style="background: linear-gradient(135deg, rgba(19, 136, 8, 0.2), rgba(19, 136, 8, 0.3)); border: 1px solid var(--green); color: var(--green); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(19, 136, 8, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">📊 Data Summary</button>
+                <div class="status-indicator" style="display: flex; align-items: center; gap: 0.75rem; background: linear-gradient(135deg, rgba(19, 136, 8, 0.15), rgba(19, 136, 8, 0.25)); border: 1px solid var(--green); border-radius: 24px; padding: 8px 16px; font-size: 0.9rem; color: var(--green); font-weight: 600; backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(19, 136, 8, 0.2);">
+                    <div style="width: 10px; height: 10px; background: var(--green); border-radius: 50%; animation: glow 2s infinite; box-shadow: 0 0 8px rgba(19, 136, 8, 0.5);"></div>
                     <span>Live Processing</span>
                 </div>
             </div>
@@ -539,28 +1076,32 @@
                 Click on a state to view detailed fake news analysis
             </div>
             
-            <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px;">
-                <h3 style="font-size: 17px; margin-bottom: 18px; color: #dc3545; display: flex; align-items: center; gap: 10px; font-weight: 700;">
-                    <span style="width: 10px; height: 10px; background: #dc3545; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                    🚨 Misinformation Alerts
-                </h3>
-                <div id="misinformation-feed" style="max-height: 400px; overflow-y: auto; font-size: 15px; border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 10px; background: rgba(220, 53, 69, 0.05); margin-bottom: 25px; padding: 18px;">
-                    <div style="opacity: 0.7; text-align: center; padding: 50px;">
-                        <div style="font-size: 32px; margin-bottom: 18px;">🚨</div>
-                        <div style="font-size: 17px; font-weight: 600;">Loading misinformation alerts...</div>
-                        <div style="font-size: 15px; margin-top: 12px; opacity: 0.8;">Scanning for fake news</div>
+            <div style="margin-top: 32px; border-top: 2px solid var(--border-accent); padding-top: 32px;">
+                <div class="news-section">
+                    <h3 style="color: var(--high-risk);">
+                        <span style="width: 12px; height: 12px; background: var(--high-risk); border-radius: 50%; animation: glow 2s infinite;"></span>
+                        🚨 Misinformation Alerts
+                    </h3>
+                    <div id="misinformation-feed" class="news-feed misinformation-feed">
+                        <div style="opacity: 0.7; text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 48px; margin-bottom: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🚨</div>
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Loading misinformation alerts...</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">Scanning for fake news across India</div>
+                        </div>
                     </div>
                 </div>
                 
-                <h3 style="font-size: 18px; margin-bottom: 20px; color: #138808; display: flex; align-items: center; gap: 12px; font-weight: 700;">
-                    <span style="width: 12px; height: 12px; background: #138808; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                    ✅ Verified Real News
-                </h3>
-                <div id="real-news-feed" style="max-height: 450px; overflow-y: auto; font-size: 15px; border: 1px solid rgba(19, 136, 8, 0.3); border-radius: 10px; background: rgba(19, 136, 8, 0.05); padding: 18px;">
-                    <div style="opacity: 0.7; text-align: center; padding: 50px;">
-                        <div style="font-size: 32px; margin-bottom: 18px;">📰</div>
-                        <div style="font-size: 17px; font-weight: 600;">Loading verified news...</div>
-                        <div style="font-size: 15px; margin-top: 12px; opacity: 0.8;">Fetching latest real news updates</div>
+                <div class="news-section">
+                    <h3 style="color: var(--green);">
+                        <span style="width: 12px; height: 12px; background: var(--green); border-radius: 50%; animation: glow 2s infinite;"></span>
+                        ✅ Verified Real News
+                    </h3>
+                    <div id="real-news-feed" class="news-feed real-news-feed">
+                        <div style="opacity: 0.7; text-align: center; padding: 60px 20px;">
+                            <div style="font-size: 48px; margin-bottom: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">📰</div>
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Loading verified news...</div>
+                            <div style="font-size: 14px; color: var(--text-muted);">Fetching latest authentic updates</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -587,9 +1128,17 @@
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
-        const minZoom = 0.5;
-        const maxZoom = 5;
-        const zoomStep = 0.2;
+        const minZoom = 0.6;
+        const maxZoom = 4;
+        const zoomStep = 0.15;
+        
+        // Map bounds for consistent positioning
+        let mapBounds = {
+            width: 0,
+            height: 0,
+            centerX: 0,
+            centerY: 0
+        };
         
         // Initialize the enhanced heatmap
         async function initializeEnhancedHeatmap() {
@@ -646,8 +1195,10 @@
                         path.addEventListener('mouseleave', handleStateLeave);
                     });
                     
-                    // Setup zoom and pan functionality
+                    // Initialize map bounds and setup zoom/pan
+                    initializeMapBounds();
                     setupZoomAndPan();
+                    centerMap();
                 } else {
                     console.error('SVG element not found in loaded content');
                 }
@@ -1070,8 +1621,21 @@
         // Zoom and Pan Functions
         function updateTransform() {
             if (svgMap) {
-                svgMap.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentZoom})`;
+                // Apply transform while maintaining center position
+                const translateX = -50 + (currentX / window.innerWidth) * 100;
+                const translateY = -50 + (currentY / window.innerHeight) * 100;
+                svgMap.style.transform = `translate(${translateX}%, ${translateY}%) scale(${currentZoom})`;
                 document.getElementById('zoom-level').textContent = Math.round(currentZoom * 100) + '%';
+            }
+        }
+        
+        function initializeMapBounds() {
+            if (svgMap) {
+                const bbox = svgMap.getBBox();
+                mapBounds.width = bbox.width;
+                mapBounds.height = bbox.height;
+                mapBounds.centerX = bbox.x + bbox.width / 2;
+                mapBounds.centerY = bbox.y + bbox.height / 2;
             }
         }
         
@@ -1091,6 +1655,12 @@
         
         function resetZoom() {
             currentZoom = 1;
+            currentX = 0;
+            currentY = 0;
+            updateTransform();
+        }
+        
+        function centerMap() {
             currentX = 0;
             currentY = 0;
             updateTransform();
@@ -1739,78 +2309,7 @@
             }
         }
         
-        function showStateDetails(stateData) {
-            document.getElementById('stateName').textContent = stateData.state;
-            
-            document.getElementById('stateContent').innerHTML = `
-                <div class="state-stats">
-                    <div class="stat-row">
-                        <span>Total Events:</span>
-                        <span class="stat-value">${stateData.event_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Fake News:</span>
-                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Real News:</span>
-                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Fake News Ratio:</span>
-                        <span class="stat-value" style="color: var(--high-risk);">${(stateData.fake_probability * 100).toFixed(2)}%</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>AI Confidence:</span>
-                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A'}%</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Risk Level:</span>
-                        <span class="stat-value" style="color: ${stateData.risk_level === 'high' ? 'var(--high-risk)' : stateData.risk_level === 'medium' ? 'var(--medium-risk)' : 'var(--low-risk)'};">${stateData.risk_level || 'low'}</span>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 15px; text-align: center;">
-                    <button onclick="unselectState()" style="background: rgba(255, 153, 51, 0.2); border: 1px solid #FF9933; color: #FF9933; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255, 153, 51, 0.3)'" onmouseout="this.style.background='rgba(255, 153, 51, 0.2)'">
-                        ✕ Unselect State
-                    </button>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Fake News Ratio Legend</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
-                            <span>High Risk (>10% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #ff6b35; border-radius: 2px;"></div>
-                            <span>Medium Risk (5-10% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
-                            <span>Low-Medium Risk (2-5% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #FF9933; border-radius: 2px;"></div>
-                            <span>Low Risk (0.1-2% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #138808; border-radius: 2px;"></div>
-                            <span>Very Low Risk (<0.1% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #88A4BC; border-radius: 2px;"></div>
-                            <span>Insufficient Data (<50 events)</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
-                    Click on another state or use the unselect button above
-                </div>
-            `;
-        }
+
         
         // Test Colors Debug Function
         function testMapColors() {
@@ -1834,10 +2333,19 @@
             console.log('Test colors applied - click states to see interaction');
         }
         
-        // Add test colors button to zoom controls
-        function addTestColorsButton() {
+        // Add additional controls to zoom controls
+        function addAdditionalControls() {
             const zoomControls = document.querySelector('.zoom-controls');
             if (zoomControls) {
+                // Add center button
+                const centerButton = document.createElement('button');
+                centerButton.className = 'zoom-btn center-btn';
+                centerButton.onclick = centerMap;
+                centerButton.title = 'Center Map';
+                centerButton.textContent = '⌖';
+                zoomControls.appendChild(centerButton);
+                
+                // Add test colors button
                 const testButton = document.createElement('button');
                 testButton.className = 'zoom-btn';
                 testButton.onclick = testMapColors;
@@ -1850,8 +2358,8 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeEnhancedHeatmap();
-            // Add test colors button after a short delay
-            setTimeout(addTestColorsButton, 1000);
+            // Add additional controls after a short delay
+            setTimeout(addAdditionalControls, 1000);
         });
     </script>
 </body>
