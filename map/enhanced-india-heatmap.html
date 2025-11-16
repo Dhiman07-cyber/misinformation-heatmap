@@ -67,6 +67,7 @@
         
         body {
             margin: 0;
+            padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             /* Enhanced Tricolor inspired dark theme with depth */
             background: 
@@ -80,10 +81,10 @@
                     #0a0a0a 100%
                 );
             color: var(--text-primary);
-            display: flex;
-            min-height: 100vh;
+            height: 100vh;
             overflow: hidden;
             position: relative;
+            box-sizing: border-box;
         }
         
         /* Add subtle pattern overlay */
@@ -101,56 +102,162 @@
             z-index: 0;
         }
         
-        #left {
-            flex: 1;
+        /* Main layout structure - FULL SCREEN unified container */
+        .main-layout {
             display: flex;
             flex-direction: column;
-            min-width: 0; /* Prevents flex item from overflowing */
-            width: calc(100% - 520px); /* Subtract new sidebar width */
-        }
-        
-        header {
-            padding: 20px 24px;
-            background: 
-                linear-gradient(135deg, 
-                    rgba(255, 153, 51, 0.15) 0%, 
-                    rgba(255, 255, 255, 0.05) 50%, 
-                    rgba(19, 136, 8, 0.15) 100%
-                );
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-accent);
-            box-shadow: var(--shadow);
-            display: flex;
-            gap: 20px;
-            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(8px);
+            overflow: hidden;
             position: relative;
-            z-index: 10;
+            z-index: 1;
         }
         
-        header::before {
+        /* Tricolor accent for the unified container */
+        .main-layout::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, 
-                var(--saffron) 0%, 
-                var(--white) 50%, 
-                var(--green) 100%
-            );
+            background: linear-gradient(90deg, var(--saffron), var(--white), var(--green));
+            z-index: 1;
         }
         
-        header h1 {
-            font-size: 28px;
+        /* Navigation bar - INSIDE the unified container */
+        .navbar {
+            background: 
+                linear-gradient(135deg, 
+                    rgba(255, 153, 51, 0.1) 0%, 
+                    rgba(255, 255, 255, 0.03) 50%, 
+                    rgba(19, 136, 8, 0.1) 100%
+                );
+            border-bottom: 1px solid var(--border-accent);
+            padding: 16px 24px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Content area - NO separate container styling */
+        .content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        /* Map section (left half) */
+        .map-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            padding-right: 8px;
+        }
+        
+        /* Information section (right half) */
+        .info-section {
+            width: 520px;
+            min-width: 520px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            padding-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Navbar content */
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .navbar-title {
+            font-size: 24px;
             font-weight: 700;
             margin: 0;
             background: linear-gradient(135deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             letter-spacing: -0.5px;
+        }
+        
+        .navbar-links {
+            display: flex;
+            gap: 24px;
+            margin-left: 32px;
+        }
+        
+        .navbar-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 8px 0;
+        }
+        
+        .navbar-link:hover {
+            color: var(--accent);
+        }
+        
+        .navbar-link.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .navbar-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .navbar-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .navbar-btn.primary {
+            background: rgba(255, 153, 51, 0.2);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .navbar-btn.secondary {
+            background: rgba(19, 136, 8, 0.2);
+            border-color: var(--green);
+            color: var(--green);
+        }
+        
+        .navbar-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 153, 51, 0.3);
+        }
+        
+        .navbar-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(19, 136, 8, 0.2);
+            border: 1px solid var(--green);
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            color: var(--green);
+            font-weight: 600;
         }
         
         .status-bar {
@@ -202,11 +309,22 @@
             100% { opacity: 1; }
         }
         
-        #mapwrap {
+        .map-container {
             flex: 1;
             overflow: hidden;
             position: relative;
-            min-height: 0; /* Allows flex item to shrink below content size */
+            margin: 20px;
+            border-radius: 16px;
+            background: 
+                radial-gradient(ellipse at center, rgba(255, 153, 51, 0.05) 0%, transparent 70%),
+                linear-gradient(180deg, 
+                    rgba(7, 16, 39, 0.8) 0%, 
+                    rgba(8, 32, 53, 0.9) 50%,
+                    rgba(5, 20, 35, 0.8) 100%
+                );
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                var(--shadow-lg);
         }
         
         #svgroot {
@@ -217,21 +335,10 @@
             justify-content: center;
             touch-action: none;
             cursor: grab;
-            background: 
-                radial-gradient(ellipse at center, rgba(255, 153, 51, 0.05) 0%, transparent 70%),
-                linear-gradient(180deg, 
-                    rgba(7, 16, 39, 0.8) 0%, 
-                    rgba(8, 32, 53, 0.9) 50%,
-                    rgba(5, 20, 35, 0.8) 100%
-                );
             transition: transform 0.2s ease;
             position: relative;
             overflow: hidden;
-            border-radius: 12px;
-            margin: 12px;
-            box-shadow: 
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                var(--shadow-lg);
+            border-radius: 16px;
         }
         
         #svgroot::before {
@@ -457,76 +564,128 @@
             100% { width: 100%; }
         }
         
-        /* Ultra-wide screens (>1920px) */
-        @media (min-width: 1921px) {
-            aside {
+        /* Responsive design for navbar + two-section layout */
+        
+        /* Large screens (1440px+) */
+        @media (min-width: 1441px) {
+            .info-section {
                 width: 600px;
                 min-width: 600px;
-                max-width: 600px;
-                padding: 32px 24px;
             }
             
-            .state-name {
-                font-size: 28px;
-            }
-            
-            .stat-row {
-                font-size: 16px;
-                margin: 14px 0;
-            }
-            
-            header h1 {
-                font-size: 28px;
+            .navbar-title {
+                font-size: 26px;
             }
         }
         
-        /* Large screens (1440px - 1920px) */
-        @media (min-width: 1441px) and (max-width: 1920px) {
-            aside {
-                width: 560px;
-                min-width: 560px;
-                max-width: 560px;
-            }
-        }
-        
-        /* Medium-large screens (1200px - 1440px) */
+        /* Medium screens (1200px - 1440px) */
         @media (min-width: 1201px) and (max-width: 1440px) {
-            aside {
+            .info-section {
                 width: 480px;
                 min-width: 480px;
-                max-width: 480px;
-                padding: 20px 16px;
-            }
-            
-            .state-name {
-                font-size: 24px;
             }
         }
         
         /* Tablet landscape (768px - 1200px) */
         @media (max-width: 1200px) and (min-width: 769px) {
-            body {
+            
+            .content-area {
                 flex-direction: column;
             }
             
-            #left {
-                width: 100%;
-                height: 45vh;
+            .map-section {
+                height: 50vh;
+                padding: 12px;
+                padding-bottom: 6px;
+                border-left: none;
             }
             
-            aside {
+            .info-section {
                 width: 100%;
                 min-width: 100%;
-                max-width: 100%;
-                height: 55vh;
+                height: auto;
+                max-height: 45vh;
+                padding: 12px;
+                padding-top: 6px;
                 border-left: none;
-                border-top: 2px solid rgba(255,153,51,0.3);
-                padding: 20px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .navbar-content {
+                flex-wrap: wrap;
+                gap: 16px;
+            }
+            
+            .navbar-actions {
+                margin-left: 0;
+            }
+        }
+        
+        /* Mobile portrait (max 768px) */
+        @media (max-width: 768px) {
+            
+            .navbar {
+                padding: 12px 16px;
+            }
+            
+            .navbar-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .navbar-title {
+                font-size: 20px;
+            }
+            
+            .navbar-links {
+                margin-left: 0;
+                gap: 16px;
+            }
+            
+            .navbar-actions {
+                margin-left: 0;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .navbar-btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+            
+            .content-area {
+                flex-direction: column;
+            }
+            
+            .map-section {
+                height: 40vh;
+                padding: 12px;
+                padding-bottom: 6px;
+                border-left: none;
+            }
+            
+            .info-section {
+                width: 100%;
+                min-width: 100%;
+                height: auto;
+                padding: 12px;
+                padding-top: 6px;
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .info-content {
+                padding: 16px;
+            }
+            
+            .state-name {
+                font-size: 22px;
             }
             
             .zoom-controls {
-                top: 10px;
-                right: 10px;
+                top: 12px;
+                right: 12px;
             }
             
             .zoom-btn {
@@ -536,94 +695,40 @@
             }
         }
         
-        /* Mobile portrait (max 768px) */
-        @media (max-width: 768px) {
-            header {
-                padding: 12px 16px;
-                flex-wrap: wrap;
+        /* Small mobile (max 480px) */
+        @media (max-width: 480px) {
+            
+            .navbar {
+                padding: 8px 12px;
             }
             
-            header h1 {
-                font-size: 20px;
+            .navbar-title {
+                font-size: 18px;
             }
             
-            .status-bar {
-                padding: 8px 16px;
-                flex-wrap: wrap;
-                gap: 12px;
-                font-size: 12px;
+            .navbar-btn {
+                font-size: 0.75rem;
+                padding: 4px 8px;
             }
             
-            #left {
-                height: 40vh;
+            .map-section {
+                height: 35vh;
+                padding: 8px;
+                padding-bottom: 4px;
             }
             
-            aside {
-                height: 60vh;
-                padding: 16px;
+            .info-content {
+                padding: 12px;
             }
             
             .state-name {
-                font-size: 22px;
-            }
-            
-            .state-stats {
-                padding: 16px;
-                margin: 16px 0;
-            }
-            
-            .stat-row {
-                font-size: 14px;
-                margin: 10px 0;
-            }
-            
-            .zoom-controls {
-                top: 8px;
-                right: 8px;
+                font-size: 20px;
             }
             
             .zoom-btn {
                 width: 32px;
                 height: 32px;
                 font-size: 14px;
-            }
-            
-            .zoom-level {
-                padding: 6px 8px;
-                font-size: 10px;
-            }
-        }
-        
-        /* Small mobile (max 480px) */
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 18px;
-            }
-            
-            .status-bar {
-                font-size: 11px;
-                gap: 8px;
-            }
-            
-            #left {
-                height: 35vh;
-            }
-            
-            aside {
-                height: 65vh;
-                padding: 12px;
-            }
-            
-            .state-name {
-                font-size: 20px;
-            }
-            
-            .state-stats {
-                padding: 12px;
-            }
-            
-            .stat-row {
-                font-size: 13px;
             }
         }
         
@@ -641,65 +746,31 @@
             backdrop-filter: blur(10px);
         }
         
-        aside {
-            width: 520px;
-            min-width: 520px;
-            max-width: 520px;
-            background: 
-                linear-gradient(180deg, 
-                    rgba(26, 26, 26, 0.95) 0%, 
-                    rgba(20, 20, 20, 0.98) 100%
-                );
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--border-accent);
-            padding: 28px 24px;
-            box-sizing: border-box;
+        .info-content {
+            padding: 24px;
             overflow-y: auto;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: stretch;
-            flex-shrink: 0;
-            position: relative;
-            box-shadow: 
-                -4px 0 20px rgba(0, 0, 0, 0.3),
-                inset 1px 0 0 rgba(255, 255, 255, 0.1);
+            flex: 1;
             /* Enhanced scrollbar for better UX */
             scrollbar-width: thin;
             scrollbar-color: var(--accent) transparent;
         }
         
-        aside::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(180deg, 
-                var(--saffron) 0%, 
-                var(--white) 50%, 
-                var(--green) 100%
-            );
-        }
-        
-        aside::-webkit-scrollbar {
+        .info-content::-webkit-scrollbar {
             width: 8px;
         }
         
-        aside::-webkit-scrollbar-track {
+        .info-content::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
         }
         
-        aside::-webkit-scrollbar-thumb {
+        .info-content::-webkit-scrollbar-thumb {
             background: linear-gradient(180deg, var(--accent), var(--accent-dark));
             border-radius: 4px;
             border: 1px solid rgba(255, 153, 51, 0.3);
         }
         
-        aside::-webkit-scrollbar-thumb:hover {
+        .info-content::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(180deg, var(--accent-light), var(--accent));
         }
         
@@ -992,123 +1063,137 @@
     </style>
 </head>
 <body>
-    <div id="left">
-        <header>
-            <h1>🇮🇳 Misinformation Heatmap</h1>
-            <div style="display: flex; gap: 2rem; margin-left: 2rem;">
-                <a href="/" style="color: #a0a0a0; text-decoration: none; font-weight: 500; transition: color 0.3s ease;">Home</a>
-                <a href="/dashboard" style="color: #a0a0a0; text-decoration: none; font-weight: 500; transition: color 0.3s ease;">Dashboard</a>
-                <a href="/map/enhanced-india-heatmap.html" style="color: #FF9933; text-decoration: none; font-weight: 500;">Heatmap</a>
-            </div>
-            <div style="flex: 1;"></div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <button onclick="testMapColors()" style="background: linear-gradient(135deg, rgba(255, 153, 51, 0.2), rgba(255, 153, 51, 0.3)); border: 1px solid var(--accent); color: var(--accent); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 153, 51, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">🎨 Test Colors</button>
-                <button onclick="showDataSummary()" style="background: linear-gradient(135deg, rgba(19, 136, 8, 0.2), rgba(19, 136, 8, 0.3)); border: 1px solid var(--green); color: var(--green); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.3s ease; backdrop-filter: blur(10px);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(19, 136, 8, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">📊 Data Summary</button>
-                <div class="status-indicator" style="display: flex; align-items: center; gap: 0.75rem; background: linear-gradient(135deg, rgba(19, 136, 8, 0.15), rgba(19, 136, 8, 0.25)); border: 1px solid var(--green); border-radius: 24px; padding: 8px 16px; font-size: 0.9rem; color: var(--green); font-weight: 600; backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(19, 136, 8, 0.2);">
-                    <div style="width: 10px; height: 10px; background: var(--green); border-radius: 50%; animation: glow 2s infinite; box-shadow: 0 0 8px rgba(19, 136, 8, 0.5);"></div>
-                    <span>Live Processing</span>
-                </div>
-            </div>
-        </header>
-        
-        <div class="status-bar">
-            <div class="status-item">
-                <div class="status-dot"></div>
-                <span>Live Processing</span>
-            </div>
-            <div class="status-item">
-                <strong id="total-events">Loading...</strong> Total Events
-            </div>
-            <div class="status-item">
-                <strong id="active-states">Loading...</strong> Active States
-            </div>
-            <div class="status-item">
-                Last Update: <strong id="last-update">Loading...</strong>
-            </div>
-            <div class="status-item">
-                Accuracy: <strong id="classification-accuracy">Loading...</strong>
-            </div>
-        </div>
-        
-        <div id="mapwrap">
-            <div class="zoom-controls">
-                <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
-                <div class="zoom-level" id="zoom-level">100%</div>
-                <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
-                <button class="zoom-btn" onclick="resetZoom()" title="Reset View">⌂</button>
-            </div>
-            <div id="svgroot">
-                <div class="loading" id="loading-screen">
-                    <div class="loading-spinner"></div>
-                    <div class="loading-text">🗺️ Loading Enhanced India Map...</div>
-                    <div class="loading-subtext">Fetching real-time misinformation data</div>
-                    <div class="loading-progress">
-                        <div class="progress-bar" id="progress-bar"></div>
-                    </div>
-                </div>
-            </div>
-            <div id="tooltip"></div>
-        </div>
-    </div>
-    
-    <aside>
-        <div class="state-name" id="stateName">Select a State</div>
-        <div id="stateContent">
-            <div style="margin-top: 20px;">
-                <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Risk Levels</h4>
-                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
-                        <span>High Risk (≥60%)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
-                        <span>Medium Risk (40-59%)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <div style="width: 16px; height: 16px; background: #28a745; border-radius: 2px;"></div>
-                        <span>Low Risk (<40%)</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
-                Click on a state to view detailed fake news analysis
-            </div>
-            
-            <div style="margin-top: 32px; border-top: 2px solid var(--border-accent); padding-top: 32px;">
-                <div class="news-section">
-                    <h3 style="color: var(--high-risk);">
-                        <span style="width: 12px; height: 12px; background: var(--high-risk); border-radius: 50%; animation: glow 2s infinite;"></span>
-                        🚨 Misinformation Alerts
-                    </h3>
-                    <div id="misinformation-feed" class="news-feed misinformation-feed">
-                        <div style="opacity: 0.7; text-align: center; padding: 60px 20px;">
-                            <div style="font-size: 48px; margin-bottom: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">🚨</div>
-                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Loading misinformation alerts...</div>
-                            <div style="font-size: 14px; color: var(--text-muted);">Scanning for fake news across India</div>
-                        </div>
-                    </div>
+    <div class="main-layout">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <h1 class="navbar-title">🇮🇳 Misinformation Heatmap</h1>
+                
+                <div class="navbar-links">
+                    <a href="/" class="navbar-link">Home</a>
+                    <a href="/dashboard" class="navbar-link">Dashboard</a>
+                    <a href="/map/enhanced-india-heatmap.html" class="navbar-link active">Heatmap</a>
                 </div>
                 
-                <div class="news-section">
-                    <h3 style="color: var(--green);">
-                        <span style="width: 12px; height: 12px; background: var(--green); border-radius: 50%; animation: glow 2s infinite;"></span>
-                        ✅ Verified Real News
-                    </h3>
-                    <div id="real-news-feed" class="news-feed real-news-feed">
-                        <div style="opacity: 0.7; text-align: center; padding: 60px 20px;">
-                            <div style="font-size: 48px; margin-bottom: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">📰</div>
-                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Loading verified news...</div>
-                            <div style="font-size: 14px; color: var(--text-muted);">Fetching latest authentic updates</div>
+                <div class="navbar-actions">
+                    <button onclick="testMapColors()" class="navbar-btn primary">🎨 Test Colors</button>
+                    <button onclick="showDataSummary()" class="navbar-btn secondary">📊 Data Summary</button>
+                    
+                    <div class="navbar-status">
+                        <div style="width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: glow 2s infinite;"></div>
+                        <span>Live Processing</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Content Area - ONE unified container -->
+        <div class="content-area">
+            <!-- Map Section (Left Half) -->
+            <div class="map-section">
+                <div class="map-container">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                        <div class="zoom-level" id="zoom-level">100%</div>
+                        <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                        <button class="zoom-btn" onclick="resetZoom()" title="Reset View">⌂</button>
+                    </div>
+                    <div id="svgroot">
+                        <div class="loading" id="loading-screen">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text">🗺️ Loading Enhanced India Map...</div>
+                            <div class="loading-subtext">Fetching real-time misinformation data</div>
+                            <div class="loading-progress">
+                                <div class="progress-bar" id="progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tooltip"></div>
+                </div>
+            </div>
+            
+            <!-- Information Section (Right Half) -->
+            <div class="info-section">
+                <div class="info-content">
+                    <!-- Status Bar -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: 600; color: var(--accent); font-size: 18px;" id="total-events">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px;">Total Events</div>
+                        </div>
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: 600; color: var(--green); font-size: 18px;" id="active-states">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px;">Active States</div>
+                        </div>
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: 600; color: var(--accent); font-size: 14px;" id="last-update">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px;">Last Update</div>
+                        </div>
+                        <div style="text-align: center; padding: 8px;">
+                            <div style="font-weight: 600; color: var(--green); font-size: 18px;" id="classification-accuracy">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px;">Accuracy</div>
+                        </div>
+                    </div>
+                    
+                    <div class="state-name" id="stateName">Select a State</div>
+                    <div id="stateContent">
+                        <div style="margin-top: 20px;">
+                            <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Risk Levels</h4>
+                            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
+                                    <span>High Risk (≥60%)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
+                                    <span>Medium Risk (40-59%)</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="width: 16px; height: 16px; background: #28a745; border-radius: 2px;"></div>
+                                    <span>Low Risk (<40%)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
+                            Click on a state to view detailed fake news analysis
+                        </div>
+                        
+                        <div style="margin-top: 24px; border-top: 1px solid var(--border-accent); padding-top: 24px;">
+                            <div class="news-section">
+                                <h3 style="color: var(--high-risk);">
+                                    <span style="width: 12px; height: 12px; background: var(--high-risk); border-radius: 50%; animation: glow 2s infinite;"></span>
+                                    🚨 Misinformation Alerts
+                                </h3>
+                                <div id="misinformation-feed" class="news-feed misinformation-feed">
+                                    <div style="opacity: 0.7; text-align: center; padding: 40px 20px;">
+                                        <div style="font-size: 32px; margin-bottom: 16px;">🚨</div>
+                                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Loading misinformation alerts...</div>
+                                        <div style="font-size: 14px; color: var(--text-muted);">Scanning for fake news across India</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="news-section">
+                                <h3 style="color: var(--green);">
+                                    <span style="width: 12px; height: 12px; background: var(--green); border-radius: 50%; animation: glow 2s infinite;"></span>
+                                    ✅ Verified Real News
+                                </h3>
+                                <div id="real-news-feed" class="news-feed real-news-feed">
+                                    <div style="opacity: 0.7; text-align: center; padding: 40px 20px;">
+                                        <div style="font-size: 32px; margin-bottom: 16px;">📰</div>
+                                        <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Loading verified news...</div>
+                                        <div style="font-size: 14px; color: var(--text-muted);">Fetching latest authentic updates</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+    </div>
 
-    </aside>
 
     <script>
         // Global variables
