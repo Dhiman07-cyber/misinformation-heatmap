@@ -69,20 +69,18 @@
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            /* Enhanced Tricolor inspired dark theme with depth */
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 153, 51, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.1) 0%, transparent 50%),
-                linear-gradient(135deg, 
-                    #0a0a0a 0%,
-                    #1a1a1a 25%,
-                    #0f0f0f 50%,
-                    #1a1a1a 75%,
-                    #0a0a0a 100%
-                );
-            color: var(--text-primary);
+            /* Indian Tricolor inspired gradient - using saffron, white, green tones */
+            background: linear-gradient(135deg, 
+                #FF9933 0%,    /* Saffron */
+                #FFFFFF 25%,   /* White */
+                #FFFFFF 50%,   /* White */
+                #FFFFFF 75%,   /* White */
+                #138808 100%   /* Green */
+            );
+            min-height: 100vh;
+            color: #2d3748;
+            overflow-x: hidden;
             height: 100vh;
-            overflow: hidden;
             position: relative;
             box-sizing: border-box;
         }
@@ -108,7 +106,7 @@
             flex-direction: column;
             height: 100vh;
             width: 100vw;
-            background: rgba(26, 26, 26, 0.8);
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(8px);
             overflow: hidden;
             position: relative;
@@ -123,22 +121,20 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--saffron), var(--white), var(--green));
+            background: linear-gradient(90deg, #FF9933, #FFFFFF, #138808);
             z-index: 1;
         }
         
         /* Navigation bar - INSIDE the unified container */
         .navbar {
-            background: 
-                linear-gradient(135deg, 
-                    rgba(255, 153, 51, 0.1) 0%, 
-                    rgba(255, 255, 255, 0.03) 50%, 
-                    rgba(19, 136, 8, 0.1) 100%
-                );
-            border-bottom: 1px solid var(--border-accent);
-            padding: 16px 24px;
-            position: relative;
-            z-index: 2;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
         
         /* Content area - NO separate container styling */
@@ -165,52 +161,57 @@
             flex-direction: column;
             padding: 16px;
             padding-left: 8px;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         /* Navbar content */
-        .navbar-content {
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #FF9933;
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
         }
         
-        .navbar-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0;
-            background: linear-gradient(135deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -0.5px;
+        .flag-icon {
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
         }
         
-        .navbar-links {
+        .nav-links {
             display: flex;
-            gap: 24px;
-            margin-left: 32px;
+            gap: 2rem;
+            align-items: center;
         }
         
-        .navbar-link {
-            color: var(--text-secondary);
+        .nav-link {
+            color: #4a5568;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
-            padding: 8px 0;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
         }
         
-        .navbar-link:hover {
-            color: var(--accent);
-        }
-        
-        .navbar-link.active {
-            color: var(--accent);
-            border-bottom: 2px solid var(--accent);
+        .nav-link:hover, .nav-link.active {
+            color: #FF9933;
+            background: rgba(255, 153, 51, 0.1);
         }
         
         .navbar-actions {
-            margin-left: auto;
             display: flex;
             align-items: center;
             gap: 16px;
@@ -231,33 +232,48 @@
         }
         
         .navbar-btn.primary {
-            background: rgba(255, 153, 51, 0.2);
-            border-color: var(--accent);
-            color: var(--accent);
+            background: linear-gradient(135deg, #FF9933 0%, #B45309 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3);
         }
         
         .navbar-btn.secondary {
-            background: rgba(19, 136, 8, 0.2);
-            border-color: var(--green);
-            color: var(--green);
+            background: rgba(255, 255, 255, 0.9);
+            color: #4a5568;
+            border: 2px solid rgba(255, 153, 51, 0.3);
+            backdrop-filter: blur(10px);
         }
         
         .navbar-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(255, 153, 51, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
         }
         
-        .navbar-status {
+        .navbar-btn.secondary:hover {
+            background: rgba(255, 153, 51, 0.1);
+            border-color: #FF9933;
+            color: #FF9933;
+        }
+        
+        .nav-status {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(19, 136, 8, 0.2);
-            border: 1px solid var(--green);
-            border-radius: 16px;
-            padding: 6px 12px;
-            font-size: 0.85rem;
-            color: var(--green);
-            font-weight: 600;
+            gap: 0.5rem;
+            background: rgba(19, 136, 8, 0.1);
+            border: 1px solid rgba(19, 136, 8, 0.3);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: #138808;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #138808;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
         
         .status-bar {
@@ -318,13 +334,14 @@
             background: 
                 radial-gradient(ellipse at center, rgba(255, 153, 51, 0.05) 0%, transparent 70%),
                 linear-gradient(180deg, 
-                    rgba(7, 16, 39, 0.8) 0%, 
-                    rgba(8, 32, 53, 0.9) 50%,
-                    rgba(5, 20, 35, 0.8) 100%
+                    rgba(255, 255, 255, 0.8) 0%, 
+                    rgba(248, 250, 252, 0.9) 50%,
+                    rgba(241, 245, 249, 0.8) 100%
                 );
             box-shadow: 
                 inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                var(--shadow-lg);
+                0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 153, 51, 0.2);
         }
         
         #svgroot {
@@ -752,7 +769,7 @@
             flex: 1;
             /* Enhanced scrollbar for better UX */
             scrollbar-width: thin;
-            scrollbar-color: var(--accent) transparent;
+            scrollbar-color: #FF9933 transparent;
         }
         
         .info-content::-webkit-scrollbar {
@@ -760,31 +777,31 @@
         }
         
         .info-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 4px;
         }
         
         .info-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+            background: linear-gradient(180deg, #FF9933, #B45309);
             border-radius: 4px;
             border: 1px solid rgba(255, 153, 51, 0.3);
         }
         
         .info-content::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(180deg, var(--accent-light), var(--accent));
+            background: linear-gradient(180deg, #ffb366, #FF9933);
         }
         
         .state-name {
             font-size: 28px;
             font-weight: 800;
             margin-bottom: 16px;
-            background: linear-gradient(135deg, var(--saffron) 0%, var(--white) 50%, var(--green) 100%);
+            background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-align: center;
             padding: 16px 0;
-            border-bottom: 2px solid var(--border-accent);
+            border-bottom: 2px solid rgba(255, 153, 51, 0.3);
             position: relative;
             animation: fadeInUp 0.6s ease-out;
             letter-spacing: -0.5px;
@@ -798,24 +815,18 @@
             transform: translateX(-50%);
             width: 60px;
             height: 2px;
-            background: linear-gradient(90deg, var(--saffron), var(--green));
+            background: linear-gradient(90deg, #FF9933, #138808);
             border-radius: 1px;
         }
         
         .state-stats {
-            background: 
-                linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.12) 0%, 
-                    rgba(255, 255, 255, 0.06) 100%
-                );
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             padding: 24px;
             border-radius: 16px;
             margin: 24px 0;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 
-                0 8px 24px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 153, 51, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             animation: fadeInUp 0.8s ease-out;
             position: relative;
             overflow: hidden;
@@ -828,7 +839,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--saffron), var(--white), var(--green));
+            background: linear-gradient(90deg, #FF9933, #FFFFFF, #138808);
             border-radius: 16px 16px 0 0;
         }
         
@@ -839,17 +850,18 @@
             margin: 16px 0;
             font-size: 15px;
             padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.6);
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
             position: relative;
         }
         
         .stat-row:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.8);
             transform: translateX(4px);
             border-color: rgba(255, 153, 51, 0.2);
+            box-shadow: 0 4px 12px rgba(255, 153, 51, 0.1);
         }
         
         .stat-row::before {
@@ -859,7 +871,7 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background: linear-gradient(180deg, var(--saffron), var(--green));
+            background: linear-gradient(180deg, #FF9933, #138808);
             border-radius: 10px 0 0 10px;
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -871,14 +883,14 @@
         
         .stat-label {
             font-weight: 600;
-            color: var(--text-secondary);
+            color: #718096;
             font-size: 14px;
         }
         
         .stat-value {
             font-weight: 700;
             font-size: 16px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            color: #2d3748;
         }
         
         .risk-badge {
@@ -925,18 +937,12 @@
         }
         
         .news-feed {
-            background: 
-                linear-gradient(135deg, 
-                    rgba(255, 255, 255, 0.08) 0%, 
-                    rgba(255, 255, 255, 0.04) 100%
-                );
+            background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
             border-radius: 16px;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 8px 24px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 153, 51, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             max-height: 400px;
             overflow-y: auto;
             scrollbar-width: thin;
@@ -948,12 +954,12 @@
         }
         
         .news-feed::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.05);
             border-radius: 3px;
         }
         
         .news-feed::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+            background: linear-gradient(180deg, #FF9933, #B45309);
             border-radius: 3px;
         }
         
@@ -1066,22 +1072,23 @@
     <div class="main-layout">
         <!-- Navigation Bar -->
         <nav class="navbar">
-            <div class="navbar-content">
-                <h1 class="navbar-title">🇮🇳 Misinformation Heatmap</h1>
-                
-                <div class="navbar-links">
-                    <a href="/" class="navbar-link">Home</a>
-                    <a href="/dashboard" class="navbar-link">Dashboard</a>
-                    <a href="/map/enhanced-india-heatmap.html" class="navbar-link active">Heatmap</a>
+            <div class="nav-content">
+                <a href="/" class="logo">
+                    <img src="/assets/indian-flag.png" alt="Indian Flag" class="flag-icon">
+                    Misinformation Heatmap
+                </a>
+                <div class="nav-links">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/dashboard" class="nav-link">Dashboard</a>
+                    <a href="/map/enhanced-india-heatmap.html" class="nav-link active">Heatmap</a>
                 </div>
-                
                 <div class="navbar-actions">
                     <button onclick="testMapColors()" class="navbar-btn primary">🎨 Test Colors</button>
                     <button onclick="showDataSummary()" class="navbar-btn secondary">📊 Data Summary</button>
                     
-                    <div class="navbar-status">
-                        <div style="width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: glow 2s infinite;"></div>
-                        <span>Live Processing</span>
+                    <div class="nav-status">
+                        <div class="status-dot"></div>
+                        <span id="system-status">Live Processing</span>
                     </div>
                 </div>
             </div>
@@ -1116,22 +1123,22 @@
             <div class="info-section">
                 <div class="info-content">
                     <!-- Status Bar -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.8); border-radius: 8px; border: 1px solid rgba(255, 153, 51, 0.2); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
                         <div style="text-align: center; padding: 8px;">
-                            <div style="font-weight: 600; color: var(--accent); font-size: 18px;" id="total-events">Loading...</div>
-                            <div style="opacity: 0.7; font-size: 12px;">Total Events</div>
+                            <div style="font-weight: 600; color: #FF9933; font-size: 18px;" id="total-events">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px; color: #718096;">Total Events</div>
                         </div>
                         <div style="text-align: center; padding: 8px;">
-                            <div style="font-weight: 600; color: var(--green); font-size: 18px;" id="active-states">Loading...</div>
-                            <div style="opacity: 0.7; font-size: 12px;">Active States</div>
+                            <div style="font-weight: 600; color: #138808; font-size: 18px;" id="active-states">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px; color: #718096;">Active States</div>
                         </div>
                         <div style="text-align: center; padding: 8px;">
-                            <div style="font-weight: 600; color: var(--accent); font-size: 14px;" id="last-update">Loading...</div>
-                            <div style="opacity: 0.7; font-size: 12px;">Last Update</div>
+                            <div style="font-weight: 600; color: #FF9933; font-size: 14px;" id="last-update">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px; color: #718096;">Last Update</div>
                         </div>
                         <div style="text-align: center; padding: 8px;">
-                            <div style="font-weight: 600; color: var(--green); font-size: 18px;" id="classification-accuracy">Loading...</div>
-                            <div style="opacity: 0.7; font-size: 12px;">Accuracy</div>
+                            <div style="font-weight: 600; color: #138808; font-size: 18px;" id="classification-accuracy">Loading...</div>
+                            <div style="opacity: 0.7; font-size: 12px; color: #718096;">Accuracy</div>
                         </div>
                     </div>
                     
