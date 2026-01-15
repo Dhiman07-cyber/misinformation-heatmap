@@ -10,23 +10,24 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 
 ## 📸 Screenshots & Demo
 
+### Main Homepage
+> Overview of the whole website
+
+![Analysis Preview](docs/media-assets/Home.png)
+*Coming Soon: Add your analysis interface screenshot here*
+
 ### Main Dashboard
 > Real-time misinformation detection dashboard with live statistics
 
-![Dashboard Preview](docs/images/dashboard.png)
+![Dashboard Preview](docs/media-assets/Dashboard.png)
 *Coming Soon: Add your dashboard screenshot here*
 
 ### Interactive India Heatmap
 > Geographic visualization of misinformation distribution across Indian states
 
-![Heatmap Preview](docs/images/heatmap.png)
+![Heatmap Preview](docs/media-assets/Map.png)
 *Coming Soon: Add your heatmap screenshot here*
 
-### News Analysis Interface
-> Detailed article analysis with multi-component scoring
-
-![Analysis Preview](docs/images/analysis.png)
-*Coming Soon: Add your analysis interface screenshot here*
 
 ### 🎥 Video Demo
 > Full system walkthrough and feature demonstration
