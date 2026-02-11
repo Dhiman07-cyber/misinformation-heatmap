@@ -4,7 +4,7 @@
 # ============================================================================
 # Stage 1: Base Python environment with system dependencies
 # ============================================================================
-FROM python:3.9-slim as base
+FROM python:3.14.3-slim as base
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
