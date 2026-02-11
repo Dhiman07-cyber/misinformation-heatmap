@@ -55,3 +55,4 @@ geopy>=2.4.0,<3.0.0
 
 # Security
 passlib[bcrypt]>=1.7.0,<2.0.0
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
