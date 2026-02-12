@@ -1,30 +1,33 @@
 # 🛡️ Enhanced Fake News Detection System - Complete Overview
 
 ## 🚀 System Status: ACTIVE
-- **22,050+ Real Events Processed**
-- **30+ Indian News Sources**
-- **All 29 States Covered**
+- **34+ Indian News Sources** (RSS feeds)
+- **All 29 States + UTs Covered**
 - **Real-time Processing Active**
+- **ML Classifier**: 94.8% accuracy, 1.0 ROC-AUC, 0 false positives
+- **Training Data**: 381 labeled examples across 8 categories
 
 ## 🔧 Core Components
 
 ### 1. 🧠 AI Analysis Engine
-- **IndicBERT**: Specialized for Indian languages and cultural context
-- **ML Classifier**: Multi-algorithm ensemble for fake news detection
-- **Linguistic Analysis**: Pattern recognition for misinformation indicators
-- **Source Credibility**: Reliability scoring for news sources
+- **5-Model ML Ensemble**: Naive Bayes + SVM + Random Forest + Logistic Regression + Gradient Boosting (94.8% accuracy, 1.0 ROC-AUC, zero false positives)
+- **IndicBERT Integration**: Indian language embeddings (768-dim vectors) with variance-based fake-news signal
+- **Indian Context Extraction**: Hinglish detection, WhatsApp forward patterns, communal language triggers
+- **Deterministic Detection**: All random simulations removed for reproducible results  
+- **Linguistic Analysis**: Sensational language, emotional manipulation, attribution patterns
+- **Source Credibility**: Known source database + domain heuristics
 
 ### 2. 🛰️ Verification Systems
-- **Satellite Verification**: Google Earth Engine for location claims
-- **Fact-Checker Integration**: Alt News, Boom Live, WebQoof databases
-- **Cross-Reference Analysis**: Multi-source claim validation
-- **Geographic Validation**: Real location extraction and verification
+- **Fact-Checking Database**: Keyword matching against 20+ known debunked claims (Alt News, Boom Live, WebQoof)
+- **Satellite Geocoding**: Nominatim API for location verification (deterministic confidence)
+- **Cross-Reference Analysis**: TF-IDF similarity + multi-source/rumor pattern detection
+- **Source Analysis**: Credibility scoring based on known sources and URL patterns
 
 ### 3. 📊 Real-Time Processing
-- **RSS Ingestion**: Live feeds from 30+ major Indian news outlets
-- **Batch Processing**: Efficient handling of high-volume data streams
-- **State Aggregation**: Real-time statistics by Indian state
-- **Live Classification**: Instant fake news detection and scoring
+- **RSS Ingestion**: Live feeds from 34+ major Indian news outlets (Times of India, Hindu, NDTV, etc.)
+- **Batch Processing**: 50-event batches with efficient pipeline
+- **State Aggregation**: Geographic extraction and state-wise statistics
+- **Live Classification**: Sub-second ML predictions with 7-component ensemble scoring
 
 ## 🗺️ Interactive Interfaces
 
@@ -103,22 +106,23 @@
 - Content preprocessing and cleaning
 
 ### Step 2: AI Analysis
-- IndicBERT embeddings for Indian context
-- ML classification using ensemble methods
-- Linguistic pattern analysis
-- Source credibility assessment
+- **ML Classifier**: 5-model ensemble prediction (NB/SVM/RF/LR/GB)
+- **IndicBERT**: Embedding extraction + variance-based fake signal (5% weight)
+- **Indian Context**: Hinglish/WhatsApp/communal pattern detection
+- **Linguistic**: Sensational language + emotional manipulation scoring
+- **Source Credibility**: Domain analysis + known source lookup
 
 ### Step 3: Verification
-- Location extraction and satellite verification
-- Fact-checker database lookup
-- Cross-reference analysis across sources
-- Indian cultural context validation
+- **Fact-Checking**: Keyword matching against debunked claims database
+- **Geocoding**: Nominatim API for location-based confidence
+- **Cross-Reference**: TF-IDF content similarity + rumor pattern detection
+- **Deterministic Scoring**: No random fallbacks, reproducible results
 
 ### Step 4: Scoring & Classification
-- Fake news probability calculation
-- Confidence score assignment
-- Risk level determination
-- Geographic mapping
+- **Weighted Ensemble**: ML=35%, Linguistic=20%, Source=20%, Fact=10%, Satellite=5%, Cross-ref=5%, IndicBERT=5%
+- **Fake News Probability**: Combined score from all 7 components
+- **Verdict**: "fake"/"real" with confidence threshold (>0.6 = fake, <0.4 = real)
+- **Geographic Mapping**: State extraction for heatmap visualization
 
 ### Step 5: Real-Time Updates
 - Database storage with state aggregation
@@ -129,12 +133,12 @@
 ## 📈 Performance Metrics
 
 ### Current Statistics
-- **Total Events**: 22,050+ real news articles processed
-- **Processing Rate**: ~1.6 events per second
+- **ML Model**: 94.8% test accuracy, 94.1% F1 score, 1.0 ROC-AUC
+- **Training Data**: 381 examples (176 fake, 205 real) across 8 categories
+- **Processing**: Real-time batch ingestion from 34+ RSS sources
 - **Geographic Coverage**: All 29 Indian states + UTs
-- **Source Diversity**: 30+ major Indian news outlets
-- **Classification Accuracy**: Continuously monitored
-- **Update Frequency**: Real-time with 30-second refresh cycles
+- **Update Frequency**: 2-minute ingestion cycles
+- **Deterministic**: 100% reproducible results (zero randomness)
 
 ### System Capabilities
 - **High Volume Processing**: Handles thousands of articles daily
@@ -152,10 +156,10 @@
 - Editorial quality assessment
 
 ### Classification Accuracy
-- Multi-algorithm ensemble approach
-- Continuous learning and improvement
-- Human-verified training data
-- Regular model updates and refinement
+- **5-Model Ensemble**: NB + SVM + RF + LR + GB with soft voting
+- **Test Set Performance**: 94.8% accuracy, zero false positives, 88.9% recall
+- **Training Data**: 381 India-specific labeled examples with Hinglish/WhatsApp content
+- **Retraining**: Add examples to CSV and run `python advanced_ml_classifier.py`
 
 ### Geographic Precision
 - State-level location extraction

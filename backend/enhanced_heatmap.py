@@ -16,7 +16,6 @@ import json
 import hashlib
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
-import random
 import time
 
 # Add backend to path
@@ -407,17 +406,58 @@ def calculate_analysis_confidence(text: str, watson_results: Dict) -> float:
     return min(confidence, 1.0)
 
 def create_fallback_analysis(event: Dict) -> Dict:
-    """Create fallback analysis when Watson fails"""
+    """Create fallback analysis using ML classifier when Watson fails"""
+    text = f"{event.get('title', '')} {event.get('content', '')}"
+    
+    # Try ML classifier for real misinformation scoring
+    misinformation_score = 0.3  # Default to low-risk (not neutral 0.5)
+    ml_confidence = 0.3
+    
+    try:
+        from advanced_ml_classifier import load_classifier
+        classifier = load_classifier()
+        if classifier:
+            prediction = classifier.predict([text])[0]
+            probabilities = classifier.predict_proba([text])[0]
+            fake_prob = probabilities[1] if len(probabilities) > 1 else 0.5
+            ml_confidence = max(probabilities)
+            misinformation_score = fake_prob
+    except Exception as e:
+        logger.warning(f"ML classifier fallback failed: {e}")
+    
+    # Add basic linguistic scoring on top of ML
+    text_lower = text.lower()
+    sensational_keywords = [
+        'breaking', 'urgent', 'shocking', 'exclusive', 'exposed', 'viral',
+        'alert', 'proof', 'leaked', 'caught', 'busted', 'secret'
+    ]
+    sensational_count = sum(1 for kw in sensational_keywords if kw in text_lower)
+    linguistic_boost = min(sensational_count * 0.05, 0.2)
+    misinformation_score = min(1.0, misinformation_score + linguistic_boost)
+    
+    # VADER sentiment as fallback
+    sentiment_label = 'neutral'
+    try:
+        from nltk.sentiment import SentimentIntensityAnalyzer
+        sia = SentimentIntensityAnalyzer()
+        scores = sia.polarity_scores(text)
+        if scores['compound'] > 0.05:
+            sentiment_label = 'positive'
+        elif scores['compound'] < -0.05:
+            sentiment_label = 'negative'
+    except Exception:
+        pass
+    
     return {
-        'misinformation_score': 0.5,
+        'misinformation_score': round(misinformation_score, 4),
         'virality_score': 0.4,
-        'confidence': 0.3,
-        'sentiment': 'neutral',
+        'confidence': round(ml_confidence, 4),
+        'sentiment': sentiment_label,
         'emotions': {},
         'entities': [],
         'keywords': [],
         'concepts': [],
-        'watson_analysis': {'error': 'Watson analysis unavailable'}
+        'watson_analysis': {'error': 'Watson unavailable, used ML classifier fallback'}
     }
 
 # Initialize enhanced database
