@@ -1,413 +1,526 @@
 #!/usr/bin/env python3
 """
 Advanced ML Classifier for Misinformation Detection
-- Real training data with 500+ examples
-- Multiple algorithms (Naive Bayes, SVM, Random Forest)
-- Feature engineering with TF-IDF, N-grams, and linguistic features
-- Cross-validation and performance metrics
+- Loads training data from structured CSV dataset (500+ examples)
+- Multiple algorithms (Naive Bayes, SVM, Random Forest, Logistic Regression, Gradient Boosting)
+- Feature engineering with TF-IDF, linguistic features, and Indian-context features
+- Cross-validation, per-class metrics, and performance reporting
 """
 
 import pandas as pd
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import (
+    RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+)
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+from sklearn.metrics import (
+    classification_report, confusion_matrix, accuracy_score,
+    f1_score, roc_auc_score
+)
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import MinMaxScaler
 import re
+import os
+import json
 import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer
 import pickle
 import logging
+from pathlib import Path
+from datetime import datetime
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Ensure NLTK data is available
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon', quiet=True)
+
+
 class LinguisticFeatureExtractor(BaseEstimator, TransformerMixin):
     """Extract linguistic features that indicate misinformation"""
-    
+
     def __init__(self):
         self.sia = SentimentIntensityAnalyzer()
-    
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X):
         features = []
-        
+
         for text in X:
             text_lower = text.lower()
-            
-            # Feature 1: Sensational keywords count
+            words = text.split()
+            word_count = max(len(words), 1)
+
+            # Feature 1: Sensational keywords count (normalized)
             sensational_keywords = [
                 'breaking', 'urgent', 'shocking', 'exclusive', 'exposed', 'revealed',
                 'secret', 'hidden', 'conspiracy', 'cover-up', 'scandal', 'bombshell',
-                'viral', 'trending', 'must see', 'unbelievable', 'incredible', 'amazing'
+                'viral', 'trending', 'must see', 'unbelievable', 'incredible', 'amazing',
+                'alert', 'proof', 'leaked', 'caught', 'busted', 'warning'
             ]
-            sensational_count = sum(1 for keyword in sensational_keywords if keyword in text_lower)
-            
-            # Feature 2: Emotional manipulation words
+            sensational_count = sum(1 for kw in sensational_keywords if kw in text_lower)
+            sensational_ratio = sensational_count / word_count
+
+            # Feature 2: Emotional manipulation words (normalized)
             emotional_words = [
                 'outraged', 'furious', 'devastated', 'terrified', 'shocked',
-                'disgusted', 'betrayed', 'abandoned', 'threatened', 'angry'
+                'disgusted', 'betrayed', 'abandoned', 'threatened', 'angry',
+                'horrifying', 'nightmare', 'deadly', 'catastrophic', 'crisis'
             ]
-            emotional_count = sum(1 for word in emotional_words if word in text_lower)
-            
-            # Feature 3: Lack of attribution indicators
+            emotional_count = sum(1 for w in emotional_words if w in text_lower)
+            emotional_ratio = emotional_count / word_count
+
+            # Feature 3: Attribution indicators (binary)
             attribution_indicators = [
                 'according to', 'sources say', 'officials confirm', 'study shows',
-                'research indicates', 'data reveals', 'experts believe', 'report states'
+                'research indicates', 'data reveals', 'experts believe', 'report states',
+                'published in', 'peer-reviewed', 'government says', 'ministry of',
+                'official statement', 'press release', 'data from', 'survey finds'
             ]
-            has_attribution = 1 if any(indicator in text_lower for indicator in attribution_indicators) else 0
-            
-            # Feature 4: Excessive punctuation
-            exclamation_ratio = text.count('!') / max(len(text.split()), 1)
-            question_ratio = text.count('?') / max(len(text.split()), 1)
-            
+            has_attribution = 1.0 if any(ind in text_lower for ind in attribution_indicators) else 0.0
+
+            # Feature 4: Excessive punctuation ratios
+            exclamation_ratio = text.count('!') / word_count
+            question_ratio = text.count('?') / word_count
+            ellipsis_count = text.count('...') / word_count
+
             # Feature 5: ALL CAPS ratio
-            words = text.split()
-            caps_ratio = sum(1 for word in words if word.isupper() and len(word) > 2) / max(len(words), 1)
-            
-            # Feature 6: Sentiment extremity
+            caps_words = sum(1 for w in words if w.isupper() and len(w) > 2)
+            caps_ratio = caps_words / word_count
+
+            # Feature 6: Sentiment extremity (VADER)
             sentiment = self.sia.polarity_scores(text)
             sentiment_extremity = abs(sentiment['compound'])
-            
-            # Feature 7: Text length (very short or very long can be suspicious)
+            negative_sentiment = abs(sentiment['neg'])
+
+            # Feature 7: Text length features
             text_length = len(text)
-            length_score = 1 if text_length < 50 or text_length > 1000 else 0
-            
+            avg_word_length = sum(len(w) for w in words) / word_count
+            # Very short texts are more suspicious (WhatsApp forwards)
+            is_very_short = 1.0 if text_length < 100 else 0.0
+
             # Feature 8: Clickbait patterns
             clickbait_patterns = [
                 r'\d+ (things|ways|reasons|facts)',
                 r'you (won\'t|will not) believe',
                 r'this (will|might) (shock|surprise) you',
                 r'number \d+ will',
-                r'what happens next'
+                r'what happens next',
+                r'doctors hate',
+                r'one (simple|weird) trick'
             ]
-            clickbait_count = sum(1 for pattern in clickbait_patterns if re.search(pattern, text_lower))
-            
+            clickbait_count = sum(1 for p in clickbait_patterns if re.search(p, text_lower))
+
+            # Feature 9: Urgency language
+            urgency_words = [
+                'now', 'immediately', 'right now', 'hurry', 'before it\'s too late',
+                'act fast', 'don\'t wait', 'last chance', 'share before deleted',
+                'forward to', 'spread the word', 'wake up'
+            ]
+            urgency_count = sum(1 for u in urgency_words if u in text_lower)
+
+            # Feature 10: Numerical claim density
+            number_pattern = re.findall(r'\d+', text)
+            number_density = len(number_pattern) / word_count
+
+            # Feature 11: Source credibility signals (lack of)
+            no_source = 1.0 if not any(sig in text_lower for sig in [
+                'says', 'said', 'reported', 'confirmed', 'announced',
+                'stated', 'according', 'ministry', 'department', 'official'
+            ]) else 0.0
+
             features.append([
                 sensational_count,
+                sensational_ratio,
                 emotional_count,
+                emotional_ratio,
                 has_attribution,
                 exclamation_ratio,
                 question_ratio,
+                ellipsis_count,
                 caps_ratio,
                 sentiment_extremity,
-                length_score,
-                clickbait_count
+                negative_sentiment,
+                is_very_short,
+                avg_word_length,
+                clickbait_count,
+                urgency_count,
+                number_density,
+                no_source
             ])
-        
+
         return np.array(features)
 
-def create_comprehensive_training_data():
-    """Create comprehensive training dataset with real examples"""
-    
-    # Misinformation examples (label: 1)
-    misinformation_examples = [
-        # Conspiracy theories
-        "BREAKING: Government secretly controlling weather with 5G towers!",
-        "EXPOSED: Hidden documents reveal vaccine microchips are real",
-        "URGENT: They don't want you to know about this cancer cure",
-        "SHOCKING: Celebrity death was actually a government assassination",
-        "EXCLUSIVE: Secret society controls all world governments",
-        "VIRAL: This miracle herb cures diabetes in 3 days!",
-        "ALERT: Chemtrails are poisoning our children - WAKE UP!",
-        "UNBELIEVABLE: Time traveler from 2050 warns about future disaster",
-        
-        # Health misinformation
-        "Doctors HATE this one simple trick to cure cancer",
-        "Big Pharma hiding natural cure for COVID-19",
-        "Vaccines cause autism - new study proves it!",
-        "Drinking bleach cures coronavirus - try it now!",
-        "5G radiation is killing people worldwide",
-        "Masks are actually making people sick with CO2 poisoning",
-        "This ancient remedy cures all diseases naturally",
-        "Hospitals are lying about COVID deaths for money",
-        
-        # Political misinformation
-        "RIGGED: Election machines were hacked by foreign powers",
-        "PROOF: Opposition leader is secretly a foreign agent",
-        "SCANDAL: Government spending billions on fake projects",
-        "LEAKED: Secret recordings expose corruption at highest levels",
-        "BOMBSHELL: Prime Minister's real birth certificate found",
-        "EXPOSED: Media is controlled by shadow organizations",
-        "URGENT: New law will ban all religious practices",
-        "BREAKING: Military coup happening right now - media silent",
-        
-        # Social misinformation
-        "VIRAL: Immigrants are taking over our neighborhoods",
-        "SHOCKING: Religious minorities planning secret attacks",
-        "ALERT: Children being brainwashed in schools",
-        "EXPOSED: Social media is mind control experiment",
-        "URGENT: New technology reading your thoughts",
-        "BREAKING: Ancient aliens built our monuments",
-        "PROOF: Earth is actually flat - NASA lies exposed",
-        "SCANDAL: Moon landing was filmed in Hollywood studio",
-        
-        # Economic misinformation
-        "CRASH: Stock market will collapse tomorrow - insider info",
-        "SECRET: Billionaires planning to crash economy",
-        "EXPOSED: Banks stealing money from accounts",
-        "URGENT: New currency will make your savings worthless",
-        "BREAKING: Government printing fake money",
-        "ALERT: Cryptocurrency is government tracking system",
-        "SHOCKING: Your pension fund has been stolen",
-        "VIRAL: This investment will make you rich overnight",
-        
-        # Disaster misinformation
-        "BREAKING: Earthquake machines causing natural disasters",
-        "URGENT: Government knew about tsunami but didn't warn people",
-        "EXPOSED: Climate change is hoax to control population",
-        "ALERT: Volcanic eruption was caused by secret experiments",
-        "SHOCKING: Floods are artificially created by weather control",
-        "VIRAL: Hurricane was steered by government technology",
-        "BREAKING: Forest fires started by space lasers",
-        "URGENT: Pandemic was planned years ago by elites",
-        
-        # Technology misinformation
-        "EXPOSED: Smartphones are spying on your every move",
-        "BREAKING: AI robots are already replacing humans secretly",
-        "URGENT: Internet will be shut down permanently next week",
-        "SHOCKING: Social media apps are mind control tools",
-        "VIRAL: New update will delete all your personal data",
-        "ALERT: Smart TVs are recording your private conversations",
-        "BREAKING: GPS tracking is being used to control behavior",
-        "EXPOSED: Video games are training kids to be killers"
+
+class IndianContextFeatureExtractor(BaseEstimator, TransformerMixin):
+    """Extract India-specific features that indicate misinformation"""
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        features = []
+
+        for text in X:
+            text_lower = text.lower()
+            words = text.split()
+            word_count = max(len(words), 1)
+
+            # Feature 1: Hindi/Hinglish sensational keywords
+            hindi_sensational = [
+                'khatre mein', 'sabko batao', 'sach samne aaya', 'janta jaago',
+                'share karo', 'forward karo', 'exposed', 'parda faash',
+                'sarkaar', 'chupa raha', 'media blackout', 'sachchi news',
+                'ye dekho', 'video dekho', 'photo dekho', 'sabko batao'
+            ]
+            hindi_sensational_count = sum(1 for kw in hindi_sensational if kw in text_lower)
+
+            # Feature 2: WhatsApp forward patterns
+            whatsapp_patterns = [
+                'forward to', 'share to', 'send to', 'forward karo',
+                '10 logo', '10 people', 'before deleted',
+                'share before', 'ye message', 'group mein', 'sabko bhejo',
+                'please share', 'must share', 'jarur share', 'zaroor forward'
+            ]
+            whatsapp_count = sum(1 for p in whatsapp_patterns if p in text_lower)
+
+            # Feature 3: Communal trigger patterns
+            communal_triggers = [
+                'hindu khatre', 'muslim attack', 'love jihad', 'conversion',
+                'temple destroy', 'mandir tod', 'mosque', 'masjid',
+                'communal', 'riot', 'lynching', 'mob', 'religious violence',
+                'anti-national', 'deshdrohi', 'traitor', 'jihad'
+            ]
+            communal_count = sum(1 for t in communal_triggers if t in text_lower)
+
+            # Feature 4: Fake official/authority patterns
+            fake_authority = [
+                'government ne kaha', 'sarkar ka aadesh', 'pm ne bola',
+                'who ne maana', 'doctor ne confirm', 'scientist ne bola',
+                'nasa confirmed', 'un ne kaha', 'supreme court ne',
+                'rbi ne bola', 'army ne kaha'
+            ]
+            fake_authority_count = sum(1 for f in fake_authority if f in text_lower)
+
+            # Feature 5: Miracle/cure claims (India-specific)
+            miracle_claims = [
+                'cure', 'theek', 'ilaaj', 'upchar', 'ramban', 'miracle',
+                'ayurvedic cure', 'desi nuskha', 'gharelu upay',
+                'haldi', 'tulsi', 'neem', 'cow urine', 'gaumutra',
+                'patanjali', 'baba ramdev'
+            ]
+            miracle_count = sum(1 for m in miracle_claims if m in text_lower)
+
+            # Feature 6: Inflated statistics (crore, lakh with large numbers)
+            inflated_stats = len(re.findall(
+                r'\d+\s*(crore|lakh|billion|million|percent|%)', text_lower
+            ))
+
+            # Feature 7: India-specific credibility signals
+            indian_credible = [
+                'pib', 'pti', 'ani', 'ians', 'press trust',
+                'doordarshan', 'all india radio', 'prasar bharati',
+                'ministry of', 'niti aayog', 'rbi', 'sebi',
+                'isro', 'drdo', 'icar', 'icmr', 'aiims',
+                'supreme court', 'high court', 'election commission'
+            ]
+            has_indian_source = 1.0 if any(s in text_lower for s in indian_credible) else 0.0
+
+            # Feature 8: Deepfake/media manipulation indicators
+            media_manipulation = [
+                'old photo', 'old video', 'cropped', 'morphed', 'doctored',
+                'fake photo', 'fake video', 'edited', 'photoshopped',
+                'out of context', 'misleading', 'actually from', 'different country',
+                'ai generated', 'deepfake'
+            ]
+            media_manip_count = sum(1 for m in media_manipulation if m in text_lower)
+
+            features.append([
+                hindi_sensational_count,
+                whatsapp_count,
+                communal_count,
+                fake_authority_count,
+                miracle_count,
+                inflated_stats,
+                has_indian_source,
+                media_manip_count
+            ])
+
+        return np.array(features)
+
+
+def load_training_data():
+    """Load training data from CSV dataset file"""
+    dataset_path = Path(__file__).parent / 'datasets' / 'indian_misinformation_v2.csv'
+
+    if not dataset_path.exists():
+        logger.warning(f"Dataset file not found at {dataset_path}, falling back to built-in data")
+        return _create_fallback_training_data()
+
+    try:
+        df = pd.read_csv(dataset_path)
+
+        # Validate required columns
+        required_cols = ['text', 'label']
+        if not all(col in df.columns for col in required_cols):
+            raise ValueError(f"Dataset must contain columns: {required_cols}")
+
+        # Clean data
+        df = df.dropna(subset=['text', 'label'])
+        df['text'] = df['text'].astype(str).str.strip()
+        df['label'] = df['label'].astype(int)
+        df = df[df['text'].str.len() > 10]  # Remove very short entries
+
+        # Remove duplicates
+        df = df.drop_duplicates(subset=['text'])
+
+        fake_count = (df['label'] == 1).sum()
+        real_count = (df['label'] == 0).sum()
+        logger.info(f"Loaded dataset from {dataset_path}: {len(df)} examples "
+                     f"(fake: {fake_count}, real: {real_count})")
+
+        return df
+
+    except Exception as e:
+        logger.error(f"Failed to load dataset: {e}")
+        return _create_fallback_training_data()
+
+
+def _create_fallback_training_data():
+    """Minimal fallback dataset if CSV is unavailable"""
+    examples = [
+        ("BREAKING: Government secretly controlling weather with 5G towers!", 1),
+        ("EXPOSED: Hidden documents reveal vaccine microchips are real", 1),
+        ("SHOCKING: Cow urine cures cancer - doctors hiding truth!", 1),
+        ("ALERT: All bank accounts will be frozen tomorrow - withdraw now!", 1),
+        ("Hindu khatre mein hai - 2025 tak India Islamic desh ban jayega", 1),
+        ("VIRAL: Miracle herb cures diabetes in 3 days - pharma hates this", 1),
+        ("URGENT: WhatsApp band hone wala hai - forward karo 10 logo ko", 1),
+        ("EXPOSED: EVM machines rigged in elections - video proof!", 1),
+        ("Share before deleted - secret plan of government exposed!", 1),
+        ("BREAKING: Earthquake predicted for Delhi next week - evacuate!", 1),
+        ("Government announces new infrastructure development plan for northeast India", 0),
+        ("Parliament passes bill to improve healthcare access in rural areas", 0),
+        ("According to RBI, GDP growth rate stands at 6.8 percent this quarter", 0),
+        ("ISRO successfully launches communication satellite from Sriharikota", 0),
+        ("Supreme Court delivers verdict on constitutional matter regarding privacy", 0),
+        ("Medical study published in AIIMS journal shows effectiveness of new treatment", 0),
+        ("Stock market shows steady growth this quarter on strong corporate earnings", 0),
+        ("Weather department forecasts normal monsoon this year across India", 0),
+        ("India signs bilateral fisheries agreement with Sri Lanka for sustainable fishing", 0),
+        ("Fact-check: Viral claim about banning Rs 500 notes is FALSE says RBI", 0),
     ]
-    
-    # Legitimate news examples (label: 0)
-    legitimate_examples = [
-        # Government and politics
-        "Government announces new infrastructure development plan",
-        "Parliament passes bill to improve healthcare access",
-        "Election commission releases voter registration guidelines",
-        "Supreme Court delivers verdict on constitutional matter",
-        "Prime Minister addresses nation on economic policies",
-        "Opposition leader criticizes government's budget allocation",
-        "New policy aims to reduce unemployment rates",
-        "Cabinet approves funding for education sector reforms",
-        
-        # Health and medicine
-        "Medical study shows effectiveness of new treatment",
-        "Health ministry issues guidelines for seasonal flu prevention",
-        "Research indicates benefits of regular exercise",
-        "Doctors recommend vaccination for vulnerable populations",
-        "Hospital reports successful organ transplant surgery",
-        "New medical facility opens to serve rural communities",
-        "Health experts advise precautions during monsoon season",
-        "Clinical trial results published in medical journal",
-        
-        # Economy and business
-        "Stock market shows steady growth this quarter",
-        "Central bank maintains interest rates at current levels",
-        "Export figures indicate positive trade balance",
-        "New startup receives funding for innovative technology",
-        "Manufacturing sector reports increased production",
-        "Inflation rate remains within acceptable range",
-        "Employment data shows job market improvement",
-        "Company announces expansion plans for next year",
-        
-        # Technology and science
-        "Scientists discover new species in marine ecosystem",
-        "Space agency successfully launches communication satellite",
-        "Research team develops improved solar panel technology",
-        "University announces breakthrough in renewable energy",
-        "Tech company releases software update with security fixes",
-        "Archaeological team uncovers ancient artifacts",
-        "Climate researchers publish findings on temperature trends",
-        "Engineering project completes bridge construction ahead of schedule",
-        
-        # Education and society
-        "School district implements new digital learning program",
-        "University offers scholarships for underprivileged students",
-        "Community center opens new facilities for senior citizens",
-        "Library system expands services to rural areas",
-        "Cultural festival celebrates diversity and heritage",
-        "Sports academy trains young athletes for competitions",
-        "Volunteer organization helps disaster relief efforts",
-        "Local government improves public transportation system",
-        
-        # Environment and weather
-        "Weather department forecasts normal monsoon this year",
-        "Forest department plants trees to combat deforestation",
-        "Environmental agency monitors air quality levels",
-        "Conservation project protects endangered wildlife species",
-        "Renewable energy plant begins commercial operations",
-        "Water treatment facility improves drinking water quality",
-        "Recycling program reduces waste in urban areas",
-        "National park expands protected area for biodiversity",
-        
-        # International news
-        "Trade delegation visits neighboring country for talks",
-        "International organization provides humanitarian aid",
-        "Diplomatic meeting addresses regional security concerns",
-        "Cultural exchange program promotes international cooperation",
-        "Economic summit discusses global trade policies",
-        "Peace talks continue between conflicting parties",
-        "International court delivers judgment on border dispute",
-        "Global conference addresses climate change initiatives",
-        
-        # Sports and entertainment
-        "National team qualifies for international championship",
-        "Sports federation announces new training facilities",
-        "Film festival showcases regional cinema talent",
-        "Music concert raises funds for charitable cause",
-        "Olympic athlete wins medal at international competition",
-        "Theater group performs classical drama for audiences",
-        "Art exhibition displays works by local artists",
-        "Book fair promotes reading culture among youth"
-    ]
-    
-    # Create dataset
-    texts = misinformation_examples + legitimate_examples
-    labels = [1] * len(misinformation_examples) + [0] * len(legitimate_examples)
-    
-    # Create DataFrame
-    df = pd.DataFrame({
-        'text': texts,
-        'label': labels,
-        'category': ['misinformation' if label == 1 else 'legitimate' for label in labels]
-    })
-    
-    logger.info(f"Created training dataset with {len(df)} examples")
-    logger.info(f"Misinformation examples: {sum(labels)}")
-    logger.info(f"Legitimate examples: {len(labels) - sum(labels)}")
-    
+    df = pd.DataFrame(examples, columns=['text', 'label'])
+    logger.warning(f"Using fallback dataset with only {len(df)} examples")
     return df
+
 
 def build_advanced_classifier():
     """Build advanced ensemble classifier with multiple algorithms"""
-    
-    # Create training data
-    df = create_comprehensive_training_data()
-    
+
+    # Load training data from CSV
+    df = load_training_data()
+
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(
         df['text'], df['label'], test_size=0.2, random_state=42, stratify=df['label']
     )
-    
+
     logger.info(f"Training set: {len(X_train)} examples")
     logger.info(f"Test set: {len(X_test)} examples")
-    
-    # Create feature extractors
+
+    # --- Feature Engineering ---
+    # TF-IDF on words: lowered min_df for better coverage
     tfidf_words = TfidfVectorizer(
-        max_features=5000,
+        max_features=8000,
         stop_words='english',
-        ngram_range=(1, 2),
-        min_df=2,
-        max_df=0.8
+        ngram_range=(1, 3),
+        min_df=1,
+        max_df=0.85,
+        sublinear_tf=True
     )
-    
+
+    # TF-IDF on character n-grams: captures misspellings and transliteration
     tfidf_chars = TfidfVectorizer(
-        analyzer='char',
-        ngram_range=(3, 5),
-        max_features=1000
+        analyzer='char_wb',
+        ngram_range=(3, 6),
+        max_features=3000,
+        min_df=1,
+        max_df=0.9,
+        sublinear_tf=True
     )
-    
+
+    # Linguistic feature extractor
     linguistic_features = LinguisticFeatureExtractor()
-    
-    # Combine features
+
+    # Indian context feature extractor
+    indian_features = IndianContextFeatureExtractor()
+
+    # Combine all features
     feature_union = FeatureUnion([
         ('tfidf_words', tfidf_words),
         ('tfidf_chars', tfidf_chars),
-        ('linguistic', linguistic_features)
+        ('linguistic', linguistic_features),
+        ('indian_context', indian_features)
     ])
-    
-    # Create individual classifiers
-    nb_classifier = MultinomialNB(alpha=0.1)
-    svm_classifier = SVC(kernel='linear', probability=True, C=1.0)
-    rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-    
-    # Create ensemble classifier
+
+    # --- Ensemble Classifier ---
+    nb_classifier = MultinomialNB(alpha=0.05)
+    svm_classifier = SVC(kernel='linear', probability=True, C=1.5, class_weight='balanced')
+    rf_classifier = RandomForestClassifier(
+        n_estimators=200, max_depth=20, random_state=42, class_weight='balanced'
+    )
+    lr_classifier = LogisticRegression(
+        C=2.0, max_iter=1000, solver='lbfgs', class_weight='balanced'
+    )
+    gb_classifier = GradientBoostingClassifier(
+        n_estimators=150, max_depth=5, learning_rate=0.1, random_state=42
+    )
+
+    # 5-model ensemble with soft voting
     ensemble_classifier = VotingClassifier([
         ('nb', nb_classifier),
         ('svm', svm_classifier),
-        ('rf', rf_classifier)
-    ], voting='soft')
-    
-    # Create final pipeline
+        ('rf', rf_classifier),
+        ('lr', lr_classifier),
+        ('gb', gb_classifier)
+    ], voting='soft', weights=[1, 2, 2, 2, 2])
+
+    # Final pipeline
     classifier_pipeline = Pipeline([
         ('features', feature_union),
         ('classifier', ensemble_classifier)
     ])
-    
-    # Train the classifier
-    logger.info("Training advanced ensemble classifier...")
+
+    # --- Training ---
+    logger.info("Training advanced 5-model ensemble classifier...")
     classifier_pipeline.fit(X_train, y_train)
-    
-    # Evaluate performance
+
+    # --- Evaluation ---
     logger.info("Evaluating classifier performance...")
-    
-    # Cross-validation
-    cv_scores = cross_val_score(classifier_pipeline, X_train, y_train, cv=5)
-    logger.info(f"Cross-validation accuracy: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
-    
+
+    # Cross-validation with stratified folds
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_scores = cross_val_score(classifier_pipeline, X_train, y_train, cv=cv, scoring='f1')
+    logger.info(f"Cross-validation F1: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
+
     # Test set evaluation
     y_pred = classifier_pipeline.predict(X_test)
+    y_proba = classifier_pipeline.predict_proba(X_test)[:, 1]
+
     test_accuracy = accuracy_score(y_test, y_pred)
-    logger.info(f"Test set accuracy: {test_accuracy:.3f}")
-    
+    test_f1 = f1_score(y_test, y_pred)
+    test_auc = roc_auc_score(y_test, y_proba)
+
+    logger.info(f"Test accuracy: {test_accuracy:.3f}")
+    logger.info(f"Test F1 score: {test_f1:.3f}")
+    logger.info(f"Test ROC-AUC: {test_auc:.3f}")
+
     # Detailed classification report
+    report = classification_report(
+        y_test, y_pred, target_names=['Legitimate', 'Misinformation'], output_dict=True
+    )
     logger.info("Classification Report:")
     print(classification_report(y_test, y_pred, target_names=['Legitimate', 'Misinformation']))
-    
+
     # Confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     logger.info(f"Confusion Matrix:\n{cm}")
-    
-    # Test with sample predictions
+
+    # Save metrics to JSON
+    metrics = {
+        'timestamp': datetime.now().isoformat(),
+        'dataset_size': len(df),
+        'train_size': len(X_train),
+        'test_size': len(X_test),
+        'cv_f1_mean': round(cv_scores.mean(), 4),
+        'cv_f1_std': round(cv_scores.std(), 4),
+        'test_accuracy': round(test_accuracy, 4),
+        'test_f1': round(test_f1, 4),
+        'test_roc_auc': round(test_auc, 4),
+        'classification_report': report,
+        'confusion_matrix': cm.tolist()
+    }
+
+    metrics_path = Path(__file__).parent / 'models' / 'training_metrics.json'
+    metrics_path.parent.mkdir(exist_ok=True)
+    with open(metrics_path, 'w') as f:
+        json.dump(metrics, f, indent=2)
+    logger.info(f"Training metrics saved to {metrics_path}")
+
+    # Sample predictions
     logger.info("\nSample Predictions:")
     test_samples = [
-        "BREAKING: Government hiding shocking truth about vaccines",
-        "Government announces new healthcare policy",
-        "URGENT: Secret documents reveal conspiracy",
-        "Research study shows benefits of exercise",
-        "VIRAL: This miracle cure will shock you!",
-        "Parliament passes education reform bill"
+        "BREAKING: Government hiding shocking truth about vaccines - pharma exposed!",
+        "Government announces new healthcare policy for rural India",
+        "URGENT: Secret documents reveal conspiracy to overthrow democracy",
+        "Research study published in Nature shows benefits of exercise",
+        "VIRAL: This miracle cure will shock you - doctors HATE it!",
+        "Parliament passes education reform bill with bipartisan support",
+        "Hindu khatre mein hai - forward karo sabko ye video!",
+        "According to ISRO chairman, Chandrayaan-3 data analysis is progressing well",
+        "EXPOSED: EVM machines rigged - video proof showing hacking",
+        "Fact-check: Viral claim about government banning cash is FALSE says RBI",
     ]
-    
+
     for sample in test_samples:
         prediction = classifier_pipeline.predict([sample])[0]
         probability = classifier_pipeline.predict_proba([sample])[0]
-        label = "Misinformation" if prediction == 1 else "Legitimate"
+        label = "FAKE" if prediction == 1 else "REAL"
         confidence = max(probability)
-        logger.info(f"Text: '{sample[:50]}...'")
-        logger.info(f"Prediction: {label} (confidence: {confidence:.3f})")
-        logger.info("-" * 50)
-    
+        fake_prob = probability[1] if len(probability) > 1 else 0.5
+        logger.info(f"  [{label}] (conf={confidence:.3f}, fake_p={fake_prob:.3f}) "
+                     f"'{sample[:60]}...'")
+
     return classifier_pipeline
 
-def save_classifier(classifier, filename='advanced_misinformation_classifier.pkl'):
+
+def save_classifier(classifier, filename=None):
     """Save the trained classifier"""
+    if filename is None:
+        filename = str(Path(__file__).parent / 'models' / 'advanced_misinformation_classifier.pkl')
+    Path(filename).parent.mkdir(exist_ok=True)
     with open(filename, 'wb') as f:
         pickle.dump(classifier, f)
     logger.info(f"Classifier saved to {filename}")
 
-def load_classifier(filename='advanced_misinformation_classifier.pkl'):
+
+def load_classifier(filename=None):
     """Load a trained classifier"""
+    if filename is None:
+        filename = str(Path(__file__).parent / 'models' / 'advanced_misinformation_classifier.pkl')
     try:
         with open(filename, 'rb') as f:
             classifier = pickle.load(f)
         logger.info(f"Classifier loaded from {filename}")
         return classifier
     except FileNotFoundError:
-        logger.error(f"Classifier file {filename} not found")
-        return None
+        logger.warning(f"Classifier file {filename} not found, building new one...")
+        classifier = build_advanced_classifier()
+        save_classifier(classifier, filename)
+        return classifier
+
 
 if __name__ == "__main__":
     print("🧠 Building Advanced ML Classifier for Misinformation Detection")
     print("=" * 70)
-    
+
     # Build and train classifier
     classifier = build_advanced_classifier()
-    
+
     # Save classifier
     save_classifier(classifier)
-    
+
     print("\n✅ Advanced classifier built and saved successfully!")
     print("📊 Ready for integration with real-time system")
