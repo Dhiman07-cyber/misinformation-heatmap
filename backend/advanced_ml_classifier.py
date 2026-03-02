@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
 Advanced ML Classifier for Misinformation Detection
-- Loads training data from structured CSV dataset (500+ examples)
+- Loads training data from structured CSV dataset (760+ examples)
 - Multiple algorithms (Naive Bayes, SVM, Random Forest, Logistic Regression, Gradient Boosting)
 - Feature engineering with TF-IDF, linguistic features, and Indian-context features
+- Hinglish-aware with expanded fake news patterns
 - Cross-validation, per-class metrics, and performance reporting
 """
 
@@ -67,7 +68,12 @@ class LinguisticFeatureExtractor(BaseEstimator, TransformerMixin):
                 'breaking', 'urgent', 'shocking', 'exclusive', 'exposed', 'revealed',
                 'secret', 'hidden', 'conspiracy', 'cover-up', 'scandal', 'bombshell',
                 'viral', 'trending', 'must see', 'unbelievable', 'incredible', 'amazing',
-                'alert', 'proof', 'leaked', 'caught', 'busted', 'warning'
+                'alert', 'proof', 'leaked', 'caught', 'busted', 'warning',
+                # Additional sensational patterns
+                'suppressed', 'banned', 'deleted', 'censored', 'silenced',
+                'whistleblower', 'classified', 'blackout', 'hidden camera',
+                'insider reveals', 'mainstream media hiding', 'doctors hate',
+                'forward before deleted', 'share before removed'
             ]
             sensational_count = sum(1 for kw in sensational_keywords if kw in text_lower)
             sensational_ratio = sensational_count / word_count
@@ -218,7 +224,11 @@ class IndianContextFeatureExtractor(BaseEstimator, TransformerMixin):
                 'cure', 'theek', 'ilaaj', 'upchar', 'ramban', 'miracle',
                 'ayurvedic cure', 'desi nuskha', 'gharelu upay',
                 'haldi', 'tulsi', 'neem', 'cow urine', 'gaumutra',
-                'patanjali', 'baba ramdev'
+                'patanjali', 'baba ramdev',
+                # Additional miracle/pseudoscience patterns
+                'miracle cure', 'ancient remedy', 'natural cure', '100% effective',
+                'doctors hiding', 'pharma hiding', 'permanently cures', 'guaranteed cure',
+                'theek ho jata', 'cancer theek', 'dawai nahi chahiye', 'bilkul theek'
             ]
             miracle_count = sum(1 for m in miracle_claims if m in text_lower)
 
@@ -262,7 +272,7 @@ class IndianContextFeatureExtractor(BaseEstimator, TransformerMixin):
 
 def load_training_data():
     """Load training data from CSV dataset file"""
-    dataset_path = Path(__file__).parent / 'datasets' / 'indian_misinformation_v2.csv'
+    dataset_path = Path(__file__).parent / 'datasets' / 'indian_misinformation_v4.csv'
 
     if not dataset_path.exists():
         logger.warning(f"Dataset file not found at {dataset_path}, falling back to built-in data")

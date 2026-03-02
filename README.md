@@ -39,14 +39,14 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 
 ## 🚀 Key Features
 
-- **Advanced AI Analysis**: 5-model ensemble ML classifier (94.8% accuracy, 1.0 ROC-AUC, zero false positives)
+- **Advanced AI Analysis**: 5-model ensemble ML classifier (91.0% accuracy, 0.973 ROC-AUC, 91.0% CV F1)
 - **IndicBERT Integration**: Indian language embeddings for cultural context
 - **Deterministic Detection**: Removed all random simulations for reproducible results
 - **Real-time Processing**: 34+ Indian news sources with live RSS ingestion
 - **Interactive Visualization**: State-wise heatmap with geographic distribution
 - **Multi-layer Verification**: Fact-checking database, satellite geocoding, source credibility
 - **Indian Context**: Specialized for Hinglish, regional languages, WhatsApp forwards
-- **381-Example Dataset**: Labeled misinformation across 8 categories (politics, health, economic, etc.)
+- **940-Example Dataset**: Vibrant misinformation dataset (477 fake / 463 real) with 6 source types
 - **RESTful API**: Comprehensive API with Swagger documentation
 - **Docker Support**: Easy deployment with Docker Compose
 - **Scalable Architecture**: Handles high-volume data ingestion
