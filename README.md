@@ -1,4 +1,4 @@
-# 🛡️ Enhanced Fake News Detection System
+# 🛡️ Misinformation Heatmap
 
 A comprehensive AI-powered system for detecting misinformation in Indian media using advanced machine learning, IndicBERT, satellite verification, and fact-checking integration.
 
