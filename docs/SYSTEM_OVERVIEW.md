@@ -5,7 +5,7 @@
 - **All 29 States + UTs Covered**
 - **Real-time Processing Active**
 - **ML Classifier**: 94.8% accuracy, 1.0 ROC-AUC, 0 false positives
-- **Training Data**: 381 labeled examples across 8 categories
+- **Training Data**: 940 labeled examples across 8 categories, 6 source types (v4 dataset)
 
 ## 🔧 Core Components
 
@@ -133,8 +133,8 @@
 ## 📈 Performance Metrics
 
 ### Current Statistics
-- **ML Model**: 94.8% test accuracy, 94.1% F1 score, 1.0 ROC-AUC
-- **Training Data**: 381 examples (176 fake, 205 real) across 8 categories
+- **ML Model**: 91.0% test accuracy, 90.9% F1 score, 0.973 ROC-AUC, 91.0% CV F1
+- **Training Data**: 940 examples (477 fake, 463 real) across 8 categories, 6 source types
 - **Processing**: Real-time batch ingestion from 34+ RSS sources
 - **Geographic Coverage**: All 29 Indian states + UTs
 - **Update Frequency**: 2-minute ingestion cycles
@@ -157,9 +157,9 @@
 
 ### Classification Accuracy
 - **5-Model Ensemble**: NB + SVM + RF + LR + GB with soft voting
-- **Test Set Performance**: 94.8% accuracy, zero false positives, 88.9% recall
-- **Training Data**: 381 India-specific labeled examples with Hinglish/WhatsApp content
-- **Retraining**: Add examples to CSV and run `python advanced_ml_classifier.py`
+- **Test Set Performance**: 91.0% accuracy, 90.9% F1, 0.973 ROC-AUC (v4 dataset)
+- **Training Data**: 940 India-specific examples with blogs, forums, tweets, WhatsApp, Hinglish
+- **Retraining**: Add examples to `indian_misinformation_v4.csv` and run `python advanced_ml_classifier.py`
 
 ### Geographic Precision
 - State-level location extraction
