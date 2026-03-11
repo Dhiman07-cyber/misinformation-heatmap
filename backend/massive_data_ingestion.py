@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
 Massive Data Ingestion System
-- 100+ RSS sources
-- Social media integration
-- Historical data backfill
-- High-volume processing
+- 34 real RSS sources across Indian news tiers
+- High-volume concurrent processing
+- Real misinformation detection on live articles
 """
 
 import asyncio
@@ -13,8 +12,7 @@ import sqlite3
 import json
 import hashlib
 import time
-import random
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import feedparser
@@ -72,145 +70,6 @@ MASSIVE_RSS_SOURCES = [
     {"name": "ET Now", "url": "https://www.etnow.in/rss/", "reliability": 0.75, "articles": 10},
 ]
 
-# Additional synthetic sources for demonstration (simulating social media, blogs, etc.)
-SYNTHETIC_SOURCES = [
-    {"name": "Social Media Trends", "reliability": 0.3, "articles": 50},
-    {"name": "WhatsApp Forwards", "reliability": 0.2, "articles": 30},
-    {"name": "Telegram Channels", "reliability": 0.3, "articles": 40},
-    {"name": "Facebook Posts", "reliability": 0.4, "articles": 35},
-    {"name": "Twitter Trends", "reliability": 0.5, "articles": 45},
-    {"name": "YouTube News", "reliability": 0.4, "articles": 25},
-    {"name": "Blog Posts", "reliability": 0.5, "articles": 20},
-    {"name": "Forum Discussions", "reliability": 0.3, "articles": 15},
-]
-
-# Sample news templates for synthetic data generation
-NEWS_TEMPLATES = [
-    # Political Templates
-    {
-        "category": "Politics",
-        "templates": [
-            "{politician} announces new {policy_type} for {state}",
-            "BREAKING: {party} leader makes controversial statement about {topic}",
-            "Election Commission announces {election_type} elections in {state}",
-            "Parliament passes bill on {policy_area} amid opposition protests",
-            "Chief Minister {politician} inaugurates {infrastructure} project",
-            "Political rally in {city} draws massive crowd, {politician} addresses key issues",
-            "Coalition government faces crisis over {policy_issue}",
-            "Supreme Court verdict on {legal_issue} sparks political debate"
-        ]
-    },
-    # Health Templates
-    {
-        "category": "Health",
-        "templates": [
-            "New COVID variant detected in {state}, health officials issue advisory",
-            "Vaccination drive reaches {number} milestone in {state}",
-            "Hospital in {city} performs rare {medical_procedure}",
-            "Health ministry launches campaign against {disease}",
-            "Medical college in {state} develops new treatment for {condition}",
-            "Dengue cases rise in {city}, authorities take preventive measures",
-            "AIIMS {city} conducts successful {surgery_type} surgery",
-            "Traditional medicine practices gain recognition in {state}"
-        ]
-    },
-    # Technology Templates
-    {
-        "category": "Technology",
-        "templates": [
-            "Indian startup develops AI solution for {application}",
-            "5G network launched in {city} by {telecom_company}",
-            "Cyber attack targets {sector} in {state}",
-            "Digital India initiative expands to rural {state}",
-            "Tech giant announces new office in {city}",
-            "Smartphone manufacturing hub established in {state}",
-            "Online education platform reaches {number} students",
-            "Fintech company launches new service for {demographic}"
-        ]
-    },
-    # Economy Templates
-    {
-        "category": "Economy",
-        "templates": [
-            "GDP growth in {state} exceeds national average",
-            "New industrial policy announced for {sector}",
-            "Foreign investment in {state} reaches record high",
-            "Rupee strengthens against dollar amid {economic_factor}",
-            "Stock market hits new high on {positive_news}",
-            "Inflation rate in {state} shows declining trend",
-            "Export figures from {state} show {percentage} growth",
-            "Banking sector reforms benefit {demographic} in {state}"
-        ]
-    },
-    # Social Templates
-    {
-        "category": "Social",
-        "templates": [
-            "Social media campaign raises awareness about {social_issue}",
-            "Community initiative in {city} addresses {problem}",
-            "Cultural festival in {state} celebrates {tradition}",
-            "NGO launches program for {beneficiary_group} in {region}",
-            "Religious gathering in {city} promotes {message}",
-            "Youth movement in {state} advocates for {cause}",
-            "Women's empowerment program launched in {district}",
-            "Educational initiative benefits {number} children in {area}"
-        ]
-    }
-]
-
-# Data for template filling
-TEMPLATE_DATA = {
-    "politicians": ["Narendra Modi", "Rahul Gandhi", "Mamata Banerjee", "Yogi Adityanath", "Arvind Kejriwal", "Uddhav Thackeray"],
-    "parties": ["BJP", "Congress", "AAP", "TMC", "DMK", "AIADMK", "Shiv Sena", "NCP"],
-    "states": ["Maharashtra", "Gujarat", "Tamil Nadu", "Karnataka", "West Bengal", "Uttar Pradesh", "Bihar", "Delhi"],
-    "cities": ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad"],
-    "policy_types": ["healthcare policy", "education reform", "infrastructure development", "agricultural scheme"],
-    "topics": ["economic policy", "social issues", "development projects", "governance"],
-    "infrastructure": ["metro", "highway", "hospital", "university", "airport", "bridge"],
-    "diseases": ["malaria", "tuberculosis", "diabetes", "heart disease", "cancer"],
-    "sectors": ["banking", "healthcare", "education", "transportation", "energy"],
-    "numbers": ["1 million", "50,000", "2 lakh", "10,000", "5 million"],
-    "percentages": ["15%", "25%", "30%", "40%", "20%"]
-}
-
-def generate_synthetic_news(count: int = 100) -> List[Dict]:
-    """Generate synthetic news articles for testing"""
-    synthetic_news = []
-    
-    for _ in range(count):
-        # Choose random template category
-        template_category = random.choice(NEWS_TEMPLATES)
-        template = random.choice(template_category["templates"])
-        
-        # Fill template with random data
-        filled_template = template
-        for key, values in TEMPLATE_DATA.items():
-            placeholder = "{" + key.rstrip('s') + "}"
-            if placeholder in filled_template:
-                filled_template = filled_template.replace(placeholder, random.choice(values))
-        
-        # Generate content
-        content_templates = [
-            "According to official sources, this development is expected to have significant impact on the region. Local authorities have confirmed the details and implementation timeline.",
-            "The announcement comes amid growing concerns about the issue. Experts believe this step will address key challenges faced by the community.",
-            "This initiative is part of a broader strategy to improve conditions in the area. Stakeholders have welcomed the decision and expressed optimism about outcomes.",
-            "The development has been in planning stages for several months. Officials say the project will benefit thousands of people in the region.",
-            "Local residents have responded positively to the news. The implementation is expected to begin within the next few weeks."
-        ]
-        
-        article = {
-            "title": filled_template,
-            "content": random.choice(content_templates),
-            "source": random.choice(SYNTHETIC_SOURCES)["name"],
-            "url": f"https://example.com/news/{random.randint(1000, 9999)}",
-            "timestamp": datetime.now() - timedelta(hours=random.randint(0, 48)),
-            "reliability": random.choice(SYNTHETIC_SOURCES)["reliability"],
-            "category": template_category["category"]
-        }
-        
-        synthetic_news.append(article)
-    
-    return synthetic_news
 
 def fetch_single_rss_source_enhanced(source: Dict) -> List[Dict]:
     """Enhanced RSS fetching with more articles per source"""
@@ -266,13 +125,7 @@ async def fetch_massive_rss_data():
             except Exception as e:
                 logger.error(f"❌ {source['name']} failed: {e}")
     
-    # Add synthetic data for demonstration
-    synthetic_events = generate_synthetic_news(200)  # Generate 200 synthetic articles
-    events.extend(synthetic_events)
-    
-    logger.info(f"📊 MASSIVE DATA FETCH COMPLETE: {len(events)} total events")
-    logger.info(f"   📰 RSS Events: {len(events) - len(synthetic_events)}")
-    logger.info(f"   🤖 Synthetic Events: {len(synthetic_events)}")
+    logger.info(f"📊 RSS FETCH COMPLETE: {len(events)} real articles from {len(MASSIVE_RSS_SOURCES)} sources")
     
     return events
 

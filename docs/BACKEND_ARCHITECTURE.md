@@ -37,7 +37,9 @@ Sophisticated machine learning pipeline with multiple algorithms:
 - **Naive Bayes**: Fast probabilistic classification
 - **Support Vector Machine (SVM)**: High-dimensional pattern recognition
 - **Random Forest**: Ensemble method for robust predictions
-- **Voting Classifier**: Combines all algorithms for final decision
+- **Logistic Regression (L2)**: Linear probability modeling
+- **Gradient Boosting**: Sequential error correction
+- **Voting Classifier**: Soft voting across all five algorithms for final decision
 
 #### Feature Engineering:
 - **TF-IDF Vectorization**: Term frequency analysis
@@ -264,7 +266,7 @@ REDIS_URL=redis://...          # Caching
 ### Current Benchmarks
 - **Processing Speed**: ~100 articles/second
 - **API Response Time**: <500ms (95th percentile)
-- **Classification Accuracy**: 95.8% on test data
+- **Classification Accuracy**: 91.0% on test data (0.973 ROC-AUC)
 - **Memory Usage**: ~512MB baseline
 - **CPU Usage**: ~30% under normal load
 

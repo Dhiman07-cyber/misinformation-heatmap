@@ -406,7 +406,7 @@ probabilities = classifier.predict_proba(["Breaking: Shocking news revealed!"])[
 ### Continuous Improvement
 
 **Update Cycle**:
-1. Add new labeled examples to `datasets/indian_misinformation_v2.csv`
+1. Add new labeled examples to `datasets/indian_misinformation_v4.csv`
 2. Re-run training: `python advanced_ml_classifier.py`
 3. Review metrics in `models/training_metrics.json`
 4. Deploy updated model automatically (auto-loads `.pkl` file)
