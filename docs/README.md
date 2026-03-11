@@ -16,12 +16,7 @@ Welcome to the Enhanced Fake News Detection System documentation. This comprehen
 
 ### Technical Specifications
 - **[Data Ingestion Architecture](DATA_INGESTION_ARCHITECTURE.md)** - RSS feed processing system
-- **[Cloud Platform Comparison](CLOUD_PLATFORM_COMPARISON.md)** - Platform evaluation and migration
-
-### Project Management
-- **[Improvements Summary](IMPROVEMENTS_SUMMARY.md)** - Recent enhancements and fixes
-- **[Improvement Roadmap](IMPROVEMENT_ROADMAP.md)** - Future development plans
-- **[Production Roadmap](PRODUCTION_ROADMAP.md)** - Production deployment timeline
+- **[GCP Production Setup](GCP_PRODUCTION_SETUP.md)** - Google Cloud Platform deployment guide
 
 ## 🚀 Quick Start
 
@@ -34,7 +29,7 @@ Welcome to the Enhanced Fake News Detection System documentation. This comprehen
 
 ### AI & Machine Learning
 - IndicBERT integration for Indian language processing
-- Multi-algorithm ensemble classification (95.8% accuracy)
+- Multi-algorithm ensemble classification (91.0% accuracy)
 - Linguistic pattern analysis and sentiment detection
 - Real-time processing and classification
 
@@ -59,8 +54,8 @@ Welcome to the Enhanced Fake News Detection System documentation. This comprehen
 ## 📊 System Statistics
 
 - **Processing Capacity**: 100+ articles/second
-- **Geographic Coverage**: All 29 Indian states
-- **Classification Accuracy**: 95.8% on test data
+- **Geographic Coverage**: All 29 Indian states + UTs
+- **Classification Accuracy**: 91.0% on test data (0.973 ROC-AUC)
 - **API Response Time**: <500ms average
 - **Real-time Updates**: 30-second refresh cycles
 
@@ -111,10 +106,10 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 📈 Performance Benchmarks
 
 ### Classification Performance
-- **Accuracy**: 95.8% overall
-- **Precision (Fake)**: 94.2%
-- **Recall (Fake)**: 91.7%
-- **F1-Score**: 92.9%
+- **Accuracy**: 91.0% overall
+- **Precision (Fake)**: 92.4%
+- **Recall (Fake)**: 89.5%
+- **F1-Score**: 90.9%
 
 ### System Performance
 - **Throughput**: 100+ articles/second
@@ -144,7 +139,6 @@ docker-compose -f docker-compose.prod.yml up -d
 - Submit issues with detailed reproduction steps
 
 ### Feature Requests
-- Review [Improvement Roadmap](IMPROVEMENT_ROADMAP.md) for planned features
 - Submit enhancement proposals with use cases
 - Follow contribution guidelines for implementation
 

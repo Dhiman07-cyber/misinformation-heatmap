@@ -506,13 +506,30 @@ def save_classifier(classifier, filename=None):
     logger.info(f"Classifier saved to {filename}")
 
 
+class _CustomUnpickler(pickle.Unpickler):
+    """Custom unpickler that resolves classes saved under __main__ back to this module.
+
+    When advanced_ml_classifier.py is run directly (python advanced_ml_classifier.py),
+    pickle stores custom classes as '__main__.LinguisticFeatureExtractor' etc.
+    When those pickled models are later loaded from a different entry-point
+    (e.g. main_application.py), Python tries to find the class in __main__ and fails.
+    This unpickler transparently redirects those lookups back to this module.
+    """
+    def find_class(self, module, name):
+        if module == '__main__':
+            import advanced_ml_classifier
+            if hasattr(advanced_ml_classifier, name):
+                return getattr(advanced_ml_classifier, name)
+        return super().find_class(module, name)
+
+
 def load_classifier(filename=None):
     """Load a trained classifier"""
     if filename is None:
         filename = str(Path(__file__).parent / 'models' / 'advanced_misinformation_classifier.pkl')
     try:
         with open(filename, 'rb') as f:
-            classifier = pickle.load(f)
+            classifier = _CustomUnpickler(f).load()
         logger.info(f"Classifier loaded from {filename}")
         return classifier
     except FileNotFoundError:

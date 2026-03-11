@@ -96,7 +96,7 @@ python main_application.py
 python backend/main_application.py
 ```
 
-The system will be available at **http://localhost:8000**
+The system will be available at **http://localhost:8080**
 
 ---
 
@@ -192,4 +192,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Last Updated: December 20, 2025*
+*Last Updated: March 11, 2026*
