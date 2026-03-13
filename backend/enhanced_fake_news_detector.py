@@ -153,7 +153,7 @@ class SatelliteVerificationSystem:
     
     def __init__(self):
         self.gmaps_client = None
-        self.geolocator = Nominatim(user_agent="fake_news_detector", timeout=10)
+        self.geolocator = Nominatim(user_agent="misinformation_india_heatmap_v1_xyz", timeout=10)
         self._initialize_google_maps()
     
     def _initialize_google_maps(self):
@@ -182,6 +182,7 @@ class SatelliteVerificationSystem:
                         break
                 except Exception as geo_error:
                     logger.warning(f"Geocoding attempt {attempt + 1} failed: {geo_error}")
+                    await asyncio.sleep(2)  # Delay to respect Nominatim rate limits
                     if attempt == max_retries - 1:
                         return {
                             'verified': True,
