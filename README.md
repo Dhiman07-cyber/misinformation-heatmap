@@ -14,26 +14,24 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 > Overview of the whole website
 
 ![Analysis Preview](docs/media-assets/Home.png)
-*Coming Soon: Add your analysis interface screenshot here*
 
 ### Main Dashboard
 > Real-time misinformation detection dashboard with live statistics
 
 ![Dashboard Preview](docs/media-assets/Dashboard.png)
-*Coming Soon: Add your dashboard screenshot here*
 
 ### Interactive India Heatmap
 > Geographic visualization of misinformation distribution across Indian states
 
 ![Heatmap Preview](docs/media-assets/Map.png)
-*Coming Soon: Add your heatmap screenshot here*
+
 
 
 ### 🎥 Video Demo
 > Full system walkthrough and feature demonstration
 
 [![Video Demo](https://img.shields.io/badge/▶️-Watch%20Demo-red?style=for-the-badge&logo=youtube)](https://youtube.com/your-video-link)
-*Coming Soon: Add your demo video link here*
+*Coming Soon*
 
 ---
 
