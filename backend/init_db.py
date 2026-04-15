@@ -45,7 +45,7 @@ async def create_local_database(config: Config) -> bool:
         
         # Initialize database
         db_manager = DatabaseManager()
-        db = db_manager.get_database()
+        db = db_manager.create_database()
         
         # Initialize database schema
         await db.initialize()
@@ -81,7 +81,7 @@ async def create_cloud_database(config: Config) -> bool:
             
         # Initialize database
         db_manager = DatabaseManager()
-        db = db_manager.get_database()
+        db = db_manager.create_database()
         
         # Initialize database schema
         await db.initialize()
@@ -111,7 +111,7 @@ async def validate_database(config: Config) -> bool:
         logger.info("Validating database setup...")
         
         db_manager = DatabaseManager()
-        db = db_manager.get_database()
+        db = db_manager.create_database()
         
         # Test basic connectivity by trying to initialize
         try:
@@ -143,7 +143,7 @@ async def create_sample_data(config: Config) -> bool:
         logger.info("Creating sample data...")
         
         db_manager = DatabaseManager()
-        db = db_manager.get_database()
+        db = db_manager.create_database()
         
         # Sample events for testing
         sample_events = [

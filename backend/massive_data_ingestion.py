@@ -187,12 +187,38 @@ async def high_volume_processing_loop():
             logger.info(f"   📈 Total processed: {processed_count}")
             logger.info(f"   🚀 Processing rate: {processed_events/cycle_duration:.1f} events/second")
             
+            # Prune old events to prevent unbounded DB growth
+            cleanup_old_events()
+            
             # Shorter wait time for more frequent updates
             await asyncio.sleep(120)  # 2 minutes
             
         except Exception as e:
             logger.error(f"High-volume processing error: {e}")
             await asyncio.sleep(30)  # Wait 30 seconds on error
+
+def cleanup_old_events():
+    """Delete events older than 7 days to prevent unbounded database growth"""
+    try:
+        import os
+        data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+        db_path = os.path.join(data_dir, 'enhanced_fake_news.db')
+        
+        if not os.path.exists(db_path):
+            return
+            
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        cursor.execute("DELETE FROM events WHERE timestamp < datetime('now', '-7 days')")
+        deleted = cursor.rowcount
+        conn.commit()
+        conn.close()
+        
+        if deleted > 0:
+            logger.info(f"🧹 Pruned {deleted} old events from database")
+    except Exception as e:
+        logger.error(f"Database cleanup failed: {e}")
 
 async def process_event_with_fake_news_detection(event: Dict) -> Optional[Dict]:
     """Process event with enhanced fake news detection"""
@@ -285,6 +311,12 @@ def store_event_in_database(event: Dict):
 # Global variables
 processing_active = False
 processed_count = 0
+
+def is_processing_active():
+    return processing_active
+
+def get_total_processed():
+    return processed_count
 
 if __name__ == "__main__":
     # Test massive data generation

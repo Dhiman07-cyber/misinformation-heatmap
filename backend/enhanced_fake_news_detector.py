@@ -154,6 +154,7 @@ class SatelliteVerificationSystem:
     def __init__(self):
         self.gmaps_client = None
         self.geolocator = Nominatim(user_agent="misinformation_india_heatmap_v1_xyz", timeout=10)
+        self.location_cache = {}
         self._initialize_google_maps()
     
     def _initialize_google_maps(self):
@@ -171,25 +172,35 @@ class SatelliteVerificationSystem:
     async def verify_location_claim(self, location: str, claim: str) -> Dict:
         """Verify location-based claims using geocoding (deterministic)"""
         try:
-            # Geocode the location with retry logic
-            location_data = None
-            max_retries = 2
+            # Geocode the location with retry logic and cache
             
-            for attempt in range(max_retries):
-                try:
-                    location_data = self.geolocator.geocode(location + ", India", timeout=5)
-                    if location_data:
-                        break
-                except Exception as geo_error:
-                    logger.warning(f"Geocoding attempt {attempt + 1} failed: {geo_error}")
-                    await asyncio.sleep(2)  # Delay to respect Nominatim rate limits
-                    if attempt == max_retries - 1:
-                        return {
-                            'verified': True,
-                            'confidence': 0.5,  # Neutral — can't verify
-                            'reason': 'Geocoding service unavailable',
-                            'coordinates': None
-                        }
+            if location in self.location_cache:
+                location_data = self.location_cache[location]
+            else:
+                location_data = None
+                max_retries = 2
+                
+                for attempt in range(max_retries):
+                    try:
+                        loop = asyncio.get_event_loop()
+                        from functools import partial
+                        location_data = await loop.run_in_executor(
+                            None, 
+                            partial(self.geolocator.geocode, location + ", India", timeout=5)
+                        )
+                        if location_data:
+                            self.location_cache[location] = location_data
+                            break
+                    except Exception as geo_error:
+                        logger.warning(f"Geocoding attempt {attempt + 1} failed: {geo_error}")
+                        await asyncio.sleep(2)  # Delay to respect Nominatim rate limits
+                        if attempt == max_retries - 1:
+                            return {
+                                'verified': True,
+                                'confidence': 0.5,  # Neutral — can't verify
+                                'reason': 'Geocoding service unavailable',
+                                'coordinates': None
+                            }
             
             if not location_data:
                 # Location not found — slightly suspect (may be fabricated)
