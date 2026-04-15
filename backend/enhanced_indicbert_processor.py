@@ -78,6 +78,9 @@ class EnhancedIndicBERTProcessor:
     def _initialize_model(self, for_classification: bool = False):
         """Initialize IndicBERT model"""
         try:
+            # SAFEGUARD: Limit PyTorch CPU threads to 1 to prevent massive MKL memory pool bloat in threaded environments
+            torch.set_num_threads(1)
+            
             logger.info(f"Loading tokenizer from {self.model_name}...")
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             

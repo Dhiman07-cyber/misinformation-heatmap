@@ -3,470 +3,507 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misinformation Heatmap - India</title>
+    <title>Misinformation Heatmap — Real-Time AI Detection Across India</title>
+    <meta name="description" content="AI-powered platform detecting misinformation across all 36 Indian states in real-time using IndicBERT, satellite verification, and fact-checking networks.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --saffron: #FF9933;
+            --saffron-light: #ffb366;
+            --saffron-dark: #cc7a29;
+            --green: #138808;
+            --green-light: #1ea50e;
+            --bg-dark: #050810;
+            --bg-card: rgba(255,255,255,0.04);
+            --bg-card-hover: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.08);
+            --border-accent: rgba(255,153,51,0.3);
+            --text-primary: #f0f4ff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --shadow-glow: 0 0 40px rgba(255,153,51,0.15);
+            --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --radius-sm: 10px;
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            /* Indian Tricolor inspired gradient - using saffron, white, green tones */
-            background: linear-gradient(135deg, 
-                #FF9933 0%,    /* Saffron */
-                #FFFFFF 25%,   /* White */
-                #FFFFFF 50%,   /* White */
-                #FFFFFF 75%,   /* White */
-                #138808 100%   /* Green */
-            );
+            background: var(--bg-dark);
+            color: var(--text-primary);
             min-height: 100vh;
-            color: #2d3748;
             overflow-x: hidden;
         }
-        
-        /* Alternative saffron-focused background */
-        .saffron-bg {
-            background: linear-gradient(135deg, 
-                #FF9933 0%,    /* Deep Saffron */
-                #FFB366 30%,   /* Light Saffron */
-                #FFF5E6 70%,   /* Very Light Saffron */
-                #FFFFFF 100%   /* White */
-            );
+
+        /* ─── ANIMATED BACKGROUND ─── */
+        .bg-canvas {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,153,51,0.12) 0%, transparent 70%),
+                        radial-gradient(ellipse 40% 40% at 90% 90%, rgba(19,136,8,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse 30% 30% at 10% 80%, rgba(255,153,51,0.05) 0%, transparent 50%);
         }
-        
+        .grid-overlay {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* ─── NAVBAR ─── */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0 2rem;
+            height: 64px;
+            display: flex; align-items: center;
+            background: rgba(5,8,16,0.85);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s;
         }
-        
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
+        .navbar.scrolled { background: rgba(5,8,16,0.97); box-shadow: 0 2px 30px rgba(0,0,0,0.5); }
+        .nav-inner {
+            width: 100%; max-width: 1280px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        
         .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #FF9933;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800;
+            text-decoration: none; color: var(--text-primary);
         }
-        
-        .flag-icon {
-            width: 24px;
-            height: 16px;
-            object-fit: cover;
-            border-radius: 2px;
+        .logo-icon {
+            width: 34px; height: 34px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(255,153,51,0.4);
         }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-        
+        .logo span { color: var(--saffron); }
+        .nav-links { display: flex; align-items: center; gap: 0.5rem; }
         .nav-link {
-            color: #4a5568;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+            padding: 0.45rem 1rem; border-radius: var(--radius-sm);
+            transition: all 0.2s;
         }
-        
-        .nav-link:hover, .nav-link.active {
-            color: #FF9933;
-            background: rgba(255, 153, 51, 0.1);
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+        .nav-link.active { color: var(--saffron); }
+        .nav-pill {
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(19,136,8,0.12); border: 1px solid rgba(19,136,8,0.3);
+            border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; color: #22c55e;
         }
-        
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(19, 136, 8, 0.1);
-            border: 1px solid rgba(19, 136, 8, 0.3);
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            color: #138808;
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
+            animation: livePulse 2s infinite;
         }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #138808;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
+
+        /* ─── HERO ─── */
         .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            text-align: center;
-            padding: 2rem;
-            position: relative;
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 100px 2rem 4rem;
         }
-        
-        .hero::before {
-            content: '';\n            position: absolute;\n            top: 0;\n            left: 0;\n            right: 0;\n            bottom: 0;\n            background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"20\" cy=\"20\" r=\"1\" fill=\"%23FF9933\" opacity=\"0.1\"/><circle cx=\"80\" cy=\"40\" r=\"1\" fill=\"%23138808\" opacity=\"0.1\"/><circle cx=\"40\" cy=\"80\" r=\"1\" fill=\"%23FF9933\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>') repeat;\n            opacity: 0.3;\n            pointer-events: none;\n        }
-        
         .hero-badge {
-            background: rgba(255, 153, 51, 0.2);
-            border: 1px solid rgba(255, 153, 51, 0.4);
-            color: #B45309;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,153,51,0.1); border: 1px solid rgba(255,153,51,0.25);
+            border-radius: 30px; padding: 7px 18px;
+            font-size: 0.8rem; font-weight: 600; color: var(--saffron);
+            letter-spacing: 0.5px; margin-bottom: 2rem;
+            animation: fadeInDown 0.6s ease;
         }
-        
+        .hero-badge::before { content: '✦'; font-size: 10px; }
         .hero-title {
-            font-size: clamp(3rem, 8vw, 6rem);
-            font-weight: 900;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.1;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 8vw, 6.5rem);
+            font-weight: 900; line-height: 1.05; letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.7s ease 0.1s both;
         }
-        
-        .hero-subtitle {
-            font-size: clamp(1.2rem, 3vw, 1.8rem);
-            font-weight: 600;
-            margin-bottom: 2rem;
-            color: #4a5568;
-            max-width: 800px;
+        .hero-title .line1 { display: block; color: var(--text-primary); }
+        .hero-title .line2 {
+            display: block;
+            background: linear-gradient(135deg, var(--saffron) 0%, #f97316 40%, var(--green) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-        
-        .hero-description {
-            font-size: 1.2rem;
-            color: #718096;
-            max-width: 700px;
-            margin-bottom: 3rem;
-            line-height: 1.7;
+        .hero-desc {
+            font-size: clamp(1rem, 2vw, 1.25rem); font-weight: 400;
+            color: var(--text-secondary); line-height: 1.7;
+            max-width: 680px; margin: 0 auto 3rem;
+            animation: fadeInUp 0.7s ease 0.2s both;
         }
-        
-        .stats-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-            max-width: 700px;
-            width: 100%;
+        .hero-desc strong { color: var(--saffron); font-weight: 600; }
+
+        /* ─── STATS STRIP ─── */
+        .stats-strip {
+            display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 3rem; animation: fadeInUp 0.7s ease 0.3s both;
         }
-        
-        .stat-item {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 1.5rem;
-            border-radius: 16px;
+        .stat-pill {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.25rem 2rem; text-align: center;
+            min-width: 160px; transition: all 0.3s;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 153, 51, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        .stat-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 153, 51, 0.2);
-        }
-        
+        .stat-pill:hover { border-color: var(--border-accent); transform: translateY(-4px); box-shadow: var(--shadow-glow); }
         .stat-number {
-            font-size: clamp(1.8rem, 4vw, 2.5rem);
-            font-weight: 800;
-            color: #FF9933;
-            margin-bottom: 0.5rem;
-            line-height: 1;
-            word-break: break-all;
-            overflow-wrap: break-word;
+            font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800;
+            color: var(--saffron); line-height: 1;
         }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #4a5568;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
+        .stat-number.green { color: #22c55e; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
+        /* ─── CTA BUTTONS ─── */
+        .cta-group {
+            display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+            animation: fadeInUp 0.7s ease 0.4s both;
         }
-        
-        .cta-buttons {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
         .btn {
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 180px;
-            justify-content: center;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 0.9rem 2rem; border-radius: var(--radius-sm);
+            font-size: 1rem; font-weight: 600; text-decoration: none;
+            transition: all 0.3s; cursor: pointer; border: none;
         }
-        
         .btn-primary {
-            background: linear-gradient(135deg, #FF9933 0%, #B45309 100%);
-            color: white;
-            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3);
+            background: linear-gradient(135deg, var(--saffron) 0%, #f97316 100%);
+            color: white; box-shadow: 0 4px 20px rgba(255,153,51,0.4);
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
-        }
-        
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,153,51,0.5); }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.9);
-            color: #4a5568;
-            border: 2px solid rgba(255, 153, 51, 0.3);
-            backdrop-filter: blur(10px);
+            background: var(--bg-card); color: var(--text-primary);
+            border: 1px solid var(--border); backdrop-filter: blur(10px);
         }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 153, 51, 0.1);
-            border-color: #FF9933;
-            color: #FF9933;
-            transform: translateY(-2px);
+        .btn-secondary:hover { border-color: var(--border-accent); color: var(--saffron); transform: translateY(-2px); }
+
+        /* ─── SCROLL INDICATOR ─── */
+        .scroll-hint {
+            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: var(--text-muted); font-size: 0.75rem; animation: bounce 2s infinite;
         }
-        
-        .features-section {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 4rem 2rem;
-            margin-top: 2rem;
+        .scroll-arrow { font-size: 1.2rem; }
+        @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+        /* ─── FEATURES SECTION ─── */
+        .section {
+            position: relative; z-index: 1;
+            padding: 6rem 2rem;
         }
-        
-        .features-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
+        .section-inner { max-width: 1200px; margin: 0 auto; }
+        .section-label {
+            text-align: center; font-size: 0.8rem; font-weight: 700; letter-spacing: 2px;
+            color: var(--saffron); text-transform: uppercase; margin-bottom: 1rem;
         }
-        
-        .features-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #2d3748;
-            margin-bottom: 1rem;
+        .section-title {
+            font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800; text-align: center; margin-bottom: 1rem;
+            letter-spacing: -1px;
         }
-        
-        .features-subtitle {
-            font-size: 1.2rem;
-            color: #718096;
-            margin-bottom: 3rem;
-        }
-        
+        .section-desc { color: var(--text-secondary); text-align: center; font-size: 1.1rem; margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 auto 6rem; max-width: 1200px; }
+
+        /* ─── FEATURE CARDS ─── */
         .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
         }
-        
         .feature-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 153, 51, 0.1);
-            transition: transform 0.3s ease;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem;
+            transition: all 0.3s; backdrop-filter: blur(10px);
+            position: relative; overflow: hidden;
         }
-        
-        .feature-card:hover {
-            transform: translateY(-5px);
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--saffron), transparent);
+            opacity: 0; transition: opacity 0.3s;
         }
-        
+        .feature-card:hover { border-color: var(--border-accent); transform: translateY(-6px); box-shadow: var(--shadow-card), var(--shadow-glow); }
+        .feature-card:hover::before { opacity: 1; }
         .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            width: 52px; height: 52px; border-radius: 14px; margin-bottom: 1.25rem;
+            display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+            background: rgba(255,153,51,0.1); border: 1px solid rgba(255,153,51,0.2);
         }
-        
-        .feature-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #2d3748;
-            margin-bottom: 1rem;
+        .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif; }
+        .feature-desc { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.65; }
+
+        /* ─── METRICS SECTION ─── */
+        .metrics-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
         }
-        
-        .feature-description {
-            color: #718096;
-            line-height: 1.6;
+        .metric-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem; text-align: center;
+            backdrop-filter: blur(10px); transition: all 0.3s;
         }
-        
+        .metric-card:hover { border-color: var(--border-accent); transform: translateY(-4px); }
+        .metric-val {
+            font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 900;
+            background: linear-gradient(135deg, var(--saffron), var(--green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            line-height: 1;
+        }
+        .metric-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
+
+        /* ─── CTA SECTION ─── */
+        .cta-section {
+            position: relative; z-index: 1; padding: 6rem 2rem;
+        }
+        .cta-box {
+            max-width: 800px; margin: 0 auto; text-align: center;
+            background: linear-gradient(135deg, rgba(255,153,51,0.08), rgba(19,136,8,0.08));
+            border: 1px solid var(--border-accent); border-radius: 24px; padding: 4rem 2rem;
+            position: relative; overflow: hidden;
+        }
+        .cta-box::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(ellipse at center, rgba(255,153,51,0.05), transparent 60%);
+            pointer-events: none;
+        }
+        .cta-title { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+        .cta-desc { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2.5rem; }
+
+        /* ─── FOOTER ─── */
+        footer {
+            position: relative; z-index: 1;
+            border-top: 1px solid var(--border); padding: 2rem;
+            text-align: center; color: var(--text-muted); font-size: 0.85rem;
+        }
+        footer a { color: var(--saffron); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ─── RESPONSIVE ─── */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            .stats-preview {
-                grid-template-columns: 1fr;
-            }
+            .nav-links { display: none; }
+            .hero { padding: 90px 1.5rem 3rem; }
+            .stats-strip { gap: 1rem; }
+            .stat-pill { min-width: 130px; padding: 1rem 1.5rem; }
+            .section { padding: 4rem 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-content">
-            <div class="logo">
-                <img src="/assets/indian-flag.png" alt="Indian Flag" class="flag-icon">
-                Misinformation Heatmap
-            </div>
+    <div class="bg-canvas"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-inner">
+            <a href="/" class="logo">
+                <div class="logo-icon">🛡️</div>
+                Misinfo<span>Heatmap</span>
+            </a>
             <div class="nav-links">
                 <a href="/" class="nav-link active">Home</a>
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
-            <div class="nav-status">
-                <div class="status-dot"></div>
-                <span id="system-status">System Ready</span>
+            <div class="nav-pill">
+                <div class="live-dot"></div>
+                <span id="nav-status">System Ready</span>
             </div>
         </div>
     </nav>
 
-    <main class="hero">
-        <div class="hero-badge">
-            🚀 Powered by Advanced AI & Machine Learning
-        </div>
-        
-        <h1 class="hero-title">Misinformation Heatmap</h1>
-        <h2 class="hero-subtitle">Real-time Detection & Monitoring Across India</h2>
-        
-        <p class="hero-description">
-            Advanced AI-powered platform that detects and tracks misinformation 
-            across Indian media using IndicBERT, comprehensive fact-checking networks, 
-            and real-time analysis covering all 36 states and union territories.
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-badge">Powered by IndicBERT & 5-Model Ensemble AI</div>
+
+        <h1 class="hero-title">
+            <span class="line1">Combating Fake News</span>
+            <span class="line2">Across India</span>
+        </h1>
+
+        <p class="hero-desc">
+            An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>,
+            covering all 36 states and union territories in real-time.
         </p>
-        
-        <div class="stats-preview">
-            <div class="stat-item">
-                <div class="stat-number" id="live-events">0</div>
-                <div class="stat-label">Events Processed</div>
+
+        <!-- Live Stats -->
+        <div class="stats-strip">
+            <div class="stat-pill">
+                <div class="stat-number" id="stat-events">—</div>
+                <div class="stat-label">Events Analyzed</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number">95.8%</div>
-                <div class="stat-label">AI Accuracy</div>
+            <div class="stat-pill">
+                <div class="stat-number">91%</div>
+                <div class="stat-label">Detection Accuracy</div>
             </div>
-            <div class="stat-item">
-                <div class="stat-number">36</div>
+            <div class="stat-pill">
+                <div class="stat-number green">36</div>
                 <div class="stat-label">States & UTs</div>
             </div>
+            <div class="stat-pill">
+                <div class="stat-number">34+</div>
+                <div class="stat-label">News Sources</div>
+            </div>
         </div>
-        
-        <div class="cta-buttons">
+
+        <div class="cta-group">
             <a href="/map/enhanced-india-heatmap.html" class="btn btn-primary">
-                🗺️ Explore Heatmap
+                🗺️ Explore Live Heatmap
             </a>
             <a href="/dashboard" class="btn btn-secondary">
                 📊 View Dashboard
             </a>
         </div>
-    </main>
 
-    <section class="features-section">
-        <div class="features-container">
-            <h3 class="features-title">Comprehensive Misinformation Detection</h3>
-            <p class="features-subtitle">Advanced technology protecting information integrity across India</p>
-            
+        <div class="scroll-hint">
+            <span>Scroll to explore</span>
+            <span class="scroll-arrow">↓</span>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+        <div class="section-inner">
+            <div class="section-label">Technology Stack</div>
+            <h2 class="section-title">How Detection Works</h2>
+            <p class="section-desc">Multi-layered AI analysis combining language models, fact-checking, and satellite verification.</p>
+
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">🧠</div>
-                    <h4 class="feature-title">IndicBERT AI</h4>
-                    <p class="feature-description">
-                        Advanced language model specifically trained for Indian languages and contexts, 
-                        providing superior accuracy in detecting misinformation patterns.
-                    </p>
+                    <div class="feature-title">IndicBERT NLP Engine</div>
+                    <p class="feature-desc">Advanced language embeddings specifically trained for Indian languages including Hindi, Bengali, Tamil, and 8 others — providing culturally-aware misinformation detection.</p>
                 </div>
-                
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">5-Model ML Ensemble</div>
+                    <p class="feature-desc">Five independently trained classifiers vote on each piece of content. Achieves 91% accuracy on our 940-example India-specific benchmark dataset with 0.973 ROC-AUC.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <div class="feature-title">Real-Time Fact Checking</div>
+                    <p class="feature-desc">Cross-references claims against Alt News, Boom Live, WebQoof and other verified Indian fact-checking organizations to validate breaking news stories.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛰️</div>
+                    <div class="feature-title">Satellite Verification</div>
+                    <p class="feature-desc">Geographic claims are validated using satellite imagery analysis (Google Earth Engine). Identifies anomalies between reported events and ground truth.</p>
+                </div>
                 <div class="feature-card">
                     <div class="feature-icon">🗺️</div>
-                    <h4 class="feature-title">Complete Coverage</h4>
-                    <p class="feature-description">
-                        Monitoring all 28 states and 8 union territories of India with 
-                        real-time data processing from 34+ trusted news sources.
-                    </p>
+                    <div class="feature-title">Geographic Heatmap</div>
+                    <p class="feature-desc">Interactive SVG map of India showing real-time misinformation concentration by state. Click any region to drill into detailed event feeds and risk scores.</p>
                 </div>
-                
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
-                    <h4 class="feature-title">Real-time Processing</h4>
-                    <p class="feature-description">
-                        High-volume data ingestion and analysis processing 500+ events per cycle 
-                        with continuous monitoring and instant classification.
-                    </p>
+                    <div class="feature-title">High-Volume Ingestion</div>
+                    <p class="feature-desc">Concurrent RSS fetching from 34+ Indian news outlets every 2 minutes. Processes 500+ articles per cycle with low-latency classification and state-wise aggregation.</p>
                 </div>
             </div>
         </div>
     </section>
 
+    <div class="divider"></div>
+
+    <!-- METRICS -->
+    <section class="section">
+        <div class="section-inner">
+            <div class="section-label">Performance</div>
+            <h2 class="section-title">By the Numbers</h2>
+            <p class="section-desc">Production-ready metrics from our AI classification pipeline.</p>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-val">91%</div>
+                    <div class="metric-label">CV F1-Score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">0.973</div>
+                    <div class="metric-label">ROC-AUC Score</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">940</div>
+                    <div class="metric-label">Training Examples</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">12</div>
+                    <div class="metric-label">Languages Supported</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-val">5</div>
+                    <div class="metric-label">ML Models in Ensemble</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="cta-box">
+            <h2 class="cta-title">Ready to explore the data?</h2>
+            <p class="cta-desc">View the interactive misinformation heatmap covering every Indian state in real-time.</p>
+            <div class="cta-group">
+                <a href="/map/enhanced-india-heatmap.html" class="btn btn-primary">🗺️ Open Heatmap</a>
+                <a href="/dashboard" class="btn btn-secondary">📊 Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Made with ❤️ for a more informed India &nbsp;|&nbsp; 
+        <a href="https://ai4bharat.org/" target="_blank">IndicBERT by AI4Bharat</a> &nbsp;|&nbsp; 
+        MIT License</p>
+    </footer>
+
     <script>
-        // Format large numbers for display
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'K';
-            }
-            return num.toString();
-        }
-        
-        // Update live stats
-        async function updateStats() {
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Load live stats
+        async function loadStats() {
             try {
-                const response = await fetch('/api/v1/stats');
-                const data = await response.json();
+                const res = await fetch('/api/v1/stats');
+                if (!res.ok) return;
+                const data = await res.json();
+                const el = document.getElementById('stat-events');
+                const n = data.total_events || 0;
+                el.textContent = n >= 1000 ? (n/1000).toFixed(1) + 'K' : n;
                 
-                document.getElementById('live-events').textContent = formatNumber(data.total_events || 0);
-                
-                const statusText = document.getElementById('system-status');
-                if (data.processing_active) {
-                    statusText.textContent = 'Live Processing';
-                } else {
-                    statusText.textContent = 'System Ready';
-                }
-            } catch (error) {
-                console.log('Status check failed:', error);
-            }
+                const statusEl = document.getElementById('nav-status');
+                statusEl.textContent = data.processing_active ? 'Live Processing' : 'System Ready';
+            } catch (_) {}
         }
-        
-        // Update every 30 seconds
-        updateStats();
-        setInterval(updateStats, 30000);
+
+        // Intersection observer for card animations
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.style.opacity = '1';
+                    e.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card, .metric-card, .stat-pill').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(24px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease, border-color 0.3s, box-shadow 0.3s';
+            observer.observe(card);
+        });
+
+        loadStats();
+        setInterval(loadStats, 30000);
     </script>
 </body>
 </html>

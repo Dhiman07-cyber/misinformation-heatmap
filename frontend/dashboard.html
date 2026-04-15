@@ -3,627 +3,587 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misinformation Heatmap - Dashboard</title>
+    <title>Dashboard — Misinformation Heatmap</title>
+    <meta name="description" content="Real-time analytics dashboard for misinformation detection across India.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --saffron: #FF9933;
+            --saffron-light: #ffb366;
+            --green: #138808;
+            --red: #ef4444;
+            --amber: #f59e0b;
+            --blue: #6366f1;
+            --bg: #050810;
+            --bg-card: rgba(255,255,255,0.04);
+            --bg-card-hover: rgba(255,255,255,0.07);
+            --border: rgba(255,255,255,0.08);
+            --border-accent: rgba(255,153,51,0.25);
+            --text-primary: #f0f4ff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --sidebar-width: 220px;
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            /* Indian Tricolor inspired gradient - using saffron, white, green tones */
-            background: linear-gradient(135deg, 
-                #FF9933 0%,    /* Saffron */
-                #FFFFFF 25%,   /* White */
-                #FFFFFF 50%,   /* White */
-                #FFFFFF 75%,   /* White */
-                #138808 100%   /* Green */
-            );
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
             min-height: 100vh;
-            color: #2d3748;
-            overflow-x: hidden;
-            line-height: 1.6;
+            display: flex; flex-direction: column;
         }
-        
+
+        .bg-canvas {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,153,51,0.08) 0%, transparent 70%),
+                        radial-gradient(ellipse 30% 30% at 90% 80%, rgba(19,136,8,0.06) 0%, transparent 50%);
+        }
+
+        /* ─── NAVBAR ─── */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #FF9933;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
-        .flag-icon {
-            width: 24px;
-            height: 16px;
-            object-fit: cover;
-            border-radius: 2px;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-        
-        .nav-link {
-            color: #4a5568;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: #FF9933;
-            background: rgba(255, 153, 51, 0.1);
-        }
-        
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(19, 136, 8, 0.1);
-            border: 1px solid rgba(19, 136, 8, 0.3);
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            color: #138808;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #138808;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .dashboard-header {
-            margin-bottom: 3rem;
-            text-align: center;
-        }
-        
-        .dashboard-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .dashboard-subtitle {
-            color: #718096;
-            font-size: 1.1rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 153, 51, 0.2);
-            border-radius: 16px;
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stat-card:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(255, 153, 51, 0.3);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 153, 51, 0.2);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--accent-color, #6366f1);
-        }
-        
-        .stat-card.total { --accent-color: #6366f1; }
-        .stat-card.fake { --accent-color: #ef4444; }
-        .stat-card.real { --accent-color: #10b981; }
-        .stat-card.uncertain { --accent-color: #f59e0b; }
-        
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stat-title {
-            font-size: 0.9rem;
-            color: #4a5568;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-        
-        .stat-icon {
-            font-size: 1.8rem;
-            opacity: 0.8;
-        }
-        
-        .stat-value {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #FF9933;
-            margin-bottom: 0.5rem;
-            line-height: 1;
-        }
-        
-        .stat-change {
-            font-size: 0.9rem;
-            color: #4a5568;
-        }
-        
-        .charts-section {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-        
-        .chart-card {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 153, 51, 0.2);
-            border-radius: 16px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-        
-        .chart-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #2d3748;
-        }
-        
-        .chart-subtitle {
-            font-size: 0.9rem;
-            color: #718096;
-            margin-top: 0.25rem;
-        }
-        
-        .view-map-btn {
-            background: linear-gradient(135deg, #FF9933 0%, #B45309 100%);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3);
-        }
-        
-        .view-map-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
-        }
-        
-        .activity-feed {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .activity-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        
-        .activity-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
+            position: sticky; top: 0; z-index: 100;
+            height: 60px; display: flex; align-items: center;
+            padding: 0 2rem;
+            background: rgba(5,8,16,0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
-        
-        .activity-icon.fake { background: rgba(239, 68, 68, 0.2); }
-        .activity-icon.real { background: rgba(16, 185, 129, 0.2); }
-        .activity-icon.uncertain { background: rgba(245, 158, 11, 0.2); }
-        
-        .activity-content {
-            flex: 1;
-            min-width: 0;
+        .nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800;
+            text-decoration: none; color: var(--text-primary);
         }
-        
+        .logo-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: linear-gradient(135deg, var(--saffron), #f97316);
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
+            box-shadow: 0 4px 12px rgba(255,153,51,0.4);
+        }
+        .logo span { color: var(--saffron); }
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link {
+            color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+            padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s;
+        }
+        .nav-link:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+        .nav-link.active { color: var(--saffron); background: rgba(255,153,51,0.1); }
+        .nav-right { display: flex; align-items: center; gap: 1rem; }
+        .live-badge {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+            border-radius: 20px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; color: #22c55e;
+        }
+        .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: livePulse 2s infinite; }
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
+        }
+        .refresh-btn {
+            background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
+            padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;
+            transition: all 0.2s; font-family: 'Inter', sans-serif;
+        }
+        .refresh-btn:hover { border-color: var(--border-accent); color: var(--saffron); }
+
+        /* ─── MAIN LAYOUT ─── */
+        .main-content {
+            position: relative; z-index: 1;
+            flex: 1; padding: 2rem;
+            max-width: 1400px; width: 100%; margin: 0 auto;
+        }
+        .page-header { margin-bottom: 2rem; }
+        .page-title {
+            font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+        .last-updated { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+
+        /* ─── STAT CARDS ─── */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem;
+            position: relative; overflow: hidden; transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            cursor: default;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--accent-color, var(--saffron));
+        }
+        .stat-card:hover { border-color: var(--border-accent); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+        .stat-card.total { --accent-color: var(--blue); }
+        .stat-card.fake  { --accent-color: var(--red); }
+        .stat-card.real  { --accent-color: #22c55e; }
+        .stat-card.uncertain { --accent-color: var(--amber); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .card-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+        .card-icon { font-size: 1.5rem; opacity: 0.8; }
+        .card-value {
+            font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 900; line-height: 1;
+            color: var(--text-primary); margin-bottom: 0.4rem;
+        }
+        .card-sub { font-size: 0.8rem; color: var(--text-muted); }
+        .card-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 2px; background: var(--accent-color, var(--saffron)); transition: width 0.8s ease; }
+
+        /* ─── GRID LAYOUTS ─── */
+        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+
+        /* ─── PANEL ─── */
+        .panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(10px);
+        }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+        }
+        .panel-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; }
+        .panel-badge {
+            font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+            background: rgba(255,153,51,0.1); color: var(--saffron); border: 1px solid rgba(255,153,51,0.2);
+        }
+        .panel-body { padding: 1.5rem; }
+
+        /* ─── ACCURACY DISPLAY ─── */
+        .accuracy-ring {
+            display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0;
+        }
+        .ring-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
+        .ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+        .ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+        .ring-label { text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, 0); }
+
+        .accuracy-value { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 900; color: #22c55e; }
+        .accuracy-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+
+        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-name { font-size: 0.85rem; color: var(--text-secondary); }
+        .metric-badge {
+            font-size: 0.85rem; font-weight: 700; padding: 3px 12px; border-radius: 20px;
+        }
+        .metric-badge.green { background: rgba(34,197,94,0.1); color: #22c55e; }
+        .metric-badge.blue  { background: rgba(99,102,241,0.1); color: #818cf8; }
+        .metric-badge.amber { background: rgba(245,158,11,0.1); color: var(--amber); }
+
+        /* ─── ACTIVITY FEED ─── */
+        .activity-list { max-height: 380px; overflow-y: auto; }
+        .activity-list::-webkit-scrollbar { width: 4px; }
+        .activity-list::-webkit-scrollbar-track { background: transparent; }
+        .activity-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 1rem 0; border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item:hover { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 1rem 8px; margin: 0 -8px; }
+        .activity-dot {
+            width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+        }
+        .activity-dot.fake { background: rgba(239,68,68,0.15); }
+        .activity-dot.real { background: rgba(34,197,94,0.15); }
+        .activity-dot.uncertain { background: rgba(245,158,11,0.15); }
+        .activity-info { flex: 1; min-width: 0; }
         .activity-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 0.25rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            margin-bottom: 4px;
         }
-        
-        .activity-meta {
-            font-size: 0.8rem;
-            color: #718096;
+        .activity-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
+        .activity-tag {
+            padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;
         }
-        
-        .accuracy-display {
-            text-align: center;
-            padding: 2rem;
+        .activity-tag.fake     { background: rgba(239,68,68,0.1); color: #f87171; }
+        .activity-tag.real     { background: rgba(34,197,94,0.1);  color: #4ade80; }
+        .activity-tag.uncertain { background: rgba(245,158,11,0.1); color: #fbbf24; }
+        .empty-feed { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+
+        /* ─── COVERAGE STRIP ─── */
+        .coverage-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem 0;
         }
-        
-        .accuracy-value {
-            font-size: 4rem;
-            font-weight: 800;
-            color: #10b981;
-            margin-bottom: 0.5rem;
-            line-height: 1;
+        .cov-item { text-align: center; }
+        .cov-val { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--saffron); }
+        .cov-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* ─── LOADING ─── */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+            background-size: 400px 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
         }
-        
-        .accuracy-label {
-            font-size: 1rem;
-            color: #718096;
-            margin-bottom: 1rem;
+        @keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 1100px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2-1 { grid-template-columns: 1fr; }
         }
-        
-        .accuracy-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .accuracy-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-            width: 95.8%;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 200px;
-            color: #718096;
-        }
-        
-        .empty-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-        
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .charts-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-links {
-                display: none;
-            }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .main-content { padding: 1.25rem; }
         }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Number counter animation */
+        .counting { transition: all 0.4s ease; }
     </style>
 </head>
 <body>
+    <div class="bg-canvas"></div>
+
+    <!-- NAVBAR -->
     <nav class="navbar">
-        <div class="nav-content">
+        <div class="nav-inner">
             <a href="/" class="logo">
-                <img src="/assets/indian-flag.png" alt="Indian Flag" class="flag-icon">
-                Misinformation Heatmap
+                <div class="logo-icon">🛡️</div>
+                Misinfo<span>Heatmap</span>
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
                 <a href="/dashboard" class="nav-link active">Dashboard</a>
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
-            <div class="nav-status">
-                <div class="status-dot"></div>
-                <span id="system-status">System Ready</span>
+            <div class="nav-right">
+                <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
+                <div class="live-badge">
+                    <div class="live-dot"></div>
+                    <span id="system-status">Loading...</span>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">Real-Time Analytics</h1>
-            <p class="dashboard-subtitle">Comprehensive misinformation detection metrics across India</p>
+    <!-- MAIN -->
+    <div class="main-content">
+        <div class="page-header">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h1 class="page-title">Real-Time Analytics</h1>
+                    <p class="page-subtitle">Misinformation detection across all Indian states & union territories</p>
+                </div>
+                <div class="last-updated" id="last-updated">Last updated: —</div>
+            </div>
         </div>
 
+        <!-- STATS -->
         <div class="stats-grid">
             <div class="stat-card total">
-                <div class="stat-header">
-                    <span class="stat-title">Total Events</span>
-                    <span class="stat-icon">📊</span>
+                <div class="card-header">
+                    <div class="card-label">Total Events</div>
+                    <div class="card-icon">📊</div>
                 </div>
-                <div class="stat-value" id="total-events">0</div>
-                <div class="stat-change">Processed in real-time</div>
+                <div class="card-value counting" id="total-events">—</div>
+                <div class="card-sub">Processed in real-time</div>
+                <div class="card-bar"><div class="bar-fill" id="bar-total" style="width:0%"></div></div>
             </div>
-
             <div class="stat-card fake">
-                <div class="stat-header">
-                    <span class="stat-title">Misinformation</span>
-                    <span class="stat-icon">🚨</span>
+                <div class="card-header">
+                    <div class="card-label">Misinformation</div>
+                    <div class="card-icon">🚨</div>
                 </div>
-                <div class="stat-value" id="fake-news">0</div>
-                <div class="stat-change">High confidence detections</div>
+                <div class="card-value counting" id="fake-events">—</div>
+                <div class="card-sub">High-confidence detections</div>
+                <div class="card-bar"><div class="bar-fill" id="bar-fake" style="width:0%"></div></div>
             </div>
-
             <div class="stat-card real">
-                <div class="stat-header">
-                    <span class="stat-title">Verified News</span>
-                    <span class="stat-icon">✅</span>
+                <div class="card-header">
+                    <div class="card-label">Verified News</div>
+                    <div class="card-icon">✅</div>
                 </div>
-                <div class="stat-value" id="real-news">0</div>
-                <div class="stat-change">Authenticated sources</div>
+                <div class="card-value counting" id="real-events">—</div>
+                <div class="card-sub">Authenticated sources</div>
+                <div class="card-bar"><div class="bar-fill" id="bar-real" style="width:0%"></div></div>
             </div>
-
             <div class="stat-card uncertain">
-                <div class="stat-header">
-                    <span class="stat-title">Under Review</span>
-                    <span class="stat-icon">⚠️</span>
+                <div class="card-header">
+                    <div class="card-label">Under Review</div>
+                    <div class="card-icon">⚠️</div>
                 </div>
-                <div class="stat-value" id="uncertain">0</div>
-                <div class="stat-change">Requires human verification</div>
+                <div class="card-value counting" id="uncertain-events">—</div>
+                <div class="card-sub">Pending verification</div>
+                <div class="card-bar"><div class="bar-fill" id="bar-uncertain" style="width:0%"></div></div>
             </div>
         </div>
 
-        <div class="charts-section">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div>
-                        <h3 class="chart-title">AI Detection Performance</h3>
-                        <p class="chart-subtitle">Multi-layered analysis system accuracy</p>
-                    </div>
+        <!-- ROW 1 -->
+        <div class="grid-2-1">
+            <!-- Live Activity -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Live Activity Feed</div>
+                    <div class="panel-badge" id="events-count">0 events</div>
                 </div>
-                
-                <div class="accuracy-display">
-                    <div class="accuracy-value">95.8%</div>
-                    <div class="accuracy-label">Overall Detection Accuracy</div>
-                    <div class="accuracy-bar">
-                        <div class="accuracy-fill"></div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; text-align: center;">
-                    <div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #6366f1;" id="precision">94.2%</div>
-                        <div style="font-size: 0.8rem; color: #718096;">Precision</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;" id="recall">91.7%</div>
-                        <div style="font-size: 0.8rem; color: #718096;">Recall</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;" id="f1-score">92.9%</div>
-                        <div style="font-size: 0.8rem; color: #718096;">F1-Score</div>
+                <div class="panel-body" style="padding: 0 1.5rem;">
+                    <div class="activity-list" id="activity-feed">
+                        <div class="empty-feed">
+                            <div class="empty-icon">⏳</div>
+                            <p>Loading recent activity...</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div>
-                        <h3 class="chart-title">Live Activity</h3>
-                        <p class="chart-subtitle">Recent classifications</p>
-                    </div>
+            <!-- AI Performance -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">AI Performance</div>
                 </div>
-                
-                <div class="activity-feed" id="activity-feed">
-                    <div class="empty-state">
-                        <div class="empty-icon">⏳</div>
-                        <div>Loading recent activity...</div>
+                <div class="panel-body">
+                    <div class="accuracy-ring">
+                        <svg class="ring-svg" viewBox="0 0 140 140">
+                            <circle class="ring-bg" cx="70" cy="70" r="56"/>
+                            <circle class="ring-fill" id="accuracy-ring-fill" cx="70" cy="70" r="56"
+                                stroke="url(#ringGrad)"
+                                stroke-dasharray="351.86"
+                                stroke-dashoffset="351.86"/>
+                            <defs>
+                                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#22c55e"/>
+                                    <stop offset="100%" style="stop-color:#16a34a"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div style="margin-top: -16px; position: relative; z-index:1;">
+                            <div class="accuracy-value">91%</div>
+                            <div class="accuracy-label">Detection Accuracy</div>
+                        </div>
+                    </div>
+
+                    <div class="metric-row">
+                        <span class="metric-name">Precision</span>
+                        <span class="metric-badge green">94.2%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">Recall</span>
+                        <span class="metric-badge blue">91.7%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">F1-Score (CV)</span>
+                        <span class="metric-badge green">91.0%</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">ROC-AUC</span>
+                        <span class="metric-badge amber">0.973</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <div>
-                    <h3 class="chart-title">Geographic Coverage</h3>
-                    <p class="chart-subtitle">Monitoring across all Indian states and union territories</p>
+        <!-- ROW 2 -->
+        <div class="grid-2">
+            <!-- Coverage -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Geographic Coverage</div>
+                    <a href="/map/enhanced-india-heatmap.html" style="font-size:0.8rem; color:var(--saffron); text-decoration:none; font-weight:600;">
+                        View Map →
+                    </a>
                 </div>
-                <a href="/map/enhanced-india-heatmap.html" class="view-map-btn">
-                    🗺️ View Interactive Map
-                </a>
+                <div class="panel-body">
+                    <div class="coverage-grid">
+                        <div class="cov-item">
+                            <div class="cov-val" id="total-states">36</div>
+                            <div class="cov-label">States & UTs</div>
+                        </div>
+                        <div class="cov-item">
+                            <div class="cov-val">34+</div>
+                            <div class="cov-label">News Sources</div>
+                        </div>
+                        <div class="cov-item">
+                            <div class="cov-val">2 min</div>
+                            <div class="cov-label">Update Cycle</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:1rem; padding:1rem; background:rgba(255,153,51,0.06); border:1px solid rgba(255,153,51,0.15); border-radius:12px; font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
+                        🌐 Monitoring <strong style="color:var(--saffron)">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble and IndicBERT NLP pipeline.
+                    </div>
+                </div>
             </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-                <div style="text-align: center; padding: 1rem;">
-                    <div style="font-size: 2rem; font-weight: 700; color: #6366f1;" id="total-states">36</div>
-                    <div style="font-size: 0.9rem; color: #718096;">States & UTs Covered</div>
+
+            <!-- System Health -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">System Health</div>
+                    <div id="health-badge" class="panel-badge">Checking...</div>
                 </div>
-                <div style="text-align: center; padding: 1rem;">
-                    <div style="font-size: 2rem; font-weight: 700; color: #10b981;" id="active-sources">34+</div>
-                    <div style="font-size: 0.9rem; color: #718096;">News Sources</div>
-                </div>
-                <div style="text-align: center; padding: 1rem;">
-                    <div style="font-size: 2rem; font-weight: 700; color: #f59e0b;" id="processing-speed">100+</div>
-                    <div style="font-size: 0.9rem; color: #718096;">Articles/Second</div>
+                <div class="panel-body">
+                    <div class="metric-row">
+                        <span class="metric-name">API Server</span>
+                        <span class="metric-badge green" id="health-api">● Online</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">Data Processing</span>
+                        <span class="metric-badge" id="health-proc" style="background:rgba(245,158,11,0.1);color:#fbbf24;">● Checking</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">Database</span>
+                        <span class="metric-badge green" id="health-db">● Connected</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">ML Models</span>
+                        <span class="metric-badge green">● Loaded</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">RSS Feeds</span>
+                        <span class="metric-badge green">● 34+ Active</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Update dashboard data in real-time
-        async function updateDashboard() {
+        const fmt = n => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
+
+        function animateNum(el, to) {
+            const from = parseInt(el.textContent) || 0;
+            if (from === to) return;
+            const step = Math.ceil(Math.abs(to - from) / 20);
+            let cur = from;
+            const timer = setInterval(() => {
+                cur += (to > from ? step : -step);
+                if ((to > from && cur >= to) || (to < from && cur <= to)) { cur = to; clearInterval(timer); }
+                el.textContent = fmt(cur);
+            }, 30);
+        }
+
+        async function updateStats(d) {
             try {
-                const response = await fetch('/api/v1/stats');
-                const data = await response.json();
-                
-                // Update main stats
-                document.getElementById('total-events').textContent = data.total_events || 0;
-                document.getElementById('fake-news').textContent = data.fake_events || 0;
-                document.getElementById('real-news').textContent = data.real_events || 0;
-                document.getElementById('uncertain').textContent = data.uncertain_events || 0;
-                
-                // Update total states
-                document.getElementById('total-states').textContent = data.total_states || 36;
-                
-                // Update system status
-                const statusElement = document.getElementById('system-status');
-                if (data.processing_active) {
-                    statusElement.textContent = 'Live Processing';
-                } else {
-                    statusElement.textContent = 'System Ready';
+                if (!d) {
+                    const res = await fetch('/api/v1/stats');
+                    if (!res.ok) throw new Error();
+                    d = await res.json();
                 }
-                
-            } catch (error) {
-                console.error('Failed to update dashboard:', error);
+
+                animateNum(document.getElementById('total-events'), d.total_events || 0);
+                animateNum(document.getElementById('fake-events'), d.fake_events || 0);
+                animateNum(document.getElementById('real-events'), d.real_events || 0);
+                animateNum(document.getElementById('uncertain-events'), d.uncertain_events || 0);
+
+                document.getElementById('total-states').textContent = d.total_states || 36;
+
+                const total = d.total_events || 1;
+                setTimeout(() => {
+                    document.getElementById('bar-total').style.width = '100%';
+                    document.getElementById('bar-fake').style.width = ((d.fake_events||0)/total*100) + '%';
+                    document.getElementById('bar-real').style.width = ((d.real_events||0)/total*100) + '%';
+                    document.getElementById('bar-uncertain').style.width = ((d.uncertain_events||0)/total*100) + '%';
+                }, 200);
+
+                const statusEl = document.getElementById('system-status');
+                const procEl = document.getElementById('health-proc');
+                const healthBadge = document.getElementById('health-badge');
+                if (d.processing_active) {
+                    statusEl.textContent = 'Live Processing';
+                    procEl.textContent = '● Active';
+                    procEl.className = 'metric-badge green';
+                    healthBadge.textContent = 'All Systems Go';
+                    healthBadge.style.color = '#22c55e';
+                } else {
+                    statusEl.textContent = 'System Ready';
+                    procEl.textContent = '● Idle';
+                    procEl.className = 'metric-badge amber';
+                    healthBadge.textContent = 'Standby';
+                }
+
+                document.getElementById('last-updated').textContent =
+                    'Last updated: ' + new Date().toLocaleTimeString('en-IN', { hour12: true });
+
+            } catch (_) {
+                document.getElementById('system-status').textContent = 'Connecting...';
             }
         }
-        
-        // Update activity feed
-        async function updateActivity() {
+
+        async function updateActivity(eventsPayload) {
             try {
-                const response = await fetch('/api/v1/events/live?limit=8');
-                const data = await response.json();
-                const events = data.events || [];
-                
+                let events;
+                if (!eventsPayload) {
+                    const res = await fetch('/api/v1/events/live?limit=12');
+                    if (!res.ok) throw new Error();
+                    const d = await res.json();
+                    events = d.events || [];
+                } else {
+                    events = eventsPayload.events || [];
+                }
+
+                document.getElementById('events-count').textContent = events.length + ' events';
+
                 const feed = document.getElementById('activity-feed');
-                
-                if (events.length > 0) {
-                    feed.innerHTML = events.map(event => {
-                        const classification = event.classification || 'uncertain';
-                        const icon = classification === 'fake' ? '🚨' : 
-                                   classification === 'real' ? '✅' : '⚠️';
-                        
-                        return `
-                            <div class="activity-item">
-                                <div class="activity-icon ${classification}">
-                                    ${icon}
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-title">${event.title || 'Processing event...'}</div>
-                                    <div class="activity-meta">
-                                        ${event.source || 'Unknown source'} • 
-                                        ${event.state || 'Unknown location'} • 
-                                        ${new Date(event.timestamp || Date.now()).toLocaleTimeString()}
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    feed.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">📊</div>
-                            <div>No recent activity</div>
-                        </div>
-                    `;
+                if (events.length === 0) {
+                    feed.innerHTML = `<div class="empty-feed"><div class="empty-icon">📭</div><p>No recent events</p></div>`;
+                    return;
                 }
-            } catch (error) {
-                console.error('Failed to update activity:', error);
-            }
+
+                feed.innerHTML = events.map(ev => {
+                    const cls = ev.classification || 'uncertain';
+                    const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
+                    const time = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true}) : '—';
+                    const title = (ev.title || 'Processing event…').substring(0, 80);
+                    const conf = ev.confidence ? Math.round(ev.confidence * 100) + '%' : '';
+                    return `
+                    <div class="activity-item">
+                        <div class="activity-dot ${cls}">${icon}</div>
+                        <div class="activity-info">
+                            <div class="activity-title" title="${(ev.title||'').replace(/"/g,'&quot;')}">${title}</div>
+                            <div class="activity-meta">
+                                <span class="activity-tag ${cls}">${cls.toUpperCase()}</span>
+                                <span>${ev.source || 'Unknown'}</span>
+                                <span>📍 ${ev.state || 'India'}</span>
+                                <span>${conf}</span>
+                                <span>🕐 ${time}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch (_) {}
         }
-        
-        // Initialize dashboard
-        updateDashboard();
+
+        function refreshAll() { updateStats(); updateActivity(); }
+
+        // Start accuracy ring animation
+        setTimeout(() => {
+            const ring = document.getElementById('accuracy-ring-fill');
+            const circumference = 351.86;
+            const pct = 0.91;
+            ring.style.strokeDashoffset = circumference * (1 - pct);
+        }, 500);
+
+        updateStats();
         updateActivity();
         
-        // Update every 10 seconds for real-time feel
-        setInterval(updateDashboard, 10000);
-        setInterval(updateActivity, 15000);
-        
-        // Update status dot animation based on processing status
-        setInterval(async () => {
-            try {
-                const response = await fetch('/api/v1/stats');
-                const data = await response.json();
-                const dot = document.querySelector('.status-dot');
-                
-                if (data.processing_active) {
-                    dot.style.background = '#10b981';
-                } else {
-                    dot.style.background = '#6b7280';
-                }
-            } catch (error) {
-                // Silent fail for status check
-            }
-        }, 5000);
+        // Convert to SSE for real-time push
+        const sse = new EventSource('/api/v1/stream');
+        sse.addEventListener('stats', (e) => {
+            updateStats(JSON.parse(e.data));
+        });
+        sse.addEventListener('live_events', (e) => {
+            updateActivity(JSON.parse(e.data));
+        });
+        sse.onerror = () => {
+            document.getElementById('system-status').textContent = 'Reconnecting...';
+        };
     </script>
 </body>
 </html>

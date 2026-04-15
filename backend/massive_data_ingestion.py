@@ -12,6 +12,7 @@ import sqlite3
 import json
 import hashlib
 import time
+import gc
 from datetime import datetime
 import random
 from typing import Dict, List, Optional
@@ -81,8 +82,19 @@ def fetch_single_rss_source_enhanced(source: Dict) -> List[Dict]:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        response = requests.get(source['url'], headers=headers, timeout=20)
-        feed = feedparser.parse(response.content)
+        response = requests.get(source['url'], headers=headers, timeout=20, stream=True)
+        response.raise_for_status()
+        
+        # SAFEGUARD: Limit response payload to 3MB to prevent massive RAM leaks 
+        content_bytes = bytearray()
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                content_bytes.extend(chunk)
+                if len(content_bytes) > 3 * 1024 * 1024:
+                    logger.warning(f"⚠️ Feed {source['name']} exceeded 3MB limit. Truncating.")
+                    break
+                    
+        feed = feedparser.parse(content_bytes)
         
         # Get more entries per source
         max_articles = source.get('articles', 15)
@@ -108,8 +120,8 @@ async def fetch_massive_rss_data():
     
     logger.info(f"📡 Starting massive data ingestion from {len(MASSIVE_RSS_SOURCES)} RSS sources")
     
-    # Use larger ThreadPoolExecutor for more concurrent requests
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    # Use conservative ThreadPoolExecutor to prevent threading overhead / RAM bloat
+    with ThreadPoolExecutor(max_workers=5) as executor:
         # Submit all RSS fetch tasks
         future_to_source = {
             executor.submit(fetch_single_rss_source_enhanced, source): source 
@@ -189,6 +201,9 @@ async def high_volume_processing_loop():
             
             # Prune old events to prevent unbounded DB growth
             cleanup_old_events()
+            
+            # Explicit garbage collection to free any dangling objects from this massive cycle
+            gc.collect()
             
             # Shorter wait time for more frequent updates
             await asyncio.sleep(120)  # 2 minutes
