@@ -94,7 +94,10 @@ def fetch_single_rss_source_enhanced(source: Dict) -> List[Dict]:
                     logger.warning(f"⚠️ Feed {source['name']} exceeded 3MB limit. Truncating.")
                     break
                     
-        feed = feedparser.parse(content_bytes)
+        # Convert bytearray → bytes for feedparser compatibility
+        content = bytes(content_bytes)
+        feed = feedparser.parse(content)
+
         
         # Get more entries per source
         max_articles = source.get('articles', 15)
@@ -241,8 +244,12 @@ async def process_event_with_fake_news_detection(event: Dict) -> Optional[Dict]:
         # Import here to avoid circular imports
         from realtime_processor import extract_location, categorize_content
         
-        # Extract location
+        # Extract location (may return None if article has no detectable Indian location)
         state = extract_location(f"{event['title']} {event['content']}")
+        
+        # If state genuinely cannot be determined, mark as 'National' (India-wide story)
+        if state is None:
+            state = 'National'
         
         # Fake news analysis
         analysis = await fake_news_detector.detect_fake_news(
@@ -283,9 +290,8 @@ async def process_event_with_fake_news_detection(event: Dict) -> Optional[Dict]:
         return None
 
 def store_event_in_database(event: Dict):
-    """Store event in database with enhanced aggregation"""
+    """Store event in enhanced_fake_news.db — the same DB the API server reads from."""
     try:
-        # Create data directory if it doesn't exist
         import os
         data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
         os.makedirs(data_dir, exist_ok=True)

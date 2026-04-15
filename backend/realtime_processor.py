@@ -139,43 +139,163 @@ async def fetch_rss_data():
     logger.info(f"📊 Fetched {len(events)} events from {len(RSS_SOURCES)} sources")
     return events
 
-def extract_location(text: str) -> str:
-    """Extract Indian state from text"""
+def extract_location(text: str) -> Optional[str]:
+    """Extract Indian state from text. Returns None if no location is found.
+    
+    Uses a comprehensive city→state mapping for 200+ Indian cities.
+    Removed the random fallback — unknown location = None, not random noise.
+    """
+    if not text:
+        return None
+
     text_lower = text.lower()
-    
-    # State variations and major cities
-    state_variations = {
-        'maharashtra': ['mumbai', 'pune', 'nagpur', 'nashik', 'aurangabad'],
-        'delhi': ['new delhi', 'delhi ncr', 'national capital'],
-        'karnataka': ['bangalore', 'bengaluru', 'mysore', 'hubli'],
-        'tamil nadu': ['chennai', 'madras', 'coimbatore', 'salem', 'madurai'],
-        'west bengal': ['kolkata', 'calcutta', 'howrah', 'durgapur'],
-        'uttar pradesh': ['lucknow', 'kanpur', 'agra', 'varanasi', 'allahabad', 'prayagraj'],
-        'gujarat': ['ahmedabad', 'surat', 'vadodara', 'rajkot'],
-        'rajasthan': ['jaipur', 'jodhpur', 'udaipur', 'kota'],
-        'punjab': ['chandigarh', 'amritsar', 'ludhiana', 'jalandhar'],
-        'haryana': ['gurgaon', 'gurugram', 'faridabad', 'panipat'],
-        'bihar': ['patna', 'gaya', 'muzaffarpur', 'bhagalpur'],
-        'odisha': ['bhubaneswar', 'cuttack', 'rourkela'],
-        'kerala': ['kochi', 'thiruvananthapuram', 'kozhikode', 'thrissur'],
-        'andhra pradesh': ['visakhapatnam', 'vijayawada', 'guntur'],
-        'telangana': ['hyderabad', 'secunderabad', 'warangal']
-    }
-    
-    # Check for state names and their cities
-    for state, cities in state_variations.items():
-        if state in text_lower or any(city in text_lower for city in cities):
-            # Convert to proper case
-            return ' '.join(word.capitalize() for word in state.split())
-    
-    # Check for remaining states
+
+    # ── Tier 1: Direct state name match ───────────────────────────────────────
     for state in INDIAN_STATES.keys():
         if state.lower() in text_lower:
             return state
-    
-    # Random fallback for demonstration
-    import random
-    return random.choice(list(INDIAN_STATES.keys()))
+
+    # ── Tier 2: Comprehensive city → state mapping (200+ cities) ──────────────
+    CITY_TO_STATE: Dict[str, str] = {
+        # Maharashtra
+        "mumbai": "Maharashtra", "bombay": "Maharashtra", "pune": "Maharashtra",
+        "nagpur": "Maharashtra", "nashik": "Maharashtra", "aurangabad": "Maharashtra",
+        "solapur": "Maharashtra", "kolhapur": "Maharashtra", "thane": "Maharashtra",
+        "navi mumbai": "Maharashtra", "amravati": "Maharashtra", "latur": "Maharashtra",
+        "dhule": "Maharashtra", "jalgaon": "Maharashtra", "akola": "Maharashtra",
+        "nanded": "Maharashtra", "satara": "Maharashtra", "sangli": "Maharashtra",
+        "ahmednagar": "Maharashtra", "ratnagiri": "Maharashtra",
+
+        # Delhi
+        "delhi": "Delhi", "new delhi": "Delhi", "noida": "Delhi",
+        "gurgaon": "Delhi", "gurugram": "Delhi", "faridabad": "Delhi",
+        "dwarka": "Delhi", "rohini": "Delhi", "janakpuri": "Delhi",
+
+        # Karnataka
+        "bangalore": "Karnataka", "bengaluru": "Karnataka", "mysore": "Karnataka",
+        "mysuru": "Karnataka", "hubli": "Karnataka", "dharwad": "Karnataka",
+        "mangalore": "Karnataka", "mangaluru": "Karnataka", "belgaum": "Karnataka",
+        "belagavi": "Karnataka", "gulbarga": "Karnataka", "kalaburagi": "Karnataka",
+        "davangere": "Karnataka", "bellary": "Karnataka", "bijapur": "Karnataka",
+        "shimoga": "Karnataka", "tumkur": "Karnataka", "udupi": "Karnataka",
+
+        # Tamil Nadu
+        "chennai": "Tamil Nadu", "madras": "Tamil Nadu", "coimbatore": "Tamil Nadu",
+        "madurai": "Tamil Nadu", "salem": "Tamil Nadu", "tiruchirappalli": "Tamil Nadu",
+        "trichy": "Tamil Nadu", "vellore": "Tamil Nadu", "tiruppur": "Tamil Nadu",
+        "erode": "Tamil Nadu", "tirunelveli": "Tamil Nadu", "ooty": "Tamil Nadu",
+        "kanchipuram": "Tamil Nadu", "thanjavur": "Tamil Nadu",
+
+        # West Bengal
+        "kolkata": "West Bengal", "calcutta": "West Bengal", "howrah": "West Bengal",
+        "durgapur": "West Bengal", "asansol": "West Bengal", "siliguri": "West Bengal",
+        "darjeeling": "West Bengal", "bardhaman": "West Bengal", "haldia": "West Bengal",
+        "kharagpur": "West Bengal", "malda": "West Bengal",
+
+        # Uttar Pradesh
+        "lucknow": "Uttar Pradesh", "kanpur": "Uttar Pradesh", "agra": "Uttar Pradesh",
+        "varanasi": "Uttar Pradesh", "allahabad": "Uttar Pradesh", "prayagraj": "Uttar Pradesh",
+        "meerut": "Uttar Pradesh", "ghaziabad": "Uttar Pradesh", "aligarh": "Uttar Pradesh",
+        "moradabad": "Uttar Pradesh", "bareilly": "Uttar Pradesh", "mathura": "Uttar Pradesh",
+        "vrindavan": "Uttar Pradesh", "gorakhpur": "Uttar Pradesh", "noida": "Uttar Pradesh",
+        "saharanpur": "Uttar Pradesh", "jhansi": "Uttar Pradesh", "ayodhya": "Uttar Pradesh",
+
+        # Gujarat
+        "ahmedabad": "Gujarat", "surat": "Gujarat", "vadodara": "Gujarat",
+        "baroda": "Gujarat", "rajkot": "Gujarat", "bhavnagar": "Gujarat",
+        "jamnagar": "Gujarat", "gandhinagar": "Gujarat", "anand": "Gujarat",
+        "morbi": "Gujarat", "nadiad": "Gujarat",
+
+        # Rajasthan
+        "jaipur": "Rajasthan", "jodhpur": "Rajasthan", "udaipur": "Rajasthan",
+        "kota": "Rajasthan", "bikaner": "Rajasthan", "ajmer": "Rajasthan",
+        "alwar": "Rajasthan", "bharatpur": "Rajasthan", "pushkar": "Rajasthan",
+        "sikar": "Rajasthan", "churu": "Rajasthan",
+
+        # Madhya Pradesh
+        "bhopal": "Madhya Pradesh", "indore": "Madhya Pradesh", "jabalpur": "Madhya Pradesh",
+        "gwalior": "Madhya Pradesh", "ujjain": "Madhya Pradesh", "sagar": "Madhya Pradesh",
+        "rewa": "Madhya Pradesh", "satna": "Madhya Pradesh",
+
+        # Andhra Pradesh
+        "visakhapatnam": "Andhra Pradesh", "vizag": "Andhra Pradesh",
+        "vijayawada": "Andhra Pradesh", "guntur": "Andhra Pradesh",
+        "tirupati": "Andhra Pradesh", "kurnool": "Andhra Pradesh",
+        "nellore": "Andhra Pradesh", "rajahmundry": "Andhra Pradesh",
+        "kakinada": "Andhra Pradesh",
+
+        # Telangana
+        "hyderabad": "Telangana", "secunderabad": "Telangana", "warangal": "Telangana",
+        "karimnagar": "Telangana", "khammam": "Telangana", "nizamabad": "Telangana",
+
+        # Kerala
+        "kochi": "Kerala", "cochin": "Kerala", "thiruvananthapuram": "Kerala",
+        "trivandrum": "Kerala", "kozhikode": "Kerala", "calicut": "Kerala",
+        "thrissur": "Kerala", "kollam": "Kerala", "palakkad": "Kerala",
+        "kannur": "Kerala", "kottayam": "Kerala", "alappuzha": "Kerala",
+
+        # Punjab
+        "amritsar": "Punjab", "ludhiana": "Punjab", "jalandhar": "Punjab",
+        "patiala": "Punjab", "bathinda": "Punjab", "mohali": "Punjab",
+        "chandigarh": "Punjab", "pathankot": "Punjab",
+
+        # Haryana
+        "gurgaon": "Haryana", "gurugram": "Haryana", "faridabad": "Haryana",
+        "panipat": "Haryana", "ambala": "Haryana", "hisar": "Haryana",
+        "rohtak": "Haryana", "karnal": "Haryana", "sonipat": "Haryana",
+
+        # Bihar
+        "patna": "Bihar", "gaya": "Bihar", "muzaffarpur": "Bihar",
+        "bhagalpur": "Bihar", "darbhanga": "Bihar", "purnia": "Bihar",
+        "bodh gaya": "Bihar", "nalanda": "Bihar",
+
+        # Odisha
+        "bhubaneswar": "Odisha", "cuttack": "Odisha", "rourkela": "Odisha",
+        "sambalpur": "Odisha", "berhampur": "Odisha", "puri": "Odisha",
+
+        # Assam
+        "guwahati": "Assam", "dispur": "Assam", "silchar": "Assam",
+        "dibrugarh": "Assam", "jorhat": "Assam", "nagaon": "Assam",
+
+        # Jharkhand
+        "ranchi": "Jharkhand", "jamshedpur": "Jharkhand", "dhanbad": "Jharkhand",
+        "bokaro": "Jharkhand", "hazaribagh": "Jharkhand",
+
+        # Uttarakhand
+        "dehradun": "Uttarakhand", "haridwar": "Uttarakhand", "rishikesh": "Uttarakhand",
+        "nainital": "Uttarakhand", "mussoorie": "Uttarakhand", "roorkee": "Uttarakhand",
+
+        # Himachal Pradesh
+        "shimla": "Himachal Pradesh", "manali": "Himachal Pradesh",
+        "dharamsala": "Himachal Pradesh", "solan": "Himachal Pradesh",
+        "kullu": "Himachal Pradesh",
+
+        # Jammu & Kashmir
+        "srinagar": "Jammu and Kashmir", "jammu": "Jammu and Kashmir",
+        "anantnag": "Jammu and Kashmir", "baramulla": "Jammu and Kashmir",
+        "pulwama": "Jammu and Kashmir", "sopore": "Jammu and Kashmir",
+
+        # North East
+        "imphal": "Manipur", "shillong": "Meghalaya", "aizawl": "Mizoram",
+        "kohima": "Nagaland", "agartala": "Tripura", "itanagar": "Arunachal Pradesh",
+        "gangtok": "Sikkim",
+
+        # Goa
+        "panaji": "Goa", "margao": "Goa", "vasco": "Goa", "mapusa": "Goa",
+
+        # Chhattisgarh
+        "raipur": "Chhattisgarh", "bhilai": "Chhattisgarh", "bilaspur": "Chhattisgarh",
+        "durg": "Chhattisgarh", "korba": "Chhattisgarh",
+    }
+
+    # Check multi-word cities first (longest match wins)
+    sorted_cities = sorted(CITY_TO_STATE.keys(), key=len, reverse=True)
+    for city in sorted_cities:
+        if city in text_lower:
+            return CITY_TO_STATE[city]
+
+    # ── Tier 3: Return None (no random fallback — data quality first) ──────────
+    return None
 
 def categorize_content(content: str) -> str:
     """Categorize content into topics"""
