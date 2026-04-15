@@ -41,12 +41,55 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import uvicorn
 
-# ─── LOGGING ─────────────────────────────────────────────────────────────────
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%H:%M:%S",
-)
+# ─── COLORIZED LOGGING ──────────────────────────────────────────────────────
+class ColorFormatter(logging.Formatter):
+    """ANSI-colored log formatter for readable server output."""
+    COLORS = {
+        logging.DEBUG:    "\033[36m",   # Cyan
+        logging.INFO:     "\033[32m",   # Green
+        logging.WARNING:  "\033[33m",   # Yellow
+        logging.ERROR:    "\033[31m",   # Red
+        logging.CRITICAL: "\033[35m",   # Magenta
+    }
+    DIM   = "\033[2m"
+    BOLD  = "\033[1m"
+    RESET = "\033[0m"
+    LEVEL_LABELS = {
+        logging.DEBUG:    "DBG",
+        logging.INFO:     "INF",
+        logging.WARNING:  "WRN",
+        logging.ERROR:    "ERR",
+        logging.CRITICAL: "CRT",
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        color  = self.COLORS.get(record.levelno, "")
+        label  = self.LEVEL_LABELS.get(record.levelno, record.levelname[:3])
+        ts     = self.formatTime(record, "%H:%M:%S")
+        name   = record.name.split(".")[-1][:18]
+        msg    = record.getMessage()
+        return (
+            f"{self.DIM}{ts}{self.RESET} "
+            f"{color}{self.BOLD}[{label}]{self.RESET} "
+            f"{self.DIM}{name:>18}{self.RESET}  "
+            f"{color if record.levelno >= logging.WARNING else ''}{msg}{self.RESET}"
+        )
+
+def _setup_logging():
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    # Remove default handlers
+    root.handlers.clear()
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColorFormatter())
+    root.addHandler(handler)
+
+    # Quieten noisy libraries
+    for noisy in ("httpx", "httpcore", "urllib3", "filelock", "watchfiles"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+_setup_logging()
 logger = logging.getLogger("misinfo_heatmap")
 
 # ─── LAZY ML STATE ───────────────────────────────────────────────────────────
@@ -78,24 +121,15 @@ def _load_ml_models():
         except Exception as e:
             logger.error(f"❌ Error loading realtime_processor: {e}")
 
-        # 2. Unified Ingestion (Hybrid: Watson + Local)
+        # 2. Ingestion loop — start directly after ML models ready
         try:
-            from ingestion_manager import unified_ingestion_manager
-            from massive_data_ingestion import is_processing_active
-            
-            # Hook the unified manager
-            _ingestion_fn = unified_ingestion_manager.start_continuous_ingestion
+            from massive_data_ingestion import high_volume_processing_loop, is_processing_active
+            _ingestion_fn  = high_volume_processing_loop
             _is_active_fn  = is_processing_active
-            logger.info("✅ UnifiedIngestionManager (Hybrid) loaded")
+            logger.info("✅ massive_data_ingestion loop ready")
         except Exception as e:
-            logger.warning(f"⚠️ UnifiedIngestionManager failed load ({e}). Falling back to massive_data_ingestion.")
-            try:
-                from massive_data_ingestion import high_volume_processing_loop, is_processing_active
-                _ingestion_fn  = high_volume_processing_loop
-                _is_active_fn  = is_processing_active
-                logger.info("✅ massive_data_ingestion loaded")
-            except Exception as e2:
-                logger.error(f"❌ Critical Failure: both ingestion managers failed: {e2}")
+            logger.warning(f"⚠️ massive_data_ingestion failed to load: {e}")
+            _ingestion_fn = None
 
         # 3. Fake News Detector & Custom Ensemble
         try:
@@ -121,7 +155,12 @@ def _get_processing_stats():
 def _is_processing_active():
     return _is_active_fn() if _is_active_fn else False
 
+
 # ─── DATABASE HELPER ─────────────────────────────────────────────────────────
+# Ingest → enhanced_fake_news.db (full article schema with title/state/verdict)
+# API server reads from this SAME file — single source of truth.
+DB_PATH = DATA_DIR / "enhanced_fake_news.db"
+
 def get_db() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -168,17 +207,18 @@ if assets_dir.exists():
 @app.on_event("startup")
 async def on_startup():
     logger.info("🚀 Server listening — ML models loading in background…")
-    # Kick off the heavy model load in a thread, then launch ingestion
     loop = asyncio.get_event_loop()
-    def _ml_then_ingest():
-        _load_ml_models()
-        if _ingestion_fn:
-            asyncio.run_coroutine_threadsafe(_ingestion_task(), loop)
-    threading.Thread(target=_ml_then_ingest, daemon=True).start()
 
-async def _ingestion_task():
-    if _ingestion_fn:
-        await _ingestion_fn()
+    def _ml_then_ingest():
+        _load_ml_models()  # blocks until models done
+        # Now that models are ready, schedule the ingestion loop on the event loop
+        if _ingestion_fn:
+            logger.info("🔄 Scheduling ingestion loop on event loop…")
+            asyncio.run_coroutine_threadsafe(_ingestion_fn(), loop)
+        else:
+            logger.warning("⚠️ No ingestion function registered — data will not update automatically.")
+
+    threading.Thread(target=_ml_then_ingest, daemon=True).start()
 
 # ─── PYDANTIC MODELS ─────────────────────────────────────────────────────────
 class AnalyzeRequest(BaseModel):
@@ -307,7 +347,7 @@ async def get_live_events(limit: int = Query(10, ge=1, le=100)):
                 SELECT title, content, source, state,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events
-                WHERE timestamp > datetime('now', '-1 hour')
+                WHERE timestamp > datetime('now', '-6 hours')
                 ORDER BY timestamp DESC
                 LIMIT ?
             """, (limit,)).fetchall()
@@ -426,14 +466,16 @@ async def health():
 
 # ─── ENTRYPOINT ──────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    W, G, S, R = "\033[1;37m", "\033[1;32m", "\033[1;33m", "\033[0m"
     print()
-    print("  +-----------------------------------------+")
-    print("  |  Misinformation Heatmap  v2.0.0         |")
-    print("  |  Server starts; ML loads in background  |")
-    print("  +-----------------------------------------+")
-    print("  -> Home:      http://localhost:8080")
-    print("  -> Dashboard: http://localhost:8080/dashboard")
-    print("  -> Heatmap:   http://localhost:8080/map/enhanced-india-heatmap.html")
-    print("  -> API Docs:  http://localhost:8080/api/docs")
+    print(f"  {W}+------------------------------------------+{R}")
+    print(f"  {W}|  {S}Misinformation Heatmap  v2.0.0{W}          |{R}")
+    print(f"  {W}|  {G}ML models load lazily in background{W}     |{R}")
+    print(f"  {W}+------------------------------------------+{R}")
+    print(f"  {W}|  {G}Home     {W}->  {S}http://localhost:8000{W}         |{R}")
+    print(f"  {W}|  {G}Dashboard{W}->  {S}http://localhost:8000/dashboard{W}  |{R}")
+    print(f"  {W}|  {G}Heatmap  {W}->  {S}http://localhost:8000/map/...{W}    |{R}")
+    print(f"  {W}|  {G}API Docs {W}->  {S}http://localhost:8000/api/docs{W}  |{R}")
+    print(f"  {W}+------------------------------------------+{R}")
     print()
-    uvicorn.run(app, host="0.0.0.0", port=8080, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")

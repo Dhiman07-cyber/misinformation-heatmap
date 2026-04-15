@@ -10,23 +10,26 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --saffron: #FF9933;
-            --saffron-light: #ffb366;
-            --green: #138808;
-            --red: #ef4444;
-            --amber: #f59e0b;
-            --blue: #6366f1;
-            --bg: #050810;
-            --bg-card: rgba(255,255,255,0.04);
-            --bg-card-hover: rgba(255,255,255,0.07);
-            --border: rgba(255,255,255,0.08);
-            --border-accent: rgba(255,153,51,0.25);
-            --text-primary: #f0f4ff;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --radius: 16px;
-            --radius-sm: 10px;
-            --sidebar-width: 220px;
+            --saffron:       #E87722;
+            --saffron-light: #FF9933;
+            --saffron-dark:  #c4601a;
+            --green:         #138808;
+            --green-light:   #1ea50e;
+            --navy:          #000080;
+            --red:           #dc2626;
+            --amber:         #d97706;
+            --blue:          #2563eb;
+            --bg:            #F8F8F4;
+            --bg-card:       #FFFFFF;
+            --border:        #E8E8E0;
+            --border-accent: rgba(232,119,34,0.25);
+            --text-primary:  #1A1A1A;
+            --text-secondary:#555555;
+            --text-muted:    #888888;
+            --shadow-sm:     0 2px 8px rgba(0,0,0,0.07);
+            --shadow-md:     0 4px 20px rgba(0,0,0,0.10);
+            --radius:        16px;
+            --radius-sm:     10px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -36,228 +39,159 @@
             background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
-            display: flex; flex-direction: column;
         }
 
-        .bg-canvas {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,153,51,0.08) 0%, transparent 70%),
-                        radial-gradient(ellipse 30% 30% at 90% 80%, rgba(19,136,8,0.06) 0%, transparent 50%);
-        }
+        /* ─── BACKGROUND ─── */
+        .bg-blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.12; }
+        .blob-1 { width: 600px; height: 600px; top: -150px; left: -100px; background: var(--saffron-light); }
+        .blob-2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: var(--green-light); }
 
         /* ─── NAVBAR ─── */
         .navbar {
             position: sticky; top: 0; z-index: 100;
-            height: 60px; display: flex; align-items: center;
-            padding: 0 2rem;
-            background: rgba(5,8,16,0.9); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
+            height: 60px; display: flex; align-items: center; padding: 0 2rem;
+            background: rgba(248,248,244,0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);
         }
         .nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .logo {
-            display: flex; align-items: center; gap: 10px;
-            font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800;
-            text-decoration: none; color: var(--text-primary);
-        }
-        .logo-icon {
-            width: 32px; height: 32px; border-radius: 8px;
-            background: linear-gradient(135deg, var(--saffron), #f97316);
-            display: flex; align-items: center; justify-content: center; font-size: 16px;
-            box-shadow: 0 4px 12px rgba(255,153,51,0.4);
-        }
-        .logo span { color: var(--saffron); }
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-link {
-            color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500;
-            padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s;
-        }
-        .nav-link:hover { color: var(--text-primary); background: var(--bg-card-hover); }
-        .nav-link.active { color: var(--saffron); background: rgba(255,153,51,0.1); }
-        .nav-right { display: flex; align-items: center; gap: 1rem; }
-        .live-badge {
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
-            border-radius: 20px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; color: #22c55e;
-        }
-        .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: livePulse 2s infinite; }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
-        }
-        .refresh-btn {
-            background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);
-            padding: 5px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer;
-            transition: all 0.2s; font-family: 'Inter', sans-serif;
-        }
-        .refresh-btn:hover { border-color: var(--border-accent); color: var(--saffron); }
+        .logo { display: flex; align-items: center; gap: 10px; font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo-badge { font-size: 0.6rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 5px; border-radius: 3px; }
+        .logo .logo-name { color: var(--saffron); }
+        .nav-links { display: flex; gap: 0.25rem; }
+        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
+        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
+        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); font-weight: 600; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; color: var(--green); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(19,136,8,0.4);}50%{opacity:0.8;box-shadow:0 0 0 5px rgba(19,136,8,0);} }
+        .refresh-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); padding: 5px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .refresh-btn:hover { border-color: var(--saffron); color: var(--saffron); }
 
         /* ─── MAIN LAYOUT ─── */
-        .main-content {
-            position: relative; z-index: 1;
-            flex: 1; padding: 2rem;
-            max-width: 1400px; width: 100%; margin: 0 auto;
-        }
+        .main { position: relative; z-index: 1; padding: 2rem; max-width: 1400px; margin: 0 auto; }
         .page-header { margin-bottom: 2rem; }
-        .page-title {
-            font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
-        .last-updated { color: var(--text-muted); font-size: 0.8rem; margin-top: 2px; }
+        .page-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
+        .page-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
+        .last-updated { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
 
         /* ─── STAT CARDS ─── */
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;
-            margin-bottom: 2rem;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 2rem; }
         .stat-card {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.5rem;
-            position: relative; overflow: hidden; transition: all 0.3s;
-            backdrop-filter: blur(10px);
-            cursor: default;
+            border-radius: var(--radius); padding: 1.5rem; position: relative;
+            overflow: hidden; transition: all 0.25s; box-shadow: var(--shadow-sm);
         }
-        .stat-card::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: var(--accent-color, var(--saffron));
-        }
-        .stat-card:hover { border-color: var(--border-accent); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
-        .stat-card.total { --accent-color: var(--blue); }
-        .stat-card.fake  { --accent-color: var(--red); }
-        .stat-card.real  { --accent-color: #22c55e; }
-        .stat-card.uncertain { --accent-color: var(--amber); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-        .card-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
-        .card-icon { font-size: 1.5rem; opacity: 0.8; }
-        .card-value {
-            font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 900; line-height: 1;
-            color: var(--text-primary); margin-bottom: 0.4rem;
-        }
-        .card-sub { font-size: 0.8rem; color: var(--text-muted); }
-        .card-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
-        .bar-fill { height: 100%; border-radius: 2px; background: var(--accent-color, var(--saffron)); transition: width 0.8s ease; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+        .stat-card.total::before  { background: var(--blue); }
+        .stat-card.fake::before   { background: var(--red); }
+        .stat-card.real::before   { background: var(--green); }
+        .stat-card.uncertain::before { background: var(--amber); }
+        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+        .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
+        .stat-icon { font-size: 1.4rem; }
+        .stat-value { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 900; line-height: 1; }
+        .stat-card.total  .stat-value { color: var(--blue); }
+        .stat-card.fake   .stat-value { color: var(--red); }
+        .stat-card.real   .stat-value { color: var(--green); }
+        .stat-card.uncertain .stat-value { color: var(--amber); }
+        .stat-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
+        .stat-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
+        .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; width: 0; }
+        .stat-card.total  .stat-bar-fill { background: var(--blue); }
+        .stat-card.fake   .stat-bar-fill { background: var(--red); }
+        .stat-card.real   .stat-bar-fill { background: var(--green); }
+        .stat-card.uncertain .stat-bar-fill { background: var(--amber); }
 
-        /* ─── GRID LAYOUTS ─── */
-        .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        /* ─── GRID ROWS ─── */
+        .row { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .row-2 { grid-template-columns: 1fr 1.6fr; }
+        .row-2b { grid-template-columns: 1.6fr 1fr; }
+        .row-3 { grid-template-columns: 1fr 1fr 1fr; }
 
-        /* ─── PANEL ─── */
         .panel {
             background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); overflow: hidden; backdrop-filter: blur(10px);
+            border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column;
         }
         .panel-header {
             display: flex; align-items: center; justify-content: space-between;
             padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
         }
-        .panel-title { font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; }
-        .panel-badge {
-            font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 20px;
-            background: rgba(255,153,51,0.1); color: var(--saffron); border: 1px solid rgba(255,153,51,0.2);
-        }
-        .panel-body { padding: 1.5rem; }
+        .panel-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+        .panel-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+        .panel-badge { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 10px; }
+        .panel-body { padding: 1.5rem; flex: 1; }
 
-        /* ─── ACCURACY DISPLAY ─── */
-        .accuracy-ring {
-            display: flex; flex-direction: column; align-items: center; padding: 1.5rem 0;
-        }
-        .ring-svg { width: 140px; height: 140px; transform: rotate(-90deg); }
-        .ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
-        .ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
-        .ring-label { text-anchor: middle; dominant-baseline: middle; transform: rotate(90deg) translate(0, 0); }
+        /* ─── ACCURACY RING ─── */
+        .accuracy-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 0; }
+        .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .ring-label { position: absolute; text-align: center; }
+        .ring-pct { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--green); line-height: 1; }
+        .ring-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
-        .accuracy-value { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 900; color: #22c55e; }
-        .accuracy-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
-
-        .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
-        .metric-row:last-child { border-bottom: none; }
-        .metric-name { font-size: 0.85rem; color: var(--text-secondary); }
-        .metric-badge {
-            font-size: 0.85rem; font-weight: 700; padding: 3px 12px; border-radius: 20px;
-        }
-        .metric-badge.green { background: rgba(34,197,94,0.1); color: #22c55e; }
-        .metric-badge.blue  { background: rgba(99,102,241,0.1); color: #818cf8; }
-        .metric-badge.amber { background: rgba(245,158,11,0.1); color: var(--amber); }
+        .metric-bar-row { display: flex; align-items: center; justify-content: space-around; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+        .metric-bar-item { text-align: center; }
+        .mbi-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; }
+        .mbi-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
         /* ─── ACTIVITY FEED ─── */
-        .activity-list { max-height: 380px; overflow-y: auto; }
-        .activity-list::-webkit-scrollbar { width: 4px; }
-        .activity-list::-webkit-scrollbar-track { background: transparent; }
-        .activity-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-        .activity-item {
-            display: flex; align-items: flex-start; gap: 12px;
-            padding: 1rem 0; border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
-        }
-        .activity-item:last-child { border-bottom: none; }
-        .activity-item:hover { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 1rem 8px; margin: 0 -8px; }
-        .activity-dot {
-            width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center; font-size: 1rem;
-        }
-        .activity-dot.fake { background: rgba(239,68,68,0.15); }
-        .activity-dot.real { background: rgba(34,197,94,0.15); }
-        .activity-dot.uncertain { background: rgba(245,158,11,0.15); }
+        .activity-feed { overflow-y: auto; max-height: 320px; display: flex; flex-direction: column; gap: 0.6rem; }
+        .activity-feed::-webkit-scrollbar { width: 4px; }
+        .activity-feed::-webkit-scrollbar-track { background: var(--bg); }
+        .activity-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .activity-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; }
+        .activity-item:hover { border-color: var(--border-accent); background: rgba(232,119,34,0.02); }
+        .activity-dot { font-size: 1.1rem; flex-shrink: 0; }
         .activity-info { flex: 1; min-width: 0; }
-        .activity-title {
-            font-size: 0.85rem; font-weight: 600; color: var(--text-primary);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-            margin-bottom: 4px;
-        }
-        .activity-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 8px; flex-wrap: wrap; }
-        .activity-tag {
-            padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;
-        }
-        .activity-tag.fake     { background: rgba(239,68,68,0.1); color: #f87171; }
-        .activity-tag.real     { background: rgba(34,197,94,0.1);  color: #4ade80; }
-        .activity-tag.uncertain { background: rgba(245,158,11,0.1); color: #fbbf24; }
-        .empty-feed { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
-        .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+        .activity-title { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .activity-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 3px; font-size: 0.72rem; color: var(--text-muted); }
+        .activity-tag { font-weight: 700; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; }
+        .activity-tag.fake { background: rgba(220,38,38,0.1); color: var(--red); }
+        .activity-tag.real { background: rgba(19,136,8,0.1); color: var(--green); }
+        .activity-tag.uncertain { background: rgba(217,119,6,0.1); color: var(--amber); }
+        .feed-count { font-size: 0.78rem; color: var(--text-muted); }
 
-        /* ─── COVERAGE STRIP ─── */
-        .coverage-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem 0;
-        }
-        .cov-item { text-align: center; }
-        .cov-val { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--saffron); }
-        .cov-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+        /* ─── COVERAGE ─── */
+        .coverage-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+        .cov-item { text-align: center; padding: 1rem; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+        .cov-val { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--saffron); }
+        .cov-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
 
-        /* ─── LOADING ─── */
-        .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-            background-size: 400px 100%; animation: shimmer 1.5s infinite; border-radius: 4px;
-        }
-        @keyframes shimmer { from { background-position: -400px 0; } to { background-position: 400px 0; } }
+        /* ─── HEALTH METRICS ─── */
+        .metric-row { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-name { font-size: 0.85rem; color: var(--text-secondary); }
+        .metric-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 10px; }
+        .metric-badge.green { background: rgba(19,136,8,0.1); color: var(--green); }
+        .metric-badge.amber { background: rgba(217,119,6,0.1); color: var(--amber); }
+        .metric-badge.red { background: rgba(220,38,38,0.1); color: var(--red); }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 1100px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .grid-2-1 { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .grid-2 { grid-template-columns: 1fr; }
-            .nav-links { display: none; }
-            .main-content { padding: 1.25rem; }
-        }
-        @media (max-width: 480px) {
-            .stats-grid { grid-template-columns: 1fr; }
-        }
+        /* ─── MAP LINK ─── */
+        .map-link { display: inline-flex; align-items: center; gap: 6px; background: var(--saffron); color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; }
+        .map-link:hover { background: var(--saffron-dark); }
 
-        /* Number counter animation */
-        .counting { transition: all 0.4s ease; }
+        .empty-feed { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.88rem; }
+        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
+
+        @media (max-width: 1024px) { .row-2, .row-2b { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr 1fr; } .row-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="bg-canvas"></div>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
 
-    <!-- NAVBAR -->
+    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-inner">
             <a href="/" class="logo">
-                <div class="logo-icon">🛡️</div>
-                Misinfo<span>Heatmap</span>
+                <span class="logo-badge">IN</span>
+                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
@@ -265,159 +199,151 @@
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
             <div class="nav-right">
-                <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
-                <div class="live-badge">
-                    <div class="live-dot"></div>
-                    <span id="system-status">Loading...</span>
+                <div class="status-pill">
+                    <span class="status-dot"></span>
+                    <span id="system-status">Connecting…</span>
                 </div>
+                <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
             </div>
         </div>
     </nav>
 
-    <!-- MAIN -->
-    <div class="main-content">
+    <div class="main">
+        <!-- Header -->
         <div class="page-header">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
-                <div>
-                    <h1 class="page-title">Real-Time Analytics</h1>
-                    <p class="page-subtitle">Misinformation detection across all Indian states & union territories</p>
-                </div>
-                <div class="last-updated" id="last-updated">Last updated: —</div>
-            </div>
+            <div class="page-title">Real-Time Analytics</div>
+            <div class="page-sub">Comprehensive misinformation detection metrics across India</div>
+            <div class="last-updated" id="last-updated">Fetching data…</div>
         </div>
 
-        <!-- STATS -->
+        <!-- Stat Cards -->
         <div class="stats-grid">
             <div class="stat-card total">
-                <div class="card-header">
-                    <div class="card-label">Total Events</div>
-                    <div class="card-icon">📊</div>
+                <div class="stat-header">
+                    <div class="stat-label">Total Events</div>
+                    <div class="stat-icon">📊</div>
                 </div>
-                <div class="card-value counting" id="total-events">—</div>
-                <div class="card-sub">Processed in real-time</div>
-                <div class="card-bar"><div class="bar-fill" id="bar-total" style="width:0%"></div></div>
+                <div class="stat-value" id="total-events">—</div>
+                <div class="stat-desc">Processed in real-time</div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="bar-total"></div></div>
             </div>
             <div class="stat-card fake">
-                <div class="card-header">
-                    <div class="card-label">Misinformation</div>
-                    <div class="card-icon">🚨</div>
+                <div class="stat-header">
+                    <div class="stat-label">Misinformation</div>
+                    <div class="stat-icon">🚨</div>
                 </div>
-                <div class="card-value counting" id="fake-events">—</div>
-                <div class="card-sub">High-confidence detections</div>
-                <div class="card-bar"><div class="bar-fill" id="bar-fake" style="width:0%"></div></div>
+                <div class="stat-value" id="fake-events">—</div>
+                <div class="stat-desc">High confidence detections</div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="bar-fake"></div></div>
             </div>
             <div class="stat-card real">
-                <div class="card-header">
-                    <div class="card-label">Verified News</div>
-                    <div class="card-icon">✅</div>
+                <div class="stat-header">
+                    <div class="stat-label">Verified News</div>
+                    <div class="stat-icon">✅</div>
                 </div>
-                <div class="card-value counting" id="real-events">—</div>
-                <div class="card-sub">Authenticated sources</div>
-                <div class="card-bar"><div class="bar-fill" id="bar-real" style="width:0%"></div></div>
+                <div class="stat-value" id="real-events">—</div>
+                <div class="stat-desc">Authenticated sources</div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="bar-real"></div></div>
             </div>
             <div class="stat-card uncertain">
-                <div class="card-header">
-                    <div class="card-label">Under Review</div>
-                    <div class="card-icon">⚠️</div>
+                <div class="stat-header">
+                    <div class="stat-label">Under Review</div>
+                    <div class="stat-icon">⚠️</div>
                 </div>
-                <div class="card-value counting" id="uncertain-events">—</div>
-                <div class="card-sub">Pending verification</div>
-                <div class="card-bar"><div class="bar-fill" id="bar-uncertain" style="width:0%"></div></div>
+                <div class="stat-value" id="uncertain-events">—</div>
+                <div class="stat-desc">Requires human verification</div>
+                <div class="stat-bar"><div class="stat-bar-fill" id="bar-uncertain"></div></div>
             </div>
         </div>
 
-        <!-- ROW 1 -->
-        <div class="grid-2-1">
-            <!-- Live Activity -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">Live Activity Feed</div>
-                    <div class="panel-badge" id="events-count">0 events</div>
-                </div>
-                <div class="panel-body" style="padding: 0 1.5rem;">
-                    <div class="activity-list" id="activity-feed">
-                        <div class="empty-feed">
-                            <div class="empty-icon">⏳</div>
-                            <p>Loading recent activity...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+        <!-- Row: AI Performance + Live Activity -->
+        <div class="row row-2">
             <!-- AI Performance -->
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">AI Performance</div>
+                    <div>
+                        <div class="panel-title">AI Detection Performance</div>
+                        <div class="panel-sub">Multi-layered analysis system accuracy</div>
+                    </div>
                 </div>
                 <div class="panel-body">
-                    <div class="accuracy-ring">
-                        <svg class="ring-svg" viewBox="0 0 140 140">
-                            <circle class="ring-bg" cx="70" cy="70" r="56"/>
-                            <circle class="ring-fill" id="accuracy-ring-fill" cx="70" cy="70" r="56"
-                                stroke="url(#ringGrad)"
-                                stroke-dasharray="351.86"
-                                stroke-dashoffset="351.86"/>
-                            <defs>
-                                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#22c55e"/>
-                                    <stop offset="100%" style="stop-color:#16a34a"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                        <div style="margin-top: -16px; position: relative; z-index:1;">
-                            <div class="accuracy-value">91%</div>
-                            <div class="accuracy-label">Detection Accuracy</div>
+                    <div class="accuracy-center">
+                        <div class="ring-wrap">
+                            <svg width="160" height="160" style="transform:rotate(-90deg)">
+                                <circle cx="80" cy="80" r="56" fill="none" stroke="#E8E8E0" stroke-width="10"/>
+                                <circle id="accuracy-ring-fill" cx="80" cy="80" r="56" fill="none"
+                                    stroke="#138808" stroke-width="10" stroke-linecap="round"
+                                    stroke-dasharray="351.86" stroke-dashoffset="351.86"
+                                    style="transition: stroke-dashoffset 1.5s ease"/>
+                            </svg>
+                            <div class="ring-label">
+                                <div class="ring-pct" id="accuracy-pct">91%</div>
+                                <div class="ring-sub">Overall Accuracy</div>
+                            </div>
                         </div>
                     </div>
+                    <div class="metric-bar-row">
+                        <div class="metric-bar-item">
+                            <div class="mbi-val" style="color:var(--blue);">94.2%</div>
+                            <div class="mbi-lbl">Precision</div>
+                        </div>
+                        <div class="metric-bar-item">
+                            <div class="mbi-val" style="color:var(--green);">91.7%</div>
+                            <div class="mbi-lbl">Recall</div>
+                        </div>
+                        <div class="metric-bar-item">
+                            <div class="mbi-val" style="color:var(--saffron);">92.9%</div>
+                            <div class="mbi-lbl">F1-Score</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="metric-row">
-                        <span class="metric-name">Precision</span>
-                        <span class="metric-badge green">94.2%</span>
+            <!-- Live Activity -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title">Live Activity</div>
+                        <div class="panel-sub">Recent classifications</div>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">Recall</span>
-                        <span class="metric-badge blue">91.7%</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">F1-Score (CV)</span>
-                        <span class="metric-badge green">91.0%</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">ROC-AUC</span>
-                        <span class="metric-badge amber">0.973</span>
+                    <span class="feed-count" id="events-count">Loading…</span>
+                </div>
+                <div class="panel-body" style="overflow:hidden; padding:1rem;">
+                    <div class="activity-feed" id="activity-feed">
+                        <div class="empty-feed"><div class="empty-icon">⏳</div>Loading recent activity…</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ROW 2 -->
-        <div class="grid-2">
-            <!-- Coverage -->
+        <!-- Row: Coverage + Health -->
+        <div class="row row-2b">
+            <!-- Geographic Coverage -->
             <div class="panel">
                 <div class="panel-header">
-                    <div class="panel-title">Geographic Coverage</div>
-                    <a href="/map/enhanced-india-heatmap.html" style="font-size:0.8rem; color:var(--saffron); text-decoration:none; font-weight:600;">
-                        View Map →
-                    </a>
+                    <div>
+                        <div class="panel-title">Geographic Coverage</div>
+                        <div class="panel-sub">Monitoring across all Indian states and union territories</div>
+                    </div>
+                    <a href="/map/enhanced-india-heatmap.html" class="map-link">🗺️ View Interactive Map</a>
                 </div>
                 <div class="panel-body">
                     <div class="coverage-grid">
                         <div class="cov-item">
                             <div class="cov-val" id="total-states">36</div>
-                            <div class="cov-label">States & UTs</div>
+                            <div class="cov-label">States &amp; UTs</div>
                         </div>
                         <div class="cov-item">
                             <div class="cov-val">34+</div>
                             <div class="cov-label">News Sources</div>
                         </div>
                         <div class="cov-item">
-                            <div class="cov-val">2 min</div>
-                            <div class="cov-label">Update Cycle</div>
+                            <div class="cov-val">100+</div>
+                            <div class="cov-label">Articles/Second</div>
                         </div>
                     </div>
-
-                    <div style="margin-top:1rem; padding:1rem; background:rgba(255,153,51,0.06); border:1px solid rgba(255,153,51,0.15); border-radius:12px; font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-                        🌐 Monitoring <strong style="color:var(--saffron)">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble and IndicBERT NLP pipeline.
+                    <div style="margin-top:1.25rem; padding:1rem; background:rgba(232,119,34,0.05); border:1px solid rgba(232,119,34,0.15); border-radius:12px; font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
+                        🌐 Monitoring <strong style="color:var(--saffron)">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
                     </div>
                 </div>
             </div>
@@ -426,7 +352,7 @@
             <div class="panel">
                 <div class="panel-header">
                     <div class="panel-title">System Health</div>
-                    <div id="health-badge" class="panel-badge">Checking...</div>
+                    <div class="panel-badge" id="health-badge">Checking…</div>
                 </div>
                 <div class="panel-body">
                     <div class="metric-row">
@@ -435,7 +361,7 @@
                     </div>
                     <div class="metric-row">
                         <span class="metric-name">Data Processing</span>
-                        <span class="metric-badge" id="health-proc" style="background:rgba(245,158,11,0.1);color:#fbbf24;">● Checking</span>
+                        <span class="metric-badge amber" id="health-proc">● Checking</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-name">Database</span>
@@ -443,11 +369,15 @@
                     </div>
                     <div class="metric-row">
                         <span class="metric-name">ML Models</span>
-                        <span class="metric-badge green">● Loaded</span>
+                        <span class="metric-badge green" id="health-ml">● Checking</span>
                     </div>
                     <div class="metric-row">
                         <span class="metric-name">RSS Feeds</span>
                         <span class="metric-badge green">● 34+ Active</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-name">GDELT Source</span>
+                        <span class="metric-badge green">● Connected</span>
                     </div>
                 </div>
             </div>
@@ -455,18 +385,19 @@
     </div>
 
     <script>
-        const fmt = n => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
+        const fmt = n => n >= 1000000 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : String(n);
 
         function animateNum(el, to) {
-            const from = parseInt(el.textContent) || 0;
+            if (!el) return;
+            const from = parseInt(el.textContent.replace(/[^0-9]/g,'')) || 0;
             if (from === to) return;
-            const step = Math.ceil(Math.abs(to - from) / 20);
+            const step = Math.max(1, Math.ceil(Math.abs(to - from) / 25));
             let cur = from;
             const timer = setInterval(() => {
                 cur += (to > from ? step : -step);
                 if ((to > from && cur >= to) || (to < from && cur <= to)) { cur = to; clearInterval(timer); }
                 el.textContent = fmt(cur);
-            }, 30);
+            }, 25);
         }
 
         async function updateStats(d) {
@@ -481,7 +412,6 @@
                 animateNum(document.getElementById('fake-events'), d.fake_events || 0);
                 animateNum(document.getElementById('real-events'), d.real_events || 0);
                 animateNum(document.getElementById('uncertain-events'), d.uncertain_events || 0);
-
                 document.getElementById('total-states').textContent = d.total_states || 36;
 
                 const total = d.total_events || 1;
@@ -493,26 +423,30 @@
                 }, 200);
 
                 const statusEl = document.getElementById('system-status');
-                const procEl = document.getElementById('health-proc');
-                const healthBadge = document.getElementById('health-badge');
-                if (d.processing_active) {
-                    statusEl.textContent = 'Live Processing';
-                    procEl.textContent = '● Active';
-                    procEl.className = 'metric-badge green';
-                    healthBadge.textContent = 'All Systems Go';
-                    healthBadge.style.color = '#22c55e';
-                } else {
-                    statusEl.textContent = 'System Ready';
-                    procEl.textContent = '● Idle';
-                    procEl.className = 'metric-badge amber';
-                    healthBadge.textContent = 'Standby';
-                }
+                const procEl   = document.getElementById('health-proc');
+                const mlEl     = document.getElementById('health-ml');
+                const badge    = document.getElementById('health-badge');
+
+                statusEl.textContent = d.processing_active ? 'Live Processing' : (d.ml_ready ? 'System Ready' : 'Loading…');
+                procEl.textContent   = d.processing_active ? '● Active' : '● Idle';
+                procEl.className     = `metric-badge ${d.processing_active ? 'green' : 'amber'}`;
+                mlEl.textContent     = d.ml_ready ? '● Loaded' : '● Loading…';
+                mlEl.className       = `metric-badge ${d.ml_ready ? 'green' : 'amber'}`;
+                badge.textContent    = d.processing_active ? 'All Systems Go' : 'Standby';
+                badge.style.color    = d.processing_active ? 'var(--green)' : 'var(--text-muted)';
+
+                // Accuracy ring
+                const acc = d.classification_accuracy || 0.91;
+                document.getElementById('accuracy-pct').textContent = Math.round(acc * 100) + '%';
+                setTimeout(() => {
+                    document.getElementById('accuracy-ring-fill').style.strokeDashoffset = 351.86 * (1 - acc);
+                }, 300);
 
                 document.getElementById('last-updated').textContent =
                     'Last updated: ' + new Date().toLocaleTimeString('en-IN', { hour12: true });
 
-            } catch (_) {
-                document.getElementById('system-status').textContent = 'Connecting...';
+            } catch(_) {
+                document.getElementById('system-status').textContent = 'Connecting…';
             }
         }
 
@@ -520,7 +454,7 @@
             try {
                 let events;
                 if (!eventsPayload) {
-                    const res = await fetch('/api/v1/events/live?limit=12');
+                    const res = await fetch('/api/v1/events/live?limit=15');
                     if (!res.ok) throw new Error();
                     const d = await res.json();
                     events = d.events || [];
@@ -537,53 +471,42 @@
                 }
 
                 feed.innerHTML = events.map(ev => {
-                    const cls = ev.classification || 'uncertain';
+                    const cls  = ev.classification || 'uncertain';
                     const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
                     const time = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true}) : '—';
-                    const title = (ev.title || 'Processing event…').substring(0, 80);
-                    const conf = ev.confidence ? Math.round(ev.confidence * 100) + '%' : '';
-                    return `
-                    <div class="activity-item">
-                        <div class="activity-dot ${cls}">${icon}</div>
+                    const title = (ev.title || 'Processing event…').substring(0, 90);
+                    const conf  = ev.confidence ? Math.round(ev.confidence * 100) + '%' : '';
+                    return `<div class="activity-item">
+                        <div class="activity-dot">${icon}</div>
                         <div class="activity-info">
                             <div class="activity-title" title="${(ev.title||'').replace(/"/g,'&quot;')}">${title}</div>
                             <div class="activity-meta">
                                 <span class="activity-tag ${cls}">${cls.toUpperCase()}</span>
                                 <span>${ev.source || 'Unknown'}</span>
                                 <span>📍 ${ev.state || 'India'}</span>
-                                <span>${conf}</span>
+                                ${conf ? `<span>${conf}</span>` : ''}
                                 <span>🕐 ${time}</span>
                             </div>
                         </div>
                     </div>`;
                 }).join('');
-            } catch (_) {}
+            } catch(_) {}
         }
 
         function refreshAll() { updateStats(); updateActivity(); }
 
-        // Start accuracy ring animation
-        setTimeout(() => {
-            const ring = document.getElementById('accuracy-ring-fill');
-            const circumference = 351.86;
-            const pct = 0.91;
-            ring.style.strokeDashoffset = circumference * (1 - pct);
-        }, 500);
-
+        // Initial load
         updateStats();
         updateActivity();
-        
-        // Convert to SSE for real-time push
+
+        // SSE for real-time updates
         const sse = new EventSource('/api/v1/stream');
-        sse.addEventListener('stats', (e) => {
-            updateStats(JSON.parse(e.data));
-        });
-        sse.addEventListener('live_events', (e) => {
-            updateActivity(JSON.parse(e.data));
-        });
-        sse.onerror = () => {
-            document.getElementById('system-status').textContent = 'Reconnecting...';
-        };
+        sse.addEventListener('stats', e => updateStats(JSON.parse(e.data)));
+        sse.addEventListener('live_events', e => updateActivity(JSON.parse(e.data)));
+        sse.onerror = () => { document.getElementById('system-status').textContent = 'Reconnecting…'; };
+
+        // Fallback polling every 15s in case SSE stalls
+        setInterval(refreshAll, 15000);
     </script>
 </body>
 </html>

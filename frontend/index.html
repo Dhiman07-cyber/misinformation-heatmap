@@ -10,500 +10,343 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --saffron: #FF9933;
-            --saffron-light: #ffb366;
-            --saffron-dark: #cc7a29;
-            --green: #138808;
-            --green-light: #1ea50e;
-            --bg-dark: #050810;
-            --bg-card: rgba(255,255,255,0.04);
-            --bg-card-hover: rgba(255,255,255,0.08);
-            --border: rgba(255,255,255,0.08);
-            --border-accent: rgba(255,153,51,0.3);
-            --text-primary: #f0f4ff;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --shadow-glow: 0 0 40px rgba(255,153,51,0.15);
-            --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
-            --radius: 16px;
-            --radius-sm: 10px;
+            --saffron:        #E87722;
+            --saffron-light:  #FF9933;
+            --saffron-dark:   #c4601a;
+            --green:          #138808;
+            --green-light:    #1ea50e;
+            --navy:           #000080;
+            --bg:             #FAFAF7;
+            --bg-card:        #FFFFFF;
+            --bg-card-hover:  #F5F5F0;
+            --border:         #E8E8E0;
+            --border-accent:  rgba(232,119,34,0.3);
+            --text-primary:   #1A1A1A;
+            --text-secondary: #555555;
+            --text-muted:     #888888;
+            --shadow-sm:      0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md:      0 4px 20px rgba(0,0,0,0.10);
+            --shadow-lg:      0 8px 40px rgba(0,0,0,0.12);
+            --radius:         16px;
+            --radius-sm:      10px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
+            background: var(--bg);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* ─── ANIMATED BACKGROUND ─── */
-        .bg-canvas {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,153,51,0.12) 0%, transparent 70%),
-                        radial-gradient(ellipse 40% 40% at 90% 90%, rgba(19,136,8,0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse 30% 30% at 10% 80%, rgba(255,153,51,0.05) 0%, transparent 50%);
+        /* ─── BACKGROUND BLOBS (India flag gradient blobs) ─── */
+        .bg-blobs {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
         }
-        .grid-overlay {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 60px 60px;
+        .blob {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
         }
+        .blob-1 { width: 700px; height: 700px; top: -200px; left: -200px; background: var(--saffron-light); }
+        .blob-2 { width: 600px; height: 600px; bottom: -150px; right: -150px; background: var(--green-light); }
+        .blob-3 { width: 400px; height: 400px; top: 40%; left: 60%; background: rgba(0,0,128,0.5); }
 
         /* ─── NAVBAR ─── */
         .navbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            padding: 0 2rem;
-            height: 64px;
+            padding: 0 2rem; height: 62px;
             display: flex; align-items: center;
-            background: rgba(5,8,16,0.85);
+            background: rgba(250,250,247,0.88);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            transition: all 0.3s;
+            transition: box-shadow 0.3s;
         }
-        .navbar.scrolled { background: rgba(5,8,16,0.97); box-shadow: 0 2px 30px rgba(0,0,0,0.5); }
-        .nav-inner {
-            width: 100%; max-width: 1280px; margin: 0 auto;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .logo {
-            display: flex; align-items: center; gap: 10px;
-            font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800;
-            text-decoration: none; color: var(--text-primary);
-        }
-        .logo-icon {
-            width: 34px; height: 34px; border-radius: 8px;
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(255,153,51,0.4);
-        }
-        .logo span { color: var(--saffron); }
-        .nav-links { display: flex; align-items: center; gap: 0.5rem; }
-        .nav-link {
-            color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;
-            padding: 0.45rem 1rem; border-radius: var(--radius-sm);
-            transition: all 0.2s;
-        }
-        .nav-link:hover { color: var(--text-primary); background: var(--bg-card-hover); }
-        .nav-link.active { color: var(--saffron); }
-        .nav-pill {
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(19,136,8,0.12); border: 1px solid rgba(19,136,8,0.3);
-            border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; color: #22c55e;
-        }
-        .live-dot {
-            width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
-            animation: livePulse 2s infinite;
-        }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
-        }
+        .navbar.scrolled { box-shadow: var(--shadow-sm); }
+        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 10px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
+        .logo .logo-name { color: var(--saffron); }
+
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
+        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
+        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
+
+        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
 
         /* ─── HERO ─── */
         .hero {
-            position: relative; z-index: 1;
-            min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 100px 2rem 4rem;
+            position: relative; z-index: 1; padding: 140px 2rem 100px;
+            text-align: center;
         }
-        .hero-badge {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(255,153,51,0.1); border: 1px solid rgba(255,153,51,0.25);
-            border-radius: 30px; padding: 7px 18px;
-            font-size: 0.8rem; font-weight: 600; color: var(--saffron);
-            letter-spacing: 0.5px; margin-bottom: 2rem;
-            animation: fadeInDown 0.6s ease;
-        }
-        .hero-badge::before { content: '✦'; font-size: 10px; }
-        .hero-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: clamp(3rem, 8vw, 6.5rem);
-            font-weight: 900; line-height: 1.05; letter-spacing: -2px;
-            margin-bottom: 1.5rem;
-            animation: fadeInUp 0.7s ease 0.1s both;
-        }
-        .hero-title .line1 { display: block; color: var(--text-primary); }
-        .hero-title .line2 {
-            display: block;
-            background: linear-gradient(135deg, var(--saffron) 0%, #f97316 40%, var(--green) 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .hero-desc {
-            font-size: clamp(1rem, 2vw, 1.25rem); font-weight: 400;
-            color: var(--text-secondary); line-height: 1.7;
-            max-width: 680px; margin: 0 auto 3rem;
-            animation: fadeInUp 0.7s ease 0.2s both;
-        }
-        .hero-desc strong { color: var(--saffron); font-weight: 600; }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: var(--saffron); background: rgba(232,119,34,0.08); border: 1px solid rgba(232,119,34,0.2); border-radius: 20px; padding: 6px 16px; margin-bottom: 2rem; letter-spacing: 0.5px; text-transform: uppercase; }
+        .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 900; line-height: 1.1; letter-spacing: -1px; color: var(--text-primary); margin-bottom: 1.5rem; }
+        .hero h1 .accent-saffron { color: var(--saffron); }
+        .hero h1 .accent-green { color: var(--green); }
+        .hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.7; }
+        .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--saffron); color: #fff; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(232,119,34,0.35); }
+        .btn-primary:hover { background: var(--saffron-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(232,119,34,0.4); }
+        .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); text-decoration: none; transition: all 0.2s; }
+        .btn-outline:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(232,119,34,0.04); }
 
         /* ─── STATS STRIP ─── */
-        .stats-strip {
-            display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center;
-            margin-bottom: 3rem; animation: fadeInUp 0.7s ease 0.3s both;
-        }
+        .stats-strip { position: relative; z-index: 1; padding: 0 2rem 5rem; }
+        .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
         .stat-pill {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.25rem 2rem; text-align: center;
-            min-width: 160px; transition: all 0.3s;
-            backdrop-filter: blur(10px);
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 1.75rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);
+            transition: all 0.25s;
         }
-        .stat-pill:hover { border-color: var(--border-accent); transform: translateY(-4px); box-shadow: var(--shadow-glow); }
-        .stat-number {
-            font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800;
-            color: var(--saffron); line-height: 1;
-        }
-        .stat-number.green { color: #22c55e; }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .stat-pill:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border-accent); }
+        .stat-pill .val { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--saffron); line-height: 1; }
+        .stat-pill .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
 
-        /* ─── CTA BUTTONS ─── */
-        .cta-group {
-            display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
-            animation: fadeInUp 0.7s ease 0.4s both;
-        }
-        .btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 0.9rem 2rem; border-radius: var(--radius-sm);
-            font-size: 1rem; font-weight: 600; text-decoration: none;
-            transition: all 0.3s; cursor: pointer; border: none;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--saffron) 0%, #f97316 100%);
-            color: white; box-shadow: 0 4px 20px rgba(255,153,51,0.4);
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,153,51,0.5); }
-        .btn-secondary {
-            background: var(--bg-card); color: var(--text-primary);
-            border: 1px solid var(--border); backdrop-filter: blur(10px);
-        }
-        .btn-secondary:hover { border-color: var(--border-accent); color: var(--saffron); transform: translateY(-2px); }
+        /* ─── FEATURES ─── */
+        .features { position: relative; z-index: 1; padding: 5rem 2rem; background: linear-gradient(to bottom, var(--bg), #F0F0EA); }
+        .section-header { text-align: center; margin-bottom: 3.5rem; }
+        .section-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--green); background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .section-sub { color: var(--text-secondary); font-size: 1rem; }
 
-        /* ─── SCROLL INDICATOR ─── */
-        .scroll-hint {
-            position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-            color: var(--text-muted); font-size: 0.75rem; animation: bounce 2s infinite;
-        }
-        .scroll-arrow { font-size: 1.2rem; }
-        @keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
-
-        /* ─── FEATURES SECTION ─── */
-        .section {
-            position: relative; z-index: 1;
-            padding: 6rem 2rem;
-        }
-        .section-inner { max-width: 1200px; margin: 0 auto; }
-        .section-label {
-            text-align: center; font-size: 0.8rem; font-weight: 700; letter-spacing: 2px;
-            color: var(--saffron); text-transform: uppercase; margin-bottom: 1rem;
-        }
-        .section-title {
-            font-family: 'Outfit', sans-serif; font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 800; text-align: center; margin-bottom: 1rem;
-            letter-spacing: -1px;
-        }
-        .section-desc { color: var(--text-secondary); text-align: center; font-size: 1.1rem; margin-bottom: 4rem; max-width: 600px; margin-left: auto; margin-right: auto; }
-        .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 auto 6rem; max-width: 1200px; }
-
-        /* ─── FEATURE CARDS ─── */
-        .features-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;
-        }
+        .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
         .feature-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 2rem;
-            transition: all 0.3s; backdrop-filter: blur(10px);
-            position: relative; overflow: hidden;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 2rem; transition: all 0.25s; box-shadow: var(--shadow-sm);
         }
-        .feature-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, var(--saffron), transparent);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .feature-card:hover { border-color: var(--border-accent); transform: translateY(-6px); box-shadow: var(--shadow-card), var(--shadow-glow); }
-        .feature-card:hover::before { opacity: 1; }
-        .feature-icon {
-            width: 52px; height: 52px; border-radius: 14px; margin-bottom: 1.25rem;
-            display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
-            background: rgba(255,153,51,0.1); border: 1px solid rgba(255,153,51,0.2);
-        }
-        .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem; font-family: 'Outfit', sans-serif; }
-        .feature-desc { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.65; }
+        .feature-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-accent); transform: translateY(-2px); }
+        .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+        .feature-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .feature-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
 
-        /* ─── METRICS SECTION ─── */
-        .metrics-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
-        }
-        .metric-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 2rem; text-align: center;
-            backdrop-filter: blur(10px); transition: all 0.3s;
-        }
-        .metric-card:hover { border-color: var(--border-accent); transform: translateY(-4px); }
-        .metric-val {
-            font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 900;
-            background: linear-gradient(135deg, var(--saffron), var(--green));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            line-height: 1;
-        }
-        .metric-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; font-weight: 500; }
+        /* ─── LIVE TICKER ─── */
+        .ticker-section { position: relative; z-index:1; padding: 3rem 2rem; }
+        .ticker-inner { max-width: 1100px; margin: 0 auto; }
+        .ticker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .ticker-title { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+        .ticker-live { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #dc2626; }
+        .ticker-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; animation: pulse-red 1.5s infinite; }
+        @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
 
-        /* ─── CTA SECTION ─── */
-        .cta-section {
-            position: relative; z-index: 1; padding: 6rem 2rem;
-        }
-        .cta-box {
-            max-width: 800px; margin: 0 auto; text-align: center;
-            background: linear-gradient(135deg, rgba(255,153,51,0.08), rgba(19,136,8,0.08));
-            border: 1px solid var(--border-accent); border-radius: 24px; padding: 4rem 2rem;
-            position: relative; overflow: hidden;
-        }
-        .cta-box::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(ellipse at center, rgba(255,153,51,0.05), transparent 60%);
-            pointer-events: none;
-        }
-        .cta-title { font-family: 'Outfit', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
-        .cta-desc { color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2.5rem; }
+        .ticker-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+        .ticker-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; border-left: 3px solid var(--green); box-shadow: var(--shadow-sm); }
+        .ticker-card.fake { border-left-color: #dc2626; }
+        .ticker-card.uncertain { border-left-color: #f59e0b; }
+        .ticker-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 0.6rem; }
+        .ticker-badge.real { background: rgba(19,136,8,0.1); color: var(--green); }
+        .ticker-badge.fake { background: rgba(220,38,38,0.1); color: #dc2626; }
+        .ticker-badge.uncertain { background: rgba(245,158,11,0.1); color: #d97706; }
+        .ticker-text { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 0.4rem; }
+        .ticker-meta { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ─── CTA ─── */
+        .cta-section { position: relative; z-index:1; padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, rgba(232,119,34,0.06), rgba(19,136,8,0.04)); }
+        .cta-inner { max-width: 600px; margin: 0 auto; }
+        .cta-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; }
+        .cta-sub { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1rem; line-height: 1.6; }
 
         /* ─── FOOTER ─── */
-        footer {
-            position: relative; z-index: 1;
-            border-top: 1px solid var(--border); padding: 2rem;
-            text-align: center; color: var(--text-muted); font-size: 0.85rem;
-        }
-        footer a { color: var(--saffron); text-decoration: none; }
-        footer a:hover { text-decoration: underline; }
-
-        /* ─── ANIMATIONS ─── */
-        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .footer { position: relative; z-index:1; border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.82rem; }
+        .footer-flag { display: inline-flex; gap: 4px; margin-bottom: 8px; }
+        .flag-stripe { width: 18px; height: 8px; border-radius: 2px; }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .hero { padding: 90px 1.5rem 3rem; }
-            .stats-strip { gap: 1rem; }
-            .stat-pill { min-width: 130px; padding: 1rem 1.5rem; }
-            .section { padding: 4rem 1.5rem; }
+            .stats-inner, .features-grid, .ticker-cards { grid-template-columns: 1fr 1fr; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+        @media (max-width: 480px) {
+            .stats-inner { grid-template-columns: 1fr 1fr; }
+            .features-grid, .ticker-cards { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-canvas"></div>
-    <div class="grid-overlay"></div>
+    <!-- Background blobs -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
-    <!-- NAVBAR -->
+    <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="nav-inner">
             <a href="/" class="logo">
-                <div class="logo-icon">🛡️</div>
-                Misinfo<span>Heatmap</span>
+                <span class="logo-badge">IN</span>
+                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link active">Home</a>
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
-            <div class="nav-pill">
-                <div class="live-dot"></div>
+            <div class="status-pill">
+                <span class="status-dot"></span>
                 <span id="nav-status">System Ready</span>
             </div>
         </div>
     </nav>
 
-    <!-- HERO -->
+    <!-- Hero -->
     <section class="hero">
-        <div class="hero-badge">Powered by IndicBERT & 5-Model Ensemble AI</div>
-
-        <h1 class="hero-title">
-            <span class="line1">Combating Fake News</span>
-            <span class="line2">Across India</span>
+        <div class="hero-eyebrow">⚡ Powered by IndicBERT &amp; 5-Model Ensemble AI</div>
+        <h1>
+            Combating Fake News<br>
+            <span class="accent-saffron">Across</span> <span class="accent-green">India</span>
         </h1>
-
-        <p class="hero-desc">
-            An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>,
-            covering all 36 states and union territories in real-time.
-        </p>
-
-        <!-- Live Stats -->
-        <div class="stats-strip">
-            <div class="stat-pill">
-                <div class="stat-number" id="stat-events">—</div>
-                <div class="stat-label">Events Analyzed</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-number">91%</div>
-                <div class="stat-label">Detection Accuracy</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-number green">36</div>
-                <div class="stat-label">States & UTs</div>
-            </div>
-            <div class="stat-pill">
-                <div class="stat-number">34+</div>
-                <div class="stat-label">News Sources</div>
-            </div>
-        </div>
-
-        <div class="cta-group">
-            <a href="/map/enhanced-india-heatmap.html" class="btn btn-primary">
-                🗺️ Explore Live Heatmap
-            </a>
-            <a href="/dashboard" class="btn btn-secondary">
-                📊 View Dashboard
-            </a>
-        </div>
-
-        <div class="scroll-hint">
-            <span>Scroll to explore</span>
-            <span class="scroll-arrow">↓</span>
+        <p>An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>, covering all 36 states and union territories in real-time.</p>
+        <div class="hero-actions">
+            <a href="/map/enhanced-india-heatmap.html" class="btn-primary">🗺️ Explore Live Heatmap</a>
+            <a href="/dashboard" class="btn-outline">📊 View Dashboard</a>
         </div>
     </section>
 
-    <div class="divider"></div>
+    <!-- Stats strip -->
+    <div class="stats-strip">
+        <div class="stats-inner">
+            <div class="stat-pill">
+                <div class="val" id="stat-events">—</div>
+                <div class="lbl">Events Analyzed</div>
+            </div>
+            <div class="stat-pill">
+                <div class="val" style="color:var(--green);">91%</div>
+                <div class="lbl">Detection Accuracy</div>
+            </div>
+            <div class="stat-pill">
+                <div class="val" style="color:var(--navy);">36</div>
+                <div class="lbl">States &amp; UTs</div>
+            </div>
+            <div class="stat-pill">
+                <div class="val">34+</div>
+                <div class="lbl">News Sources</div>
+            </div>
+        </div>
+    </div>
 
-    <!-- FEATURES -->
-    <section class="section" id="features">
-        <div class="section-inner">
-            <div class="section-label">Technology Stack</div>
-            <h2 class="section-title">How Detection Works</h2>
-            <p class="section-desc">Multi-layered AI analysis combining language models, fact-checking, and satellite verification.</p>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🧠</div>
-                    <div class="feature-title">IndicBERT NLP Engine</div>
-                    <p class="feature-desc">Advanced language embeddings specifically trained for Indian languages including Hindi, Bengali, Tamil, and 8 others — providing culturally-aware misinformation detection.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-title">5-Model ML Ensemble</div>
-                    <p class="feature-desc">Five independently trained classifiers vote on each piece of content. Achieves 91% accuracy on our 940-example India-specific benchmark dataset with 0.973 ROC-AUC.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">✅</div>
-                    <div class="feature-title">Real-Time Fact Checking</div>
-                    <p class="feature-desc">Cross-references claims against Alt News, Boom Live, WebQoof and other verified Indian fact-checking organizations to validate breaking news stories.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🛰️</div>
-                    <div class="feature-title">Satellite Verification</div>
-                    <p class="feature-desc">Geographic claims are validated using satellite imagery analysis (Google Earth Engine). Identifies anomalies between reported events and ground truth.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🗺️</div>
-                    <div class="feature-title">Geographic Heatmap</div>
-                    <p class="feature-desc">Interactive SVG map of India showing real-time misinformation concentration by state. Click any region to drill into detailed event feeds and risk scores.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-title">High-Volume Ingestion</div>
-                    <p class="feature-desc">Concurrent RSS fetching from 34+ Indian news outlets every 2 minutes. Processes 500+ articles per cycle with low-latency classification and state-wise aggregation.</p>
-                </div>
+    <!-- Features -->
+    <section class="features">
+        <div class="section-header">
+            <div class="section-tag">How It Works</div>
+            <h2 class="section-title">Multi-Layer Detection Engine</h2>
+            <p class="section-sub">Every article passes through 5 specialized models before a verdict is issued</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">IndicBERT NLP</div>
+                <div class="feature-desc">State-of-the-art multilingual transformer trained on Indian languages including Hindi, Tamil, Telugu, and 20+ more.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <div class="feature-title">Fact-Check Engine</div>
+                <div class="feature-desc">Cross-references against debunked claims from Alt News, Boom Live, The Quint WebQoof, and India Today Fact Check.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📡</div>
+                <div class="feature-title">Real-Time RSS Ingestion</div>
+                <div class="feature-desc">Monitors 34+ Indian news sources including TOI, The Hindu, NDTV, Indian Express, and regional outlets every 2 minutes.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🗺️</div>
+                <div class="feature-title">Geographic Mapping</div>
+                <div class="feature-desc">200+ city-to-state mappings identify the precise geographic origin of each misinformation event.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Ensemble Classifier</div>
+                <div class="feature-desc">5-model ensemble combining linguistic analysis, source credibility, ML classification, and cross-reference scoring.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <div class="feature-title">GDELT Integration</div>
+                <div class="feature-desc">Pulls India-specific news from the Global Database of Events — the world's largest open-source news index. Zero cost, unlimited volume.</div>
             </div>
         </div>
     </section>
 
-    <div class="divider"></div>
-
-    <!-- METRICS -->
-    <section class="section">
-        <div class="section-inner">
-            <div class="section-label">Performance</div>
-            <h2 class="section-title">By the Numbers</h2>
-            <p class="section-desc">Production-ready metrics from our AI classification pipeline.</p>
-
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-val">91%</div>
-                    <div class="metric-label">CV F1-Score</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val">0.973</div>
-                    <div class="metric-label">ROC-AUC Score</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val">940</div>
-                    <div class="metric-label">Training Examples</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val">12</div>
-                    <div class="metric-label">Languages Supported</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-val">5</div>
-                    <div class="metric-label">ML Models in Ensemble</div>
-                </div>
+    <!-- Live Ticker -->
+    <section class="ticker-section">
+        <div class="ticker-inner">
+            <div class="ticker-header">
+                <div class="ticker-title">Live Activity Feed</div>
+                <div class="ticker-live"><span class="ticker-live-dot"></span> LIVE</div>
+            </div>
+            <div class="ticker-cards" id="ticker-cards">
+                <div class="ticker-card"><div class="ticker-text" style="color:var(--text-muted); text-align:center;">⏳ Loading recent events…</div></div>
             </div>
         </div>
     </section>
 
     <!-- CTA -->
     <section class="cta-section">
-        <div class="cta-box">
-            <h2 class="cta-title">Ready to explore the data?</h2>
-            <p class="cta-desc">View the interactive misinformation heatmap covering every Indian state in real-time.</p>
-            <div class="cta-group">
-                <a href="/map/enhanced-india-heatmap.html" class="btn btn-primary">🗺️ Open Heatmap</a>
-                <a href="/dashboard" class="btn btn-secondary">📊 Dashboard</a>
-            </div>
+        <div class="cta-inner">
+            <div class="cta-title">See India's Misinformation Map</div>
+            <p class="cta-sub">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
+            <a href="/map/enhanced-india-heatmap.html" class="btn-primary" style="font-size:1rem; padding:1rem 2.5rem;">🗺️ Open Interactive Heatmap →</a>
         </div>
     </section>
 
-    <footer>
-        <p>Made with ❤️ for a more informed India &nbsp;|&nbsp; 
-        <a href="https://ai4bharat.org/" target="_blank">IndicBERT by AI4Bharat</a> &nbsp;|&nbsp; 
-        MIT License</p>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-flag">
+            <div class="flag-stripe" style="background:#FF9933;"></div>
+            <div class="flag-stripe" style="background:#FFFFFF; border:1px solid #ddd;"></div>
+            <div class="flag-stripe" style="background:#138808;"></div>
+        </div>
+        <div>Made with ❤️ for India &nbsp;·&nbsp; Powered by IndicBERT &amp; GDELT &nbsp;·&nbsp; Local-first, Zero-cost architecture</div>
     </footer>
 
     <script>
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
+        // ── Navbar scroll effect ──
         window.addEventListener('scroll', () => {
-            navbar.classList.toggle('scrolled', window.scrollY > 20);
+            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
         });
 
-        // Load live stats
+        // ── Fetch and display stats ──
         async function loadStats() {
             try {
-                const res = await fetch('/api/v1/stats');
-                if (!res.ok) return;
-                const data = await res.json();
+                const r = await fetch('/api/v1/stats');
+                if (!r.ok) return;
+                const d = await r.json();
                 const el = document.getElementById('stat-events');
-                const n = data.total_events || 0;
-                el.textContent = n >= 1000 ? (n/1000).toFixed(1) + 'K' : n;
-                
-                const statusEl = document.getElementById('nav-status');
-                statusEl.textContent = data.processing_active ? 'Live Processing' : 'System Ready';
-            } catch (_) {}
+                const n = d.total_events || 0;
+                el.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
+                document.getElementById('nav-status').textContent = d.ml_ready ? 'System Ready' : 'Loading…';
+            } catch(_) {}
         }
 
-        // Intersection observer for card animations
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.style.opacity = '1';
-                    e.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, { threshold: 0.1 });
+        // ── Fetch and display live ticker ──
+        async function loadTicker() {
+            try {
+                const r = await fetch('/api/v1/events/live?limit=6');
+                if (!r.ok) return;
+                const d = await r.json();
+                const events = d.events || [];
+                if (events.length === 0) return;
 
-        document.querySelectorAll('.feature-card, .metric-card, .stat-pill').forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(24px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease, border-color 0.3s, box-shadow 0.3s';
-            observer.observe(card);
-        });
+                const container = document.getElementById('ticker-cards');
+                container.innerHTML = events.slice(0,6).map(ev => {
+                    const cls = ev.classification || 'uncertain';
+                    const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
+                    const title = (ev.title || '').substring(0, 90);
+                    return `<div class="ticker-card ${cls === 'fake' ? 'fake' : cls === 'uncertain' ? 'uncertain' : ''}">
+                        <div class="ticker-badge ${cls}">${icon} ${cls.toUpperCase()}</div>
+                        <div class="ticker-text">${title}</div>
+                        <div class="ticker-meta">${ev.source || 'Unknown'} · ${ev.state || 'India'}</div>
+                    </div>`;
+                }).join('');
+            } catch(_) {}
+        }
 
         loadStats();
+        loadTicker();
         setInterval(loadStats, 30000);
+        setInterval(loadTicker, 15000);
     </script>
 </body>
 </html>
