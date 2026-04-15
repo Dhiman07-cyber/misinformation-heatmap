@@ -13,17 +13,17 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 ### Main Homepage
 > Overview of the whole website
 
-![Analysis Preview](docs/media-assets/Home.png)
+![Analysis Preview](docs/media-assets/home.png)
 
 ### Main Dashboard
 > Real-time misinformation detection dashboard with live statistics
 
-![Dashboard Preview](docs/media-assets/Dashboard.png)
+![Dashboard Preview](docs/media-assets/dashboard.png)
 
 ### Interactive India Heatmap
 > Geographic visualization of misinformation distribution across Indian states
 
-![Heatmap Preview](docs/media-assets/Map.png)
+![Heatmap Preview](docs/media-assets/map.png)
 
 
 
