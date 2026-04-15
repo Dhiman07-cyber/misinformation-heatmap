@@ -509,33 +509,27 @@ class BigQueryDatabase(DatabaseInterface):
     
     async def get_event(self, event_id: str) -> Optional[ProcessedEvent]:
         """Retrieve event from BigQuery - implementation would follow similar pattern"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
     
     async def get_events_by_region(self, region: str, limit: int = 100) -> List[ProcessedEvent]:
         """Get events by region from BigQuery"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
     
     async def get_events_by_timerange(self, start_time: datetime, end_time: datetime) -> List[ProcessedEvent]:
         """Get events by timerange from BigQuery"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
     
     async def get_heatmap_data(self, hours_back: int = 24) -> Dict[str, Dict[str, Any]]:
         """Get heatmap data from BigQuery"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
     
     async def delete_old_events(self, days_old: int = 30) -> int:
         """Delete old events from BigQuery"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
     
     async def get_stats(self) -> Dict[str, Any]:
         """Get BigQuery statistics"""
-        # Implementation details...
-        pass
+        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
 
 
 class DatabaseManager:

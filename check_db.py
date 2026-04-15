@@ -1,0 +1,11 @@
+import sqlite3
+conn = sqlite3.connect('data/enhanced_fake_news.db')
+c = conn.cursor()
+c.execute("SELECT name FROM sqlite_master WHERE type='table'")
+print('Tables:', c.fetchall())
+c.execute('SELECT COUNT(*) FROM events')
+print('Events count:', c.fetchone()[0])
+c.execute("PRAGMA table_info(events)")
+cols = c.fetchall()
+print('Event columns:', [col[1] for col in cols])
+conn.close()
