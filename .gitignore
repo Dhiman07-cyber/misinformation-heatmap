@@ -53,6 +53,9 @@ logs/
 *.sqlite3
 data/*.db
 data/*.sqlite
+*-journal
+*-wal
+*-shm
 
 # Cache and temporary files
 .cache/
