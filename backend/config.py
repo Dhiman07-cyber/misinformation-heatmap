@@ -81,16 +81,12 @@ class Config:
                 type="sqlite"
             )
         else:
-            project_id = os.getenv("GCP_PROJECT_ID")
-            if not project_id:
-                raise ValueError("GCP_PROJECT_ID environment variable required for cloud mode")
-            
+            # GCP Integration REMOVED to prevent costs (User Request)
+            logger.warning("Cloud DB (BigQuery) disabled. Falling back to local mode.")
+            db_path = self.data_dir / "misinfo_heatmap.db"
             return DatabaseConfig(
-                url="",  # BigQuery doesn't use traditional URLs
-                type="bigquery",
-                project_id=project_id,
-                dataset_id=os.getenv("BIGQUERY_DATASET", "misinfo_heatmap"),
-                table_name="events"
+                url=f"sqlite:///{db_path}",
+                type="sqlite"
             )
     
     def get_pubsub_config(self) -> PubSubConfig:
@@ -104,15 +100,13 @@ class Config:
                 use_emulator=True
             )
         else:
-            project_id = os.getenv("GCP_PROJECT_ID")
-            if not project_id:
-                raise ValueError("GCP_PROJECT_ID environment variable required for cloud mode")
-            
+            # GCP Pub/Sub disabled to prevent costs (User Request)
             return PubSubConfig(
-                project_id=project_id,
-                topic_name=os.getenv("PUBSUB_TOPIC", "misinfo-events"),
-                subscription_name=os.getenv("PUBSUB_SUBSCRIPTION", "misinfo-processor"),
-                use_emulator=False
+                project_id="local-project",
+                topic_name="misinfo-events",
+                subscription_name="misinfo-processor",
+                emulator_host="localhost:8085",
+                use_emulator=True
             )
     
     def get_satellite_config(self) -> SatelliteConfig:
@@ -123,14 +117,10 @@ class Config:
                 similarity_threshold=0.3
             )
         else:
-            service_account_path = os.getenv("GEE_SERVICE_ACCOUNT")
-            if not service_account_path:
-                raise ValueError("GEE_SERVICE_ACCOUNT environment variable required for cloud mode")
-            
+            # GEE disabled to prevent costs (User Request)
             return SatelliteConfig(
-                use_stub=False,
-                gee_service_account_path=service_account_path,
-                similarity_threshold=float(os.getenv("SATELLITE_THRESHOLD", "0.3"))
+                use_stub=True,
+                similarity_threshold=0.3
             )
     
     def get_watson_config(self) -> Dict[str, Any]:
@@ -138,17 +128,16 @@ class Config:
         if self.is_local_mode():
             return {"enabled": False}
         
-        api_key = os.getenv("WATSON_API_KEY")
+        api_key = os.getenv("WATSON_DISCOVERY_API_KEY") or os.getenv("WATSON_API_KEY")
         if not api_key:
-            raise ValueError("WATSON_API_KEY environment variable required for cloud mode")
+            return {"enabled": False}
         
         return {
             "enabled": True,
             "api_key": api_key,
             "url": os.getenv("WATSON_URL", "https://api.us-south.discovery.watson.cloud.ibm.com"),
             "version": os.getenv("WATSON_VERSION", "2019-04-30"),
-            "environment_id": os.getenv("WATSON_ENVIRONMENT_ID"),
-            "collection_id": os.getenv("WATSON_COLLECTION_ID")
+            "project_id": os.getenv("WATSON_PROJECT_ID")
         }
     
     def get_api_config(self) -> Dict[str, Any]:

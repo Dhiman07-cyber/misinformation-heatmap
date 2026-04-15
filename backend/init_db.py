@@ -16,7 +16,7 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import Config
-from database import DatabaseInterface, SQLiteDatabase, BigQueryDatabase, DatabaseManager
+from database import DatabaseInterface, SQLiteDatabase, DatabaseManager
 
 # Configure logging
 logging.basicConfig(
@@ -61,40 +61,7 @@ async def create_local_database(config: Config) -> bool:
         return False
 
 
-async def create_cloud_database(config: Config) -> bool:
-    """
-    Create and initialize cloud BigQuery database.
-    
-    Args:
-        config: Application configuration
-        
-    Returns:
-        bool: True if successful, False otherwise
-    """
-    try:
-        logger.info("Initializing cloud BigQuery database...")
-        
-        # Check for required cloud credentials
-        if not config.google_cloud_project:
-            logger.error("GOOGLE_CLOUD_PROJECT environment variable not set")
-            return False
-            
-        # Initialize database
-        db_manager = DatabaseManager()
-        db = db_manager.create_database()
-        
-        # Initialize database schema
-        await db.initialize()
-        
-        logger.info("Cloud database initialized successfully")
-        return True
-        
-    except Exception as e:
-        logger.error(f"Cloud database initialization failed: {e}")
-        return False
-    except Exception as e:
-        logger.error(f"Unexpected error during cloud database initialization: {e}")
-        return False
+# create_cloud_database REMOVED (GCP decommissioned to prevent costs)
 
 
 async def validate_database(config: Config) -> bool:
@@ -206,9 +173,9 @@ async def main():
     )
     parser.add_argument(
         "--mode",
-        choices=["local", "cloud"],
+        choices=["local"],
         default="local",
-        help="Database mode (local or cloud)"
+        help="Database mode (strictly local to prevent GCP costs)"
     )
     parser.add_argument(
         "--sample-data",
@@ -248,11 +215,8 @@ async def main():
             success = await validate_database(config)
             sys.exit(0 if success else 1)
         
-        # Initialize database based on mode
-        if args.mode == "local":
-            success = await create_local_database(config)
-        else:
-            success = await create_cloud_database(config)
+        # Initialize SQLite database
+        success = await create_local_database(config)
             
         if not success:
             logger.error("Database initialization failed")

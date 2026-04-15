@@ -15,6 +15,9 @@ import logging
 import sqlite3
 import json
 import threading
+import torch
+import traceback
+from transformers import AutoTokenizer, AutoModel
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -61,22 +64,54 @@ def _load_ml_models():
     try:
         logger.info("⏳ Loading backend modules (ML models initialising)…")
 
-        from realtime_processor import get_processing_stats, INDIAN_STATES
-        _proc_stats_fn = get_processing_stats
-        _INDIAN_STATES = INDIAN_STATES
-        logger.info(f"✅ realtime_processor loaded  ({len(INDIAN_STATES)} states)")
+        # Optimization: Temporarily increase threads for faster decompression/loading
+        original_threads = torch.get_num_threads()
+        torch.set_num_threads(min(4, os.cpu_count() or 1))
+        logger.info(f"⚡ Initialization speed-up: Using {torch.get_num_threads()} threads for loading.")
 
-        from massive_data_ingestion import high_volume_processing_loop, is_processing_active
-        _ingestion_fn  = high_volume_processing_loop
-        _is_active_fn  = is_processing_active
-        logger.info("✅ massive_data_ingestion loaded")
+        # 1. Realtime Processor & States
+        try:
+            from realtime_processor import get_processing_stats, INDIAN_STATES
+            _proc_stats_fn = get_processing_stats
+            _INDIAN_STATES = INDIAN_STATES
+            logger.info(f"✅ realtime_processor loaded  ({len(INDIAN_STATES)} states)")
+        except Exception as e:
+            logger.error(f"❌ Error loading realtime_processor: {e}")
 
-        from enhanced_fake_news_detector import fake_news_detector
-        _fake_detector = fake_news_detector
-        logger.info("✅ enhanced_fake_news_detector loaded")
+        # 2. Unified Ingestion (Hybrid: Watson + Local)
+        try:
+            from ingestion_manager import unified_ingestion_manager
+            from massive_data_ingestion import is_processing_active
+            
+            # Hook the unified manager
+            _ingestion_fn = unified_ingestion_manager.start_continuous_ingestion
+            _is_active_fn  = is_processing_active
+            logger.info("✅ UnifiedIngestionManager (Hybrid) loaded")
+        except Exception as e:
+            logger.warning(f"⚠️ UnifiedIngestionManager failed load ({e}). Falling back to massive_data_ingestion.")
+            try:
+                from massive_data_ingestion import high_volume_processing_loop, is_processing_active
+                _ingestion_fn  = high_volume_processing_loop
+                _is_active_fn  = is_processing_active
+                logger.info("✅ massive_data_ingestion loaded")
+            except Exception as e2:
+                logger.error(f"❌ Critical Failure: both ingestion managers failed: {e2}")
+
+        # 3. Fake News Detector & Custom Ensemble
+        try:
+            from enhanced_fake_news_detector import fake_news_detector
+            _fake_detector = fake_news_detector
+            logger.info("✅ enhanced_fake_news_detector loaded")
+        except Exception as e:
+            logger.error(f"❌ Error loading fake_news_detector: {e}")
+
+        # Revert to storage-saving mode for inference
+        torch.set_num_threads(1)
+        logger.info(f"🛡️ Safety-mode active: Reverted to {torch.get_num_threads()} thread for inference.")
 
     except Exception as exc:
-        logger.error(f"❌ ML model loading error: {exc}")
+        logger.error(f"❌ Critical ML model loading error: {exc}")
+        logger.error(traceback.format_exc())
     finally:
         _ml_ready.set()   # unblock any waiter
 

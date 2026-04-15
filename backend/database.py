@@ -391,170 +391,18 @@ class SQLiteDatabase(DatabaseInterface):
             return None
 
 
-class BigQueryDatabase(DatabaseInterface):
-    """BigQuery implementation for cloud production mode"""
-    
-    def __init__(self, project_id: str, dataset_id: str, table_name: str):
-        self.project_id = project_id
-        self.dataset_id = dataset_id
-        self.table_name = table_name
-        self.client = None
-        logger.info(f"Initializing BigQuery database: {project_id}.{dataset_id}.{table_name}")
-    
-    async def initialize(self) -> bool:
-        """Initialize BigQuery client and ensure table exists"""
-        try:
-            from google.cloud import bigquery
-            
-            self.client = bigquery.Client(project=self.project_id)
-            
-            # Create dataset if it doesn't exist
-            dataset_ref = self.client.dataset(self.dataset_id)
-            try:
-                self.client.get_dataset(dataset_ref)
-            except Exception:
-                dataset = bigquery.Dataset(dataset_ref)
-                dataset.location = "US"  # or your preferred location
-                self.client.create_dataset(dataset)
-                logger.info(f"Created BigQuery dataset: {self.dataset_id}")
-            
-            # Create table if it doesn't exist
-            table_ref = dataset_ref.table(self.table_name)
-            try:
-                self.client.get_table(table_ref)
-            except Exception:
-                schema = self._get_table_schema()
-                table = bigquery.Table(table_ref, schema=schema)
-                
-                # Set partitioning and clustering
-                table.time_partitioning = bigquery.TimePartitioning(
-                    type_=bigquery.TimePartitioningType.DAY,
-                    field="timestamp"
-                )
-                table.clustering_fields = ["region_hint", "source"]
-                
-                self.client.create_table(table)
-                logger.info(f"Created BigQuery table: {self.table_name}")
-            
-            logger.info("BigQuery database initialized successfully")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize BigQuery database: {e}")
-            return False
-    
-    def _get_table_schema(self):
-        """Define BigQuery table schema"""
-        from google.cloud import bigquery
-        
-        return [
-            bigquery.SchemaField("event_id", "STRING", mode="REQUIRED"),
-            bigquery.SchemaField("source", "STRING", mode="REQUIRED"),
-            bigquery.SchemaField("original_text", "STRING", mode="REQUIRED"),
-            bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
-            bigquery.SchemaField("lang", "STRING"),
-            bigquery.SchemaField("region_hint", "STRING"),
-            bigquery.SchemaField("lat", "FLOAT64"),
-            bigquery.SchemaField("lon", "FLOAT64"),
-            bigquery.SchemaField("entities", "STRING", mode="REPEATED"),
-            bigquery.SchemaField("virality_score", "FLOAT64"),
-            bigquery.SchemaField("satellite_data", "JSON"),
-            bigquery.SchemaField("claims_data", "JSON"),
-            bigquery.SchemaField("processing_metadata", "JSON"),
-            bigquery.SchemaField("created_at", "TIMESTAMP", mode="REQUIRED")
-        ]
-    
-    async def insert_event(self, event: ProcessedEvent) -> bool:
-        """Insert event into BigQuery"""
-        try:
-            if not self.client:
-                await self.initialize()
-            
-            table_ref = self.client.dataset(self.dataset_id).table(self.table_name)
-            table = self.client.get_table(table_ref)
-            
-            # Prepare row data
-            row_data = {
-                "event_id": event.event_id,
-                "source": event.source.value,
-                "original_text": event.original_text,
-                "timestamp": event.timestamp,
-                "lang": event.lang.value,
-                "region_hint": event.region_hint,
-                "lat": event.lat,
-                "lon": event.lon,
-                "entities": event.entities,
-                "virality_score": event.virality_score,
-                "satellite_data": event.satellite.to_dict() if event.satellite else {},
-                "claims_data": [claim.to_dict() for claim in event.claims],
-                "processing_metadata": event.processing_metadata,
-                "created_at": event.created_at
-            }
-            
-            errors = self.client.insert_rows_json(table, [row_data])
-            
-            if errors:
-                logger.error(f"BigQuery insert errors: {errors}")
-                return False
-            
-            logger.debug(f"Inserted event {event.event_id} into BigQuery")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to insert event into BigQuery: {e}")
-            return False
-    
-    # Additional BigQuery methods would be implemented here...
-    # For brevity, showing the pattern with key methods
-    
-    async def get_event(self, event_id: str) -> Optional[ProcessedEvent]:
-        """Retrieve event from BigQuery - implementation would follow similar pattern"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-    
-    async def get_events_by_region(self, region: str, limit: int = 100) -> List[ProcessedEvent]:
-        """Get events by region from BigQuery"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-    
-    async def get_events_by_timerange(self, start_time: datetime, end_time: datetime) -> List[ProcessedEvent]:
-        """Get events by timerange from BigQuery"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-    
-    async def get_heatmap_data(self, hours_back: int = 24) -> Dict[str, Dict[str, Any]]:
-        """Get heatmap data from BigQuery"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-    
-    async def delete_old_events(self, days_old: int = 30) -> int:
-        """Delete old events from BigQuery"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-    
-    async def get_stats(self) -> Dict[str, Any]:
-        """Get BigQuery statistics"""
-        raise NotImplementedError("This feature is yet to be fully implemented for BigQuery.")
-
-
 class DatabaseManager:
-    """Factory class for creating appropriate database implementation"""
+    """Factory class for creating proper database implementation"""
     
     @staticmethod
     def create_database() -> DatabaseInterface:
-        """Create database instance based on configuration"""
+        """Create database instance strictly for SQLite (cost-free)"""
         db_config = config.get_database_config()
         
-        if db_config.type == "sqlite":
-            # Extract path from SQLite URL
-            db_path = db_config.url.replace("sqlite:///", "")
-            return SQLiteDatabase(db_path)
-        
-        elif db_config.type == "bigquery":
-            return BigQueryDatabase(
-                project_id=db_config.project_id,
-                dataset_id=db_config.dataset_id,
-                table_name=db_config.table_name
-            )
-        
-        else:
-            raise ValueError(f"Unsupported database type: {db_config.type}")
+        # Extract path from SQLite URL
+        db_path = db_config.url.replace("sqlite:///", "")
+        return SQLiteDatabase(db_path)
 
 
 # Global database instance
-database = DatabaseManager.create_database()
+database = DatabaseManager.create_database()
