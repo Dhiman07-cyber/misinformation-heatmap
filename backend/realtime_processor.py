@@ -437,26 +437,24 @@ def update_state_aggregations(state: str, cursor):
         recent_events = cursor.fetchall()
         
         if recent_events:
-            # Calculate metrics
+            # Calculate metrics — use column names; works for both sqlite3.Row and psycopg2 RealDictRow
             total_events = len(recent_events)
-            fake_count = sum(1 for event in recent_events if event[0] == 'fake')
-            real_count = sum(1 for event in recent_events if event[0] == 'real')
-            uncertain_count = sum(1 for event in recent_events if event[0] == 'uncertain')
+            fake_count     = sum(1 for e in recent_events if e['fake_news_verdict'] == 'fake')
+            real_count     = sum(1 for e in recent_events if e['fake_news_verdict'] == 'real')
+            uncertain_count= sum(1 for e in recent_events if e['fake_news_verdict'] == 'uncertain')
             
-            scores = [event[1] for event in recent_events]
-            avg_score = sum(scores) / len(scores)
+            scores   = [e['fake_news_score'] for e in recent_events if e['fake_news_score'] is not None]
+            avg_score = float(sum(scores) / len(scores)) if scores else 0.0
             
             # Get trending categories
-            categories = [event[2] for event in recent_events]
+            categories = [e['category'] for e in recent_events if e['category']]
             category_counts = {}
             for cat in categories:
                 category_counts[cat] = category_counts.get(cat, 0) + 1
-            
-            trending_topics = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-            trending_topics = [cat for cat, count in trending_topics]
+            trending_topics = [cat for cat, _ in sorted(category_counts.items(), key=lambda x: x[1], reverse=True)[:5]]
             
             # Get recent headlines
-            recent_headlines = [event[3] for event in recent_events[:5]]
+            recent_headlines = [e['title'] for e in recent_events[:5] if e['title']]
             
             # Update aggregations
             cursor.execute('''
@@ -472,6 +470,7 @@ def update_state_aggregations(state: str, cursor):
             
     except Exception as e:
         logger.error(f"Failed to update state aggregations for {state}: {e}")
+
 
 async def real_time_processing_loop():
     """Main real-time processing loop"""
