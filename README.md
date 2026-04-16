@@ -1,7 +1,7 @@
 ---
 title: Misinformation Heatmap
 emoji: 🛡️
-colorFrom: orange
+colorFrom: yellow
 colorTo: green
 sdk: docker
 pinned: true
