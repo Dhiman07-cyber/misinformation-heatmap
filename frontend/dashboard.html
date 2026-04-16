@@ -385,6 +385,11 @@
     </div>
 
     <script>
+        // ── API Configuration ──
+        const API_BASE = window.location.hostname.includes('netlify.app') 
+            ? 'https://[your-huggingface-space-name].hf.space' 
+            : '';
+
         const fmt = n => n >= 1000000 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : String(n);
 
         function animateNum(el, to) {
@@ -403,7 +408,7 @@
         async function updateStats(d) {
             try {
                 if (!d) {
-                    const res = await fetch('/api/v1/stats');
+                    const res = await fetch(API_BASE + '/api/v1/stats');
                     if (!res.ok) throw new Error();
                     d = await res.json();
                 }
@@ -454,7 +459,7 @@
             try {
                 let events;
                 if (!eventsPayload) {
-                    const res = await fetch('/api/v1/events/live?limit=15');
+                    const res = await fetch(API_BASE + '/api/v1/events/live?limit=15');
                     if (!res.ok) throw new Error();
                     const d = await res.json();
                     events = d.events || [];
@@ -500,7 +505,7 @@
         updateActivity();
 
         // SSE for real-time updates
-        const sse = new EventSource('/api/v1/stream');
+        const sse = new EventSource(API_BASE + '/api/v1/stream');
         sse.addEventListener('stats', e => updateStats(JSON.parse(e.data)));
         sse.addEventListener('live_events', e => updateActivity(JSON.parse(e.data)));
         sse.onerror = () => { document.getElementById('system-status').textContent = 'Reconnecting…'; };
