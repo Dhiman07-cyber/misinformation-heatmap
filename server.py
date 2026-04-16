@@ -224,6 +224,9 @@ if MAP_DIR.exists():
 assets_dir = FRONTEND_DIR / "assets"
 if assets_dir.exists():
     app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+public_dir = ROOT_DIR / "public"
+if public_dir.exists():
+    app.mount("/public", StaticFiles(directory=str(public_dir)), name="public")
 
 # ─── LIFECYCLE ───────────────────────────────────────────────────────────────
 @app.on_event("startup")

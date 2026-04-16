@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Misinformation Heatmap — Real-Time AI Detection Across India</title>
     <meta name="description" content="AI-powered platform detecting misinformation across all 36 Indian states in real-time using IndicBERT, satellite verification, and fact-checking networks.">
+    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/public/Misinfo.ico">
+    <link rel="icon" type="image/vnd.microsoft.icon" href="/public/Misinfo.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -40,32 +43,22 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            max-width: 100vw;
         }
-
-        /* ─── BACKGROUND BLOBS (India flag gradient blobs) ─── */
-        .bg-blobs {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-        }
-        .blob {
-            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
-        }
-        .blob-1 { width: 700px; height: 700px; top: -200px; left: -200px; background: var(--saffron-light); }
-        .blob-2 { width: 600px; height: 600px; bottom: -150px; right: -150px; background: var(--green-light); }
-        .blob-3 { width: 400px; height: 400px; top: 40%; left: 60%; background: rgba(0,0,128,0.5); }
 
         /* ─── NAVBAR ─── */
         .navbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             padding: 0 2rem; height: 62px;
             display: flex; align-items: center;
-            background: rgba(250,250,247,0.88);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             transition: box-shadow 0.3s;
         }
         .navbar.scrolled { box-shadow: var(--shadow-sm); }
         .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo { display: flex; align-items: center; gap: 10px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
         .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
         .logo .logo-name { color: var(--saffron); }
 
@@ -78,27 +71,146 @@
         .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
 
+        /* Hamburger Menu */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 2001;
+            position: relative;
+        }
+        .hamburger-line {
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
+            z-index: 1500;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 80px 2rem 2rem;
+        }
+        .mobile-menu-overlay.active {
+            transform: translateX(0);
+        }
+        .mobile-menu-top {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mobile-menu-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .mobile-menu-link:hover {
+            padding-left: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-menu-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .mobile-menu-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-menu-brand .logo-badge {
+            background: #fff;
+            color: var(--saffron);
+        }
+
         /* ─── HERO ─── */
         .hero {
             position: relative; z-index: 1; padding: 140px 2rem 100px;
             text-align: center;
+            /* Premium Indian Tricolor inspired gradient with smooth transitions */
+            background: linear-gradient(135deg,
+                #FF9933 0%,                    /* Saffron */
+                #FFB84D 15%,                   /* Light saffron transition */
+                #FFF5E6 30%,                   /* Warm cream */
+                #F8F8F8 45%,                   /* Soft off-white */
+                #F0F8F0 60%,                   /* Light green tint */
+                #E8F5E8 75%,                   /* Soft green */
+                #138808 100%                   /* Green */
+            );
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
-        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: var(--saffron); background: rgba(232,119,34,0.08); border: 1px solid rgba(232,119,34,0.2); border-radius: 20px; padding: 6px 16px; margin-bottom: 2rem; letter-spacing: 0.5px; text-transform: uppercase; }
-        .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 900; line-height: 1.1; letter-spacing: -1px; color: var(--text-primary); margin-bottom: 1.5rem; }
-        .hero h1 .accent-saffron { color: var(--saffron); }
-        .hero h1 .accent-green { color: var(--green); }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                rgba(255,255,255,0.1) 0%, 
+                rgba(255,255,255,0) 70%);
+            pointer-events: none;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23FF9933" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23138808" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="%23FF9933" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: var(--saffron); background: rgba(255, 153, 51, 0.2); border: 1px solid rgba(255, 153, 51, 0.4); border-radius: 20px; padding: 6px 16px; margin-bottom: 2rem; letter-spacing: 0.5px; text-transform: uppercase; }
+        .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 900; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.5rem; background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.7; }
         .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--saffron); color: #fff; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 16px rgba(232,119,34,0.35); }
-        .btn-primary:hover { background: var(--saffron-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(232,119,34,0.4); }
+        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #FF9933 0%, #B45309 100%); color: white; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255, 153, 51, 0.4); }
         .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); text-decoration: none; transition: all 0.2s; }
         .btn-outline:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(232,119,34,0.04); }
 
         /* ─── STATS STRIP ─── */
-        .stats-strip { position: relative; z-index: 1; padding: 0 2rem 5rem; }
+        .stats-strip { position: relative; z-index: 1; padding: 5rem 2rem 5rem; background: rgba(255, 255, 255, 0.95); }
         .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
         .stat-pill {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.8); border: 1px solid var(--border); border-radius: var(--radius);
             padding: 1.75rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);
             transition: all 0.25s;
         }
@@ -107,7 +219,7 @@
         .stat-pill .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
 
         /* ─── FEATURES ─── */
-        .features { position: relative; z-index: 1; padding: 5rem 2rem; background: linear-gradient(to bottom, var(--bg), #F0F0EA); }
+        .features { position: relative; z-index: 1; padding: 5rem 2rem; background: rgba(255, 255, 255, 0.9); }
         .section-header { text-align: center; margin-bottom: 3.5rem; }
         .section-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--green); background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .section-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; }
@@ -115,7 +227,7 @@
 
         .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
         .feature-card {
-            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            background: white; border: 1px solid var(--border); border-radius: var(--radius);
             padding: 2rem; transition: all 0.25s; box-shadow: var(--shadow-sm);
         }
         .feature-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-accent); transform: translateY(-2px); }
@@ -154,25 +266,78 @@
         .footer-flag { display: inline-flex; gap: 4px; margin-bottom: 8px; }
         .flag-stripe { width: 18px; height: 8px; border-radius: 2px; }
 
-        /* ─── RESPONSIVE ─── */
-        @media (max-width: 768px) {
-            .stats-inner, .features-grid, .ticker-cards { grid-template-columns: 1fr 1fr; }
-            .hero h1 { font-size: 2.2rem; }
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 1200px) {
+            .hero { padding: 120px 1.5rem 80px; }
+            .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
         }
+        
+        @media (max-width: 768px) {
+            .navbar { padding: 0 1rem; }
+            .nav-links { gap: 0.5rem; }
+            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
+            .hero { 
+                padding: 80px 1rem 60px;
+                height: 100vh;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1rem; max-width: 100%; }
+            .hero-actions { gap: 0.75rem; }
+            .btn-primary, .btn-outline { font-size: 0.85rem; padding: 0.7rem 1.5rem; }
+            .stats-strip { padding: 4rem 1rem 4rem; }
+            .stats-inner { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .stat-pill { padding: 1.25rem 1rem; }
+            .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .feature-card { padding: 1.5rem; }
+            .ticker-cards { grid-template-columns: 1fr; gap: 0.75rem; }
+            .cta-section { padding: 3rem 1rem; }
+        }
+        
         @media (max-width: 480px) {
-            .stats-inner { grid-template-columns: 1fr 1fr; }
-            .features-grid, .ticker-cards { grid-template-columns: 1fr; }
+            .navbar { padding: 0 0.75rem; }
+            .logo { font-size: 1rem; }
+            .logo-badge { font-size: 0.55rem; }
+            .nav-links { display: none; }
+            .status-pill { display: none; }
+            .hamburger-btn { display: flex; }
+            .mobile-menu-overlay { 
+                padding: 100px 1rem 1rem;
+                z-index: 1499;
+            }
+            .mobile-menu-link { font-size: 1.3rem; padding: 0.8rem 0; }
+            .hero { 
+                padding: 60px 0.75rem 40px;
+                height: 100vh;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                position: relative;
+            }
+            .hero h1 { font-size: 1.8rem; line-height: 1.2; }
+            .hero p { font-size: 0.9rem; }
+            .hero-actions { flex-direction: column; align-items: stretch; }
+            .btn-primary, .btn-outline { width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.8rem; }
+            .stats-strip { padding: 3rem 0.75rem 3rem; }
+            .stats-inner { grid-template-columns: 1fr; gap: 0.5rem; }
+            .stat-pill { padding: 1rem; }
+            .stat-pill .val { font-size: 1.8rem; }
+            .features { padding: 3rem 0.75rem; }
+            .feature-card { padding: 1.25rem; }
+            .ticker-section { padding: 2rem 0.75rem; }
+            .ticker-card { padding: 1rem; }
+            .footer { padding: 1.5rem 0.75rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Background blobs -->
-    <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-    </div>
-
     <!-- Navbar -->
     <nav class="navbar" id="navbar">
         <div class="nav-inner">
@@ -189,15 +354,39 @@
                 <span class="status-dot"></span>
                 <span id="nav-status">System Ready</span>
             </div>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
         </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <div class="mobile-menu-top">
+            <a href="/" class="mobile-menu-link">Home</a>
+            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
+            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
+        </div>
+        <div class="mobile-menu-bottom">
+            <div class="mobile-menu-brand">
+                <span class="logo-badge">IN</span>
+                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
+            </div>
+            <div class="mobile-menu-tags">
+                <span class="menu-tag alpha">Alpha v1.0</span>
+                <span class="menu-tag live">● Live</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Hero -->
     <section class="hero">
         <div class="hero-eyebrow">⚡ Powered by IndicBERT &amp; 5-Model Ensemble AI</div>
         <h1>
             Combating Fake News<br>
-            <span class="accent-saffron">Across</span> <span class="accent-green">India</span>
+            Across India
         </h1>
         <p>An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>, covering all 36 states and union territories in real-time.</p>
         <div class="hero-actions">
@@ -208,6 +397,11 @@
 
     <!-- Stats strip -->
     <div class="stats-strip">
+        <div class="section-header">
+            <div class="section-tag">Real-Time Metrics</div>
+            <h2 class="section-title">Platform Performance Overview</h2>
+            <p class="section-sub">Live statistics showcasing our AI-powered misinformation detection capabilities across India</p>
+        </div>
         <div class="stats-inner">
             <div class="stat-pill">
                 <div class="val" id="stat-events">—</div>
@@ -311,6 +505,34 @@
         // ── Navbar scroll effect ──
         window.addEventListener('scroll', () => {
             document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // ── Hamburger menu toggle ──
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.mobile-menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close menu when clicking outside
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
 
         // ── Fetch and display stats ──

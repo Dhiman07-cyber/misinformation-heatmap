@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Misinformation Heatmap - India</title>
+    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
     <style>
         :root {
             --saffron:       #E87722;
@@ -27,6 +28,7 @@
             --medium-risk:   #d97706;
             --low-risk:      #138808;
             --shadow:        0 4px 20px rgba(0,0,0,0.08);
+            --shadow-sm:     0 2px 8px rgba(0,0,0,0.08);
             --shadow-lg:     0 8px 32px rgba(0,0,0,0.12);
         }
         
@@ -67,16 +69,15 @@
         }
         
         body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F8F8F4;
+            color: #1A1A1A;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
             min-height: 100vh;
-            color: var(--text-primary);
             overflow-x: hidden;
-            height: 100vh;
-            position: relative;
-            box-sizing: border-box;
+            max-width: 100vw;
+            scroll-behavior: smooth;
         }
         
         /* Saffron and green gradient blobs for Indian flag feel */
@@ -98,7 +99,6 @@
             height: 100vh;
             width: 100vw;
             background: transparent;
-            overflow: hidden;
             position: relative;
             z-index: 1;
         }
@@ -117,196 +117,176 @@
         
         /* Navigation bar */
         .navbar {
-            background: rgba(248,248,244,0.92);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0 2rem; height: 62px;
+            display: flex; align-items: center;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
         }
-        
+        .navbar.scrolled { box-shadow: var(--shadow-sm); }
+        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
+        .logo .logo-name { color: var(--saffron); }
+
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
+        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
+        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
+
+        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
+
+        /* Hamburger button */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 10000;
+        }
+        .hamburger-line {
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 80px 2rem 2rem;
+            overflow-x: hidden;
+        }
+        .mobile-menu-overlay.active {
+            transform: translateX(0);
+        }
+        .mobile-menu-top {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mobile-menu-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+        }
+        .mobile-menu-link:hover {
+            padding-left: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-menu-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(232, 119, 34, 0.3);
+            padding: 2rem;
+            margin: 0 -2rem -2rem -2rem;
+        }
+        .mobile-menu-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-menu-brand .logo-badge {
+            background: #fff;
+            color: var(--accent);
+        }
+        .mobile-menu-brand .logo-name {
+            color: #fff;
+        }
+        .mobile-menu-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .menu-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        .menu-tag.alpha {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .menu-tag.live {
+            background: #fff;
+            color: var(--green);
+            animation: pulse 2s infinite;
+        }
+
         /* Content area - NO separate container styling */
         .content-area {
             display: flex;
             flex: 1;
             overflow: hidden;
+            min-height: 0;
+            padding-top: 62px;
         }
         
         /* Map section (left half) */
         .map-section {
-            flex: 1;
+            flex: 0 0 700px;
             display: flex;
             flex-direction: column;
             padding: 16px;
             padding-right: 8px;
+            overflow: hidden;
         }
         
         /* Information section (right half) */
         .info-section {
-            width: 520px;
-            min-width: 520px;
+            flex: 1;
             display: flex;
             flex-direction: column;
             padding: 16px;
             padding-left: 8px;
             border-left: 1px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Navbar content */
-        .nav-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #FF9933;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
-        }
-        
-        .flag-icon {
-            width: 24px;
-            height: 16px;
-            object-fit: cover;
-            border-radius: 2px;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-        
-        .nav-link {
-            color: #4a5568;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            color: #FF9933;
-            background: rgba(255, 153, 51, 0.1);
-        }
-        
-        .navbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .navbar-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 1px solid;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .navbar-btn.primary {
-            background: linear-gradient(135deg, #FF9933 0%, #B45309 100%);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3);
-        }
-        
-        .navbar-btn.secondary {
-            background: rgba(255, 255, 255, 0.9);
-            color: #4a5568;
-            border: 2px solid rgba(255, 153, 51, 0.3);
-            backdrop-filter: blur(10px);
-        }
-        
-        .navbar-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255, 153, 51, 0.4);
-        }
-        
-        .navbar-btn.secondary:hover {
-            background: rgba(255, 153, 51, 0.1);
-            border-color: #FF9933;
-            color: #FF9933;
-        }
-        
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: rgba(19, 136, 8, 0.1);
-            border: 1px solid rgba(19, 136, 8, 0.3);
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            color: #138808;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #138808;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-bar {
-            padding: 12px 24px;
-            background: rgba(232,119,34,0.05);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: 24px;
-            align-items: center;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.7);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-            color: var(--text-secondary);
-        }
-        
-        .status-item:hover {
-            background: rgba(232,119,34,0.06);
-            border-color: var(--border-accent);
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--green);
-            animation: glow 2s infinite;
-            box-shadow: 0 0 10px rgba(19, 136, 8, 0.5);
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            min-width: 400px;
+            overflow-y: auto;
         }
         
         .map-container {
@@ -318,6 +298,7 @@
             background: #FFFFFF;
             box-shadow: 0 4px 20px rgba(0,0,0,0.07);
             border: 1px solid var(--border);
+            max-height: 500px;
         }
         
         #svgroot {
@@ -368,12 +349,18 @@
             position: absolute;
             top: 24px;
             right: 24px;
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 6px;
             z-index: 1000;
             transition: all 0.3s ease;
             animation: slideInFromRight 0.5s ease-out;
+        }
+        
+        @media (min-width: 768px) {
+            .zoom-controls {
+                display: flex;
+            }
         }
         
         /* Enhanced zoom control styling */
@@ -553,165 +540,132 @@
                 min-width: 480px;
             }
         }
-        
-        /* Tablet landscape (768px - 1200px) */
-        @media (max-width: 1200px) and (min-width: 769px) {
-            
-            .content-area {
-                flex-direction: column;
-            }
-            
-            .map-section {
-                height: 50vh;
-                padding: 12px;
-                padding-bottom: 6px;
-                border-left: none;
-            }
-            
-            .info-section {
-                width: 100%;
-                min-width: 100%;
-                height: auto;
-                max-height: 45vh;
-                padding: 12px;
-                padding-top: 6px;
-                border-left: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .navbar-content {
-                flex-wrap: wrap;
-                gap: 16px;
-            }
-            
-            .navbar-actions {
-                margin-left: 0;
-            }
-        }
-        
+
         /* Mobile portrait (max 768px) */
         @media (max-width: 768px) {
-            
-            .navbar {
-                padding: 12px 16px;
-            }
-            
-            .navbar-content {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            
-            .navbar-title {
-                font-size: 20px;
-            }
-            
-            .navbar-links {
-                margin-left: 0;
-                gap: 16px;
-            }
-            
-            .navbar-actions {
-                margin-left: 0;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            
-            .navbar-btn {
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-            
+            .navbar { padding: 0 1rem; }
+            .nav-links { display: none; }
+            .status-pill { display: none; }
+            .hamburger-btn { display: flex; }
+
             .content-area {
                 flex-direction: column;
+                overflow-y: auto;
+                display: block;
+                overflow-x: hidden;
+                padding-top: 62px;
             }
-            
+
             .map-section {
-                height: 40vh;
+                height: 55vh;
+                min-height: 350px;
                 padding: 12px;
-                padding-bottom: 6px;
+                padding-bottom: 8px;
                 border-left: none;
+                flex: none;
             }
-            
+
+            .map-container {
+                max-height: 55vh;
+            }
+
             .info-section {
                 width: 100%;
                 min-width: 100%;
+                max-width: 100%;
                 height: auto;
-                padding: 12px;
-                padding-top: 6px;
+                padding: 16px 16px 16px 4px;
+                padding-top: 20px;
                 border-left: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+                overflow-x: hidden;
             }
-            
+
             .info-content {
-                padding: 16px;
+                padding: 16px 16px 16px 4px;
+                overflow-x: hidden;
+                max-width: 100%;
+                box-sizing: border-box;
             }
-            
+
             .state-name {
                 font-size: 22px;
+                padding: 24px 0 24px 0;
+                text-align: left;
             }
-            
+
             .zoom-controls {
+                display: flex;
                 top: 12px;
                 right: 12px;
             }
-            
+
             .zoom-btn {
                 width: 36px;
                 height: 36px;
                 font-size: 16px;
             }
+
+            .zoom-level {
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+
+            /* Make status grid responsive on mobile */
+            .info-content > div:first-of-type {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 24px !important;
+                padding: 28px !important;
+                margin-bottom: 40px !important;
+            }
+
+            .info-content > div:first-of-type > div {
+                padding: 24px !important;
+            }
+
+            .info-content > div:first-of-type > div > div:first-child {
+                font-size: 16px !important;
+            }
+
+            .info-content > div:first-of-type > div > div:last-child {
+                font-size: 11px !important;
+            }
+
+            /* Add more spacing between content sections */
+            .info-content > div:nth-of-type(2) {
+                margin-top: 40px !important;
+            }
+
+            .info-content > div:nth-of-type(3) {
+                margin-top: 40px !important;
+            }
         }
-        
-        /* Small mobile (max 480px) */
+
         @media (max-width: 480px) {
-            
-            .navbar {
-                padding: 8px 12px;
-            }
-            
-            .navbar-title {
-                font-size: 18px;
-            }
-            
-            .navbar-btn {
-                font-size: 0.75rem;
-                padding: 4px 8px;
-            }
-            
-            .map-section {
-                height: 35vh;
-                padding: 8px;
-                padding-bottom: 4px;
-            }
-            
-            .info-content {
-                padding: 12px;
-            }
-            
-            .state-name {
-                font-size: 20px;
-            }
-            
-            .zoom-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 14px;
-            }
+            .navbar { padding: 0 0.75rem; }
+            .logo { font-size: 1rem; }
+            .logo-badge { font-size: 0.55rem; }
+            .nav-links { display: none; }
+            .status-pill { display: none; }
+            .hamburger-btn { display: flex; }
         }
         
         #tooltip {
-            position: absolute;
+            position: fixed;
             pointer-events: none;
             padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.95);
-            color: #041026;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.98);
+            color: #1A1A1A;
+            border-radius: 10px;
             font-size: 13px;
-            box-shadow: 0 8px 24px rgba(4,8,16,0.6);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
             display: none;
-            max-width: 300px;
+            max-width: 280px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 153, 51, 0.3);
+            z-index: 9999;
+            line-height: 1.4;
         }
         
         .info-content {
@@ -1017,34 +971,143 @@
             text-align: center;
             padding: 20px;
         }
+        
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
+            z-index: 9999;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 80px 2rem 2rem;
+            overflow-x: hidden;
+        }
+        .mobile-menu-overlay.active {
+            transform: translateX(0);
+        }
+        .mobile-menu-top {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mobile-menu-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+        }
+        .mobile-menu-link:hover {
+            padding-left: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .mobile-menu-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(232, 119, 34, 0.3);
+            padding: 2rem;
+            margin: 0 -2rem -2rem -2rem;
+        }
+        .mobile-menu-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mobile-menu-brand .logo-badge {
+            background: #fff;
+            color: var(--accent);
+        }
+        .mobile-menu-brand .logo-name {
+            color: #fff;
+        }
+        .mobile-menu-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .menu-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        .menu-tag.alpha {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .menu-tag.live {
+            background: #fff;
+            color: var(--green);
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
     <div class="main-layout">
         <!-- Navigation Bar -->
-        <nav class="navbar">
-            <div class="nav-content">
+        <nav class="navbar" id="navbar">
+            <div class="nav-inner">
                 <a href="/" class="logo">
-                    <img src="/assets/indian-flag.png" alt="Indian Flag" class="flag-icon">
-                    Misinformation Heatmap
+                    <span class="logo-badge">IN</span>
+                    <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
                 </a>
                 <div class="nav-links">
                     <a href="/" class="nav-link">Home</a>
                     <a href="/dashboard" class="nav-link">Dashboard</a>
                     <a href="/map/enhanced-india-heatmap.html" class="nav-link active">Heatmap</a>
                 </div>
-                <div class="navbar-actions">
-                    <button onclick="testMapColors()" class="navbar-btn primary">🎨 Test Colors</button>
-                    <button onclick="showDataSummary()" class="navbar-btn secondary">📊 Data Summary</button>
-                    
-                    <div class="nav-status">
-                        <div class="status-dot"></div>
-                        <span id="system-status">Live Processing</span>
-                    </div>
+                <div class="status-pill">
+                    <span class="status-dot"></span>
+                    <span id="nav-status">System Ready</span>
                 </div>
+                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
         </nav>
-        
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <div class="mobile-menu-top">
+            <a href="/" class="mobile-menu-link">Home</a>
+            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
+            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
+        </div>
+        <div class="mobile-menu-bottom">
+            <div class="mobile-menu-brand">
+                <span class="logo-badge">IN</span>
+                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
+            </div>
+            <div class="mobile-menu-tags">
+                <span class="menu-tag alpha">Alpha v1.0</span>
+                <span class="menu-tag live">● Live</span>
+            </div>
+        </div>
+    </div>
+
         <!-- Content Area - ONE unified container -->
         <div class="content-area">
             <!-- Map Section (Left Half) -->
@@ -1159,6 +1222,34 @@
             ? 'https://ndg07-heatmap.hf.space' 
             : '';
 
+        // ── Hamburger menu toggle ──
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu when clicking on a link
+        document.querySelectorAll('.mobile-menu-link').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close menu when clicking outside
+        mobileMenu.addEventListener('click', (e) => {
+            if (e.target === mobileMenu) {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
         // Global variables
         let heatmapData = [];
         let selectedState = null;
@@ -1214,8 +1305,11 @@
                 
             } catch (error) {
                 console.error('Failed to initialize heatmap:', error);
-                document.getElementById('svgroot').innerHTML = 
-                    '<div class="error">Failed to load heatmap data. Please refresh the page.</div>';
+                // Hide loading screen and show map without data
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
             }
         }
         
@@ -1461,9 +1555,11 @@
             const path = event.target;
             const stateData = findStateData(path);
             
-            if (stateData) {
-                showTooltip(event, stateData);
-            }
+            // Get state name from path
+            const pathName = path.getAttribute('name') || path.getAttribute('title') || path.id || 'Unknown';
+            
+            // Show tooltip with or without data
+            showTooltip(event, stateData || { state: pathName, event_count: 0, fake_count: 0, real_count: 0 });
         }
         
         function handleStateLeave(event) {
@@ -1495,18 +1591,28 @@
             const fakePercentage = (stateData.fake_probability * 100).toFixed(2);
             const aiConfidence = stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A';
             
-            tooltip.innerHTML = `
-                <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
-                <div>Total Events: ${stateData.event_count || 0}</div>
-                <div>Fake News: ${stateData.fake_count || 0} (${fakePercentage}%)</div>
-                <div>Real News: ${stateData.real_count || 0}</div>
-                <div>AI Confidence: ${aiConfidence}%</div>
-                <div>Risk Level: <span style="color: ${stateData.risk_level === 'high' ? '#dc3545' : stateData.risk_level === 'medium' ? '#ffc107' : '#138808'};">${stateData.risk_level || 'low'}</span></div>
-            `;
+            // Check if state has data
+            const hasData = stateData && (stateData.event_count > 0 || stateData.fake_count > 0 || stateData.real_count > 0);
+            
+            if (!hasData) {
+                tooltip.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
+                    <div style="color: #888;">Currently no data available for this state</div>
+                `;
+            } else {
+                tooltip.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
+                    <div>Total Events: ${stateData.event_count || 0}</div>
+                    <div>Fake News: ${stateData.fake_count || 0} (${fakePercentage}%)</div>
+                    <div>Real News: ${stateData.real_count || 0}</div>
+                    <div>AI Confidence: ${aiConfidence}%</div>
+                    <div>Risk Level: <span style="color: ${stateData.risk_level === 'high' ? '#dc3545' : stateData.risk_level === 'medium' ? '#ffc107' : '#138808'};">${stateData.risk_level || 'low'}</span></div>
+                `;
+            }
             
             tooltip.style.display = 'block';
-            tooltip.style.left = event.pageX + 10 + 'px';
-            tooltip.style.top = event.pageY - 10 + 'px';
+            tooltip.style.left = event.clientX + 15 + 'px';
+            tooltip.style.top = event.clientY - 15 + 'px';
         }
         
         function hideTooltip() {
@@ -1515,887 +1621,219 @@
                 tooltip.style.display = 'none';
             }
         }
+
+        // Test Colors Debug Function - Toggle between colored and default
+        let isTestColorsActive = false;
+        let originalColors = new Map();
         
-        function showStateDetails(stateData) {
-            document.getElementById('stateName').textContent = stateData.state;
+        function testMapColors() {
+            if (!svgMap) {
+                console.log('SVG map not loaded yet');
+                return;
+            }
             
-            // Get state info from INDIAN_STATES if available
-            const stateInfo = Object.values(window.INDIAN_STATES || {}).find(s => s.name === stateData.state) || {};
+            const paths = svgMap.querySelectorAll('path');
             
-            document.getElementById('stateContent').innerHTML = `
-                <div class="state-stats">
-                    <div class="stat-row">
-                        <span>Total Events:</span>
-                        <span class="stat-value">${stateData.event_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Fake News:</span>
-                        <span class="stat-value" style="color: var(--high-risk);">${stateData.fake_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Real News:</span>
-                        <span class="stat-value" style="color: var(--low-risk);">${stateData.real_count || 0}</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Fake News Ratio:</span>
-                        <span class="stat-value" style="color: var(--high-risk);">${(stateData.fake_probability * 100).toFixed(2)}%</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>AI Confidence:</span>
-                        <span class="stat-value" style="color: var(--medium-risk);">${stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A'}%</span>
-                    </div>
-                    <div class="stat-row">
-                        <span>Risk Level:</span>
-                        <span class="stat-value" style="color: ${stateData.risk_level === 'high' ? 'var(--high-risk)' : stateData.risk_level === 'medium' ? 'var(--medium-risk)' : 'var(--low-risk)'};">${stateData.risk_level || 'low'}</span>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Fake News Ratio Legend</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
-                            <span>High Risk (>10% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #ff6b35; border-radius: 2px;"></div>
-                            <span>Medium Risk (5-10% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
-                            <span>Low-Medium Risk (2-5% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #FF9933; border-radius: 2px;"></div>
-                            <span>Low Risk (0.1-2% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #138808; border-radius: 2px;"></div>
-                            <span>Very Low Risk (<0.1% fake)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #88A4BC; border-radius: 2px;"></div>
-                            <span>Insufficient Data (<50 events)</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
-                    Click on a state to view detailed analysis
-                </div>
-            `;
-        }
-        
-        async function loadStateEvents(state) {
-            try {
-                const response = await fetch(`/api/v1/events/state/${encodeURIComponent(state)}`);
-                const data = await response.json();
-                
-                if (data.events && data.events.length > 0) {
-                    const eventsHtml = data.events.map(event => `
-                        <div class="headline" style="margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 4px;">
-                            <div style="font-weight: bold; margin-bottom: 4px; font-size: 13px; line-height: 1.3;">${event.title || 'Processing event...'}</div>
-                            <div style="font-size: 11px; opacity: 0.8; color: #a0a0a0;">
-                                ${event.source || 'Unknown source'} • 
-                                <span style="color: ${event.classification === 'fake' ? '#dc3545' : event.classification === 'real' ? '#138808' : '#ffc107'};">
-                                    ${(event.classification || 'uncertain').toUpperCase()}
-                                </span> 
-                                (${((event.fake_probability || 0.5) * 100).toFixed(0)}%)
-                            </div>
-                        </div>
-                    `).join('');
+            if (!isTestColorsActive) {
+                // First click - save original colors and apply test colors
+                paths.forEach(path => {
+                    originalColors.set(path, {
+                        fill: path.style.fill || getComputedStyle(path).fill,
+                        stroke: path.style.stroke || getComputedStyle(path).stroke,
+                        strokeWidth: path.style.strokeWidth || getComputedStyle(path).strokeWidth
+                    });
                     
-                    document.getElementById('stateContent').innerHTML += `
-                        <div style="margin-top: 20px;">
-                            <h4>🔍 Recent Analysis</h4>
-                            ${eventsHtml}
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load state events:', error);
+                    // Apply different colors to test
+                    const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
+                    const pathIndex = Array.from(paths).indexOf(path);
+                    const color = colors[pathIndex % colors.length];
+                    path.style.fill = color;
+                    path.style.stroke = '#ffffff';
+                    path.style.strokeWidth = '1';
+                });
+                
+                isTestColorsActive = true;
+                console.log('Test colors applied');
+            } else {
+                // Second click - revert to original colors
+                paths.forEach(path => {
+                    const original = originalColors.get(path);
+                    if (original) {
+                        path.style.fill = original.fill;
+                        path.style.stroke = original.stroke;
+                        path.style.strokeWidth = original.strokeWidth;
+                    }
+                });
+                
+                isTestColorsActive = false;
+                originalColors.clear();
+                console.log('Original colors restored');
             }
         }
-        
-        async function updateStatusBar() {
-            try {
-                const response = await fetch('/api/v1/stats');
-                const data = await response.json();
-                
-                document.getElementById('total-events').textContent = data.total_events || 0;
-                document.getElementById('active-states').textContent = data.total_states || 36;
-                document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
-                
-                const statusDot = document.querySelector('.status-dot');
-                const statusText = document.querySelector('.status-bar .status-item span');
-                
-                if (data.processing_active) {
-                    statusDot.style.background = '#138808';
-                    statusText.textContent = 'Live Processing';
-                    statusDot.style.animation = 'pulse 2s infinite';
-                } else {
-                    statusDot.style.background = '#FF9933';
-                    statusText.textContent = 'System Ready';
-                    statusDot.style.animation = 'pulse 2s infinite';
-                }
-                
-                // Update classification accuracy
-                const accuracy = data.recent_hour_stats?.classification_accuracy || data.classification_accuracy || 0;
-                const accuracyPercent = Math.round(accuracy * 100);
-                document.getElementById('classification-accuracy').textContent = `${accuracyPercent}%`;
-                
-                // Color code accuracy
-                const accuracyElement = document.getElementById('classification-accuracy');
-                if (accuracyPercent >= 80) {
-                    accuracyElement.style.color = '#28a745';
-                } else if (accuracyPercent >= 60) {
-                    accuracyElement.style.color = '#ffc107';
-                } else {
-                    accuracyElement.style.color = '#dc3545';
-                }
-                
-            } catch (error) {
-                console.error('Failed to update status bar:', error);
-                const statusDot = document.querySelector('.status-dot');
-                const statusText = document.querySelector('.status-bar .status-item span');
-                if (statusDot && statusText) {
-                    statusDot.style.background = '#dc3545';
-                    statusText.textContent = 'Connection Error';
-                    statusDot.style.animation = 'none';
-                }
-            }
-        }
-        
+
         // Zoom and Pan Functions
-        function updateTransform() {
-            if (svgMap) {
-                // Apply transform while maintaining center position
-                const translateX = -50 + (currentX / window.innerWidth) * 100;
-                const translateY = -50 + (currentY / window.innerHeight) * 100;
-                svgMap.style.transform = `translate(${translateX}%, ${translateY}%) scale(${currentZoom})`;
-                document.getElementById('zoom-level').textContent = Math.round(currentZoom * 100) + '%';
-            }
-        }
-        
         function initializeMapBounds() {
-            if (svgMap) {
-                const bbox = svgMap.getBBox();
-                mapBounds.width = bbox.width;
-                mapBounds.height = bbox.height;
-                mapBounds.centerX = bbox.x + bbox.width / 2;
-                mapBounds.centerY = bbox.y + bbox.height / 2;
+            if (!svgMap) return;
+
+            const svgRoot = document.getElementById('svgroot');
+            const rect = svgRoot.getBoundingClientRect();
+
+            mapBounds = {
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.width / 2,
+                centerY: rect.height / 2
+            };
+
+            console.log('Map bounds initialized:', mapBounds);
+        }
+
+        function setupZoomAndPan() {
+            const svgRoot = document.getElementById('svgroot');
+            if (!svgRoot || !svgMap) return;
+
+            // Mouse wheel zoom
+            svgRoot.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -zoomStep : zoomStep;
+                const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom + delta));
+
+                // Calculate zoom position relative to mouse
+                const rect = svgRoot.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const zoomRatio = newZoom / currentZoom;
+                currentX = mouseX - (mouseX - currentX) * zoomRatio;
+                currentY = mouseY - (mouseY - currentY) * zoomRatio;
+                currentZoom = newZoom;
+
+                updateTransform();
+                updateZoomLevel();
+            }, { passive: false });
+
+            // Mouse drag pan
+            svgRoot.addEventListener('mousedown', (e) => {
+                if (e.target !== svgRoot && !e.target.closest('svg')) return;
+                isDragging = true;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                svgRoot.style.cursor = 'grabbing';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+
+                currentX += dx;
+                currentY += dy;
+
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+
+                updateTransform();
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                if (svgRoot) svgRoot.style.cursor = 'grab';
+            });
+
+            // Touch events for mobile
+            let touchStartDistance = 0;
+            let touchStartZoom = 1;
+
+            svgRoot.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    touchStartDistance = getTouchDistance(e.touches);
+                    touchStartZoom = currentZoom;
+                } else if (e.touches.length === 1) {
+                    isDragging = true;
+                    lastMouseX = e.touches[0].clientX;
+                    lastMouseY = e.touches[0].clientY;
+                }
+            });
+
+            svgRoot.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+
+                if (e.touches.length === 2) {
+                    const distance = getTouchDistance(e.touches);
+                    const zoomRatio = distance / touchStartDistance;
+                    currentZoom = Math.max(minZoom, Math.min(maxZoom, touchStartZoom * zoomRatio));
+                    updateTransform();
+                    updateZoomLevel();
+                } else if (e.touches.length === 1 && isDragging) {
+                    const dx = e.touches[0].clientX - lastMouseX;
+                    const dy = e.touches[0].clientY - lastMouseY;
+
+                    currentX += dx;
+                    currentY += dy;
+
+                    lastMouseX = e.touches[0].clientX;
+                    lastMouseY = e.touches[0].clientY;
+
+                    updateTransform();
+                }
+            }, { passive: false });
+
+            svgRoot.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            console.log('Zoom and pan setup complete');
+        }
+
+        function getTouchDistance(touches) {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function updateTransform() {
+            if (!svgMap) return;
+            svgMap.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) scale(${currentZoom})`;
+        }
+
+        function updateZoomLevel() {
+            const zoomLevelEl = document.getElementById('zoom-level');
+            if (zoomLevelEl) {
+                zoomLevelEl.textContent = Math.round(currentZoom * 100) + '%';
             }
         }
-        
+
         function zoomIn() {
-            if (currentZoom < maxZoom) {
-                currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
-                updateTransform();
-            }
+            currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
+            updateTransform();
+            updateZoomLevel();
         }
-        
+
         function zoomOut() {
-            if (currentZoom > minZoom) {
-                currentZoom = Math.max(minZoom, currentZoom - zoomStep);
-                updateTransform();
-            }
+            currentZoom = Math.max(minZoom, currentZoom - zoomStep);
+            updateTransform();
+            updateZoomLevel();
         }
-        
+
         function resetZoom() {
             currentZoom = 1;
             currentX = 0;
             currentY = 0;
             updateTransform();
+            updateZoomLevel();
         }
-        
+
         function centerMap() {
-            currentX = 0;
-            currentY = 0;
-            updateTransform();
-        }
-        
-        function setupZoomAndPan() {
-            const svgRoot = document.getElementById('svgroot');
-            
-            // Mouse wheel zoom
-            svgRoot.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const rect = svgRoot.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-                
-                const oldZoom = currentZoom;
-                if (e.deltaY < 0) {
-                    zoomIn();
-                } else {
-                    zoomOut();
-                }
-                
-                // Zoom towards mouse position
-                if (currentZoom !== oldZoom) {
-                    const zoomRatio = currentZoom / oldZoom;
-                    currentX = mouseX - (mouseX - currentX) * zoomRatio;
-                    currentY = mouseY - (mouseY - currentY) * zoomRatio;
-                    updateTransform();
-                }
-            });
-            
-            // Mouse drag pan
-            svgRoot.addEventListener('mousedown', (e) => {
-                if (e.button === 0) { // Left mouse button
-                    isDragging = true;
-                    lastMouseX = e.clientX;
-                    lastMouseY = e.clientY;
-                    svgRoot.style.cursor = 'grabbing';
-                }
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    const deltaX = e.clientX - lastMouseX;
-                    const deltaY = e.clientY - lastMouseY;
-                    
-                    currentX += deltaX;
-                    currentY += deltaY;
-                    
-                    lastMouseX = e.clientX;
-                    lastMouseY = e.clientY;
-                    
-                    updateTransform();
-                }
-            });
-            
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    svgRoot.style.cursor = 'grab';
-                }
-            });
-            
-            // Touch support for mobile
-            let lastTouchDistance = 0;
-            let lastTouchX = 0;
-            let lastTouchY = 0;
-            
-            svgRoot.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    // Single touch - pan
-                    lastTouchX = e.touches[0].clientX;
-                    lastTouchY = e.touches[0].clientY;
-                } else if (e.touches.length === 2) {
-                    // Two touches - zoom
-                    const touch1 = e.touches[0];
-                    const touch2 = e.touches[1];
-                    lastTouchDistance = Math.sqrt(
-                        Math.pow(touch2.clientX - touch1.clientX, 2) +
-                        Math.pow(touch2.clientY - touch1.clientY, 2)
-                    );
-                }
-                e.preventDefault();
-            });
-            
-            svgRoot.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 1) {
-                    // Single touch - pan
-                    const deltaX = e.touches[0].clientX - lastTouchX;
-                    const deltaY = e.touches[0].clientY - lastTouchY;
-                    
-                    currentX += deltaX;
-                    currentY += deltaY;
-                    
-                    lastTouchX = e.touches[0].clientX;
-                    lastTouchY = e.touches[0].clientY;
-                    
-                    updateTransform();
-                } else if (e.touches.length === 2) {
-                    // Two touches - zoom
-                    const touch1 = e.touches[0];
-                    const touch2 = e.touches[1];
-                    const currentDistance = Math.sqrt(
-                        Math.pow(touch2.clientX - touch1.clientX, 2) +
-                        Math.pow(touch2.clientY - touch1.clientY, 2)
-                    );
-                    
-                    if (lastTouchDistance > 0) {
-                        const zoomRatio = currentDistance / lastTouchDistance;
-                        const newZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom * zoomRatio));
-                        
-                        if (newZoom !== currentZoom) {
-                            currentZoom = newZoom;
-                            updateTransform();
-                        }
-                    }
-                    
-                    lastTouchDistance = currentDistance;
-                }
-                e.preventDefault();
-            });
+            resetZoom();
         }
 
-        // Utility functions for map interaction
-        
-        // Test function to force colors on map
-        function testMapColors() {
-            if (!svgMap) {
-                console.log('SVG map not loaded yet');
-                return;
-            }
-            
-            const paths = svgMap.querySelectorAll('path');
-            console.log(`Testing colors on ${paths.length} paths`);
-            
-            paths.forEach((path, index) => {
-                // Apply different colors to test
-                const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
-                const color = colors[index % colors.length];
-                path.style.fill = color;
-                path.style.stroke = '#ffffff';
-                path.style.strokeWidth = '1';
-            });
-            
-            console.log('Test colors applied');
-        }
-        
-        // Function to show data summary
-        function showDataSummary() {
-            console.log('=== HEATMAP DATA SUMMARY ===');
-            console.log(`Total states in data: ${heatmapData.length}`);
-            
-            if (heatmapData.length > 0) {
-                const probabilities = heatmapData.map(d => d.fake_probability);
-                const min = Math.min(...probabilities);
-                const max = Math.max(...probabilities);
-                const avg = probabilities.reduce((a, b) => a + b, 0) / probabilities.length;
-                
-                console.log(`Fake probability range: ${min.toFixed(3)} - ${max.toFixed(3)}`);
-                console.log(`Average fake probability: ${avg.toFixed(3)}`);
-                
-                // Show first 5 states
-                console.log('First 5 states:');
-                heatmapData.slice(0, 5).forEach(state => {
-                    console.log(`  ${state.state}: ${state.fake_probability.toFixed(3)} (${state.event_count} events)`);
-                });
-            }
-        }
-        
-
-        
-        // Enhanced live feed with separate misinformation and real news feeds
-        let lastEventId = null;
-        let feedUpdateCount = 0;
-        
-        async function updateLiveFeeds() {
-            await updateMisinformationFeed();
-            await updateRealNewsFeed();
-        }
-        
-        async function updateMisinformationFeed() {
-            try {
-                const response = await fetch(API_BASE + '/api/v1/events/live?limit=20');
-                const data = await response.json();
-                
-                const misinformationFeed = document.getElementById('misinformation-feed');
-                if (data.events && data.events.length > 0) {
-                    // Filter for fake/uncertain news
-                    const fakeEvents = data.events.filter(event => 
-                        event.verdict === 'fake' || event.verdict === 'uncertain'
-                    );
-                    
-                    if (fakeEvents.length > 0) {
-                        const feedHtml = fakeEvents.slice(0, 10).map((event, index) => {
-                            const verdictColor = event.verdict === 'fake' ? '#dc3545' : '#ffc107';
-                            const confidencePercent = Math.round(event.confidence * 100);
-                            
-                            return `
-                                <div style="border-left: 5px solid ${verdictColor}; padding: 18px 20px; margin-bottom: 15px; background: rgba(220, 53, 69, 0.1); border-radius: 10px; transition: all 0.3s ease;" 
-                                     onmouseover="this.style.background='rgba(220, 53, 69, 0.2)'; this.style.transform='translateX(3px)'" 
-                                     onmouseout="this.style.background='rgba(220, 53, 69, 0.1)'; this.style.transform='translateX(0)'">
-                                    <div style="font-weight: bold; margin-bottom: 10px; font-size: 15px; line-height: 1.5; color: #dc3545;">
-                                        🚨 ${event.title.substring(0, 140)}${event.title.length > 140 ? '...' : ''}
-                                    </div>
-                                    <div style="font-size: 13px; opacity: 0.8; margin-bottom: 10px; color: #a0a0a0; line-height: 1.4;">
-                                        ${event.source} • ${event.state || 'India'}
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
-                                        <span style="color: ${verdictColor}; font-weight: bold; padding: 5px 12px; background: rgba(220, 53, 69, 0.2); border-radius: 16px;">
-                                            ${event.verdict.toUpperCase()}
-                                        </span>
-                                        <span style="color: #dc3545; font-weight: 600;">
-                                            ${confidencePercent}% confidence
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                        
-                        misinformationFeed.innerHTML = feedHtml;
-                    } else {
-                        misinformationFeed.innerHTML = `
-                            <div style="text-align: center; padding: 60px 20px; color: #138808;">
-                                <div style="font-size: 32px; margin-bottom: 15px;">✅</div>
-                                <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">No misinformation detected recently!</div>
-                                <div style="font-size: 14px; opacity: 0.8; line-height: 1.4;">All news sources are showing verified content</div>
-                            </div>
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to update misinformation feed:', error);
-            }
-        }
-        
-        async function updateRealNewsFeed() {
-            try {
-                const response = await fetch(API_BASE + '/api/v1/events/live?limit=20');
-                const data = await response.json();
-                
-                const realNewsFeed = document.getElementById('real-news-feed');
-                if (data.events && data.events.length > 0) {
-                    // Filter for real news
-                    const realEvents = data.events.filter(event => event.verdict === 'real');
-                    
-                    if (realEvents.length > 0) {
-                        const feedHtml = realEvents.slice(0, 10).map((event, index) => {
-                            const confidencePercent = Math.round(event.confidence * 100);
-                            
-                            return `
-                                <div style="border-left: 5px solid #138808; padding: 18px 20px; margin-bottom: 15px; background: rgba(19, 136, 8, 0.1); border-radius: 10px; transition: all 0.3s ease;" 
-                                     onmouseover="this.style.background='rgba(19, 136, 8, 0.2)'; this.style.transform='translateX(3px)'" 
-                                     onmouseout="this.style.background='rgba(19, 136, 8, 0.1)'; this.style.transform='translateX(0)'">
-                                    <div style="font-weight: bold; margin-bottom: 10px; font-size: 15px; line-height: 1.5; color: #138808;">
-                                        ✅ ${event.title.substring(0, 140)}${event.title.length > 140 ? '...' : ''}
-                                    </div>
-                                    <div style="font-size: 13px; opacity: 0.8; margin-bottom: 10px; color: #a0a0a0; line-height: 1.4;">
-                                        ${event.source} • ${event.state || 'India'}
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
-                                        <span style="color: #138808; font-weight: bold; padding: 5px 12px; background: rgba(19, 136, 8, 0.2); border-radius: 16px;">
-                                            VERIFIED
-                                        </span>
-                                        <span style="color: #138808; font-weight: 600;">
-                                            ${confidencePercent}% confidence
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                        
-                        realNewsFeed.innerHTML = feedHtml;
-                    } else {
-                        realNewsFeed.innerHTML = `
-                            <div style="text-align: center; padding: 60px 20px; opacity: 0.7;">
-                                <div style="font-size: 28px; margin-bottom: 15px;">📰</div>
-                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">Loading verified news...</div>
-                                <div style="font-size: 14px; margin-top: 8px; line-height: 1.4;">Fetching latest real news updates</div>
-                            </div>
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to update real news feed:', error);
-            }
-        }
-        
-        // Legacy function for compatibility
-        async function updateLiveFeed() {
-            try {
-                const response = await fetch(API_BASE + '/api/v1/events/live?limit=15');
-                const data = await response.json();
-                
-                const liveFeed = document.getElementById('live-feed');
-                if (data.events && data.events.length > 0) {
-                    feedUpdateCount++;
-                    
-                    const feedHtml = data.events.map((event, index) => {
-                        const verdictColor = event.verdict === 'fake' ? '#dc3545' : 
-                                           event.verdict === 'real' ? '#28a745' : '#ffc107';
-                        const confidencePercent = Math.round(event.confidence * 100);
-                        
-                        // Calculate realistic time ago based on timestamp
-                        const now = new Date();
-                        const eventTime = new Date(event.timestamp);
-                        const diffMinutes = Math.floor((now - eventTime) / (1000 * 60));
-                        const timeAgo = diffMinutes < 1 ? 'Just now' : 
-                                       diffMinutes < 60 ? `${diffMinutes}m ago` : 
-                                       diffMinutes < 1440 ? `${Math.floor(diffMinutes/60)}h ago` : 
-                                       `${Math.floor(diffMinutes/1440)}d ago`;
-                        
-                        // Add animation for new items
-                        const isNew = index < 3 && feedUpdateCount > 1;
-                        const animationStyle = isNew ? 'animation: slideIn 0.5s ease-out;' : '';
-                        
-                        return `
-                            <div style="border-left: 3px solid ${verdictColor}; padding: 10px 12px; margin-bottom: 1px; background: ${index % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'}; transition: all 0.3s ease; ${animationStyle}" 
-                                 onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.transform='translateX(2px)'" 
-                                 onmouseout="this.style.background='${index % 2 === 0 ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'}'; this.style.transform='translateX(0)'">
-                                <div style="font-weight: bold; margin-bottom: 6px; font-size: 11px; line-height: 1.3;">
-                                    ${event.title.substring(0, 75)}${event.title.length > 75 ? '...' : ''}
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; opacity: 0.8; margin-bottom: 4px;">
-                                    <span style="color: #667eea; font-weight: 500;">${event.source}</span>
-                                    <span style="color: ${verdictColor}; font-weight: bold; font-size: 9px; padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                                        ${event.verdict.toUpperCase()}
-                                    </span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9px; opacity: 0.6;">
-                                    <span>${timeAgo}</span>
-                                    <span style="color: ${confidencePercent >= 70 ? '#28a745' : confidencePercent >= 50 ? '#ffc107' : '#dc3545'};">
-                                        ${confidencePercent}% confidence
-                                    </span>
-                                </div>
-                                ${event.state ? `<div style="font-size: 8px; opacity: 0.5; margin-top: 2px;">📍 ${event.state}</div>` : ''}
-                            </div>
-                        `;
-                    }).join('');
-                    
-                    liveFeed.innerHTML = feedHtml;
-                    
-                    // Update feed header with count
-                    const feedHeader = document.querySelector('h3');
-                    if (feedHeader && feedHeader.textContent.includes('Live Classification Feed')) {
-                        feedHeader.innerHTML = `
-                            <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                            Live Classification Feed (${data.events.length})
-                        `;
-                    }
-                    
-                } else {
-                    liveFeed.innerHTML = `
-                        <div style="opacity: 0.7; text-align: center; padding: 30px;">
-                            <div style="font-size: 24px; margin-bottom: 10px;">📡</div>
-                            <div>Processing news feeds...</div>
-                            <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;">Waiting for new events</div>
-                        </div>
-                    `;
-                }
-                
-            } catch (error) {
-                console.error('Failed to update live feed:', error);
-                document.getElementById('live-feed').innerHTML = `
-                    <div style="opacity: 0.7; text-align: center; padding: 30px; color: #dc3545;">
-                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
-                        <div>Feed temporarily unavailable</div>
-                        <div style="font-size: 10px; margin-top: 5px; opacity: 0.6;">Retrying connection...</div>
-                    </div>
-                `;
-            }
-        }
-        
-        // State-specific news feed functions
-        async function updateStateSpecificFeeds(state) {
-            try {
-                const response = await fetch(API_BASE + `/api/v1/events/state/${encodeURIComponent(state)}?limit=20`);
-                const data = await response.json();
-                
-                if (data.events && data.events.length > 0) {
-                    // Filter for fake/uncertain news
-                    const fakeEvents = data.events.filter(event => 
-                        event.verdict === 'fake' || event.verdict === 'uncertain'
-                    );
-                    
-                    // Filter for real news
-                    const realEvents = data.events.filter(event => event.verdict === 'real');
-                    
-                    // Update misinformation feed
-                    const misinformationFeed = document.getElementById('misinformation-feed');
-                    if (fakeEvents.length > 0) {
-                        const fakeHtml = fakeEvents.slice(0, 8).map((event, index) => {
-                            const verdictColor = event.verdict === 'fake' ? '#dc3545' : '#ffc107';
-                            const confidencePercent = Math.round(event.confidence * 100);
-                            
-                            return `
-                                <div style="border-left: 4px solid ${verdictColor}; padding: 16px 18px; margin-bottom: 12px; background: rgba(220, 53, 69, 0.1); border-radius: 8px; transition: all 0.3s ease;" 
-                                     onmouseover="this.style.background='rgba(220, 53, 69, 0.2)'; this.style.transform='translateX(2px)'" 
-                                     onmouseout="this.style.background='rgba(220, 53, 69, 0.1)'; this.style.transform='translateX(0)'">
-                                    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; line-height: 1.5; color: #dc3545;">
-                                        🚨 ${event.title.substring(0, 90)}${event.title.length > 90 ? '...' : ''}
-                                    </div>
-                                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; color: #a0a0a0; line-height: 1.3;">
-                                        ${event.source} • ${state}
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-                                        <span style="color: ${verdictColor}; font-weight: bold; padding: 4px 10px; background: rgba(220, 53, 69, 0.2); border-radius: 14px;">
-                                            ${event.verdict.toUpperCase()}
-                                        </span>
-                                        <span style="color: #dc3545; font-weight: 600;">
-                                            ${confidencePercent}% confidence
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                        
-                        misinformationFeed.innerHTML = fakeHtml;
-                    } else {
-                        misinformationFeed.innerHTML = `
-                            <div style="text-align: center; padding: 60px 20px; color: #138808;">
-                                <div style="font-size: 32px; margin-bottom: 15px;">✅</div>
-                                <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">No misinformation in ${state}!</div>
-                                <div style="font-size: 14px; opacity: 0.8; line-height: 1.4;">All news from this state is verified</div>
-                            </div>
-                        `;
-                    }
-                    
-                    // Update real news feed
-                    const realNewsFeed = document.getElementById('real-news-feed');
-                    if (realEvents.length > 0) {
-                        const realHtml = realEvents.slice(0, 10).map((event, index) => {
-                            const confidencePercent = Math.round(event.confidence * 100);
-                            
-                            return `
-                                <div style="border-left: 4px solid #138808; padding: 16px 18px; margin-bottom: 12px; background: rgba(19, 136, 8, 0.1); border-radius: 8px; transition: all 0.3s ease;" 
-                                     onmouseover="this.style.background='rgba(19, 136, 8, 0.2)'; this.style.transform='translateX(2px)'" 
-                                     onmouseout="this.style.background='rgba(19, 136, 8, 0.1)'; this.style.transform='translateX(0)'">
-                                    <div style="font-weight: bold; margin-bottom: 8px; font-size: 14px; line-height: 1.5; color: #138808;">
-                                        ✅ ${event.title.substring(0, 90)}${event.title.length > 90 ? '...' : ''}
-                                    </div>
-                                    <div style="font-size: 12px; opacity: 0.8; margin-bottom: 8px; color: #a0a0a0; line-height: 1.3;">
-                                        ${event.source} • ${state}
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
-                                        <span style="color: #138808; font-weight: bold; padding: 4px 10px; background: rgba(19, 136, 8, 0.2); border-radius: 14px;">
-                                            VERIFIED
-                                        </span>
-                                        <span style="color: #138808; font-weight: 600;">
-                                            ${confidencePercent}% confidence
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('');
-                        
-                        realNewsFeed.innerHTML = realHtml;
-                    } else {
-                        realNewsFeed.innerHTML = `
-                            <div style="text-align: center; padding: 60px 20px; opacity: 0.7;">
-                                <div style="font-size: 28px; margin-bottom: 15px;">📰</div>
-                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No recent news from ${state}</div>
-                                <div style="font-size: 14px; margin-top: 8px; line-height: 1.4;">Check back later for updates</div>
-                            </div>
-                        `;
-                    }
-                } else {
-                    // No events for this state
-                    document.getElementById('misinformation-feed').innerHTML = `
-                        <div style="text-align: center; padding: 60px 20px; opacity: 0.7;">
-                            <div style="font-size: 28px; margin-bottom: 15px;">📊</div>
-                            <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No recent data for ${state}</div>
-                            <div style="font-size: 14px; margin-top: 8px; line-height: 1.4;">Processing new events...</div>
-                        </div>
-                    `;
-                    
-                    document.getElementById('real-news-feed').innerHTML = `
-                        <div style="text-align: center; padding: 60px 20px; opacity: 0.7;">
-                            <div style="font-size: 28px; margin-bottom: 15px;">📊</div>
-                            <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">No recent data for ${state}</div>
-                            <div style="font-size: 14px; margin-top: 8px; line-height: 1.4;">Processing new events...</div>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load state-specific feeds:', error);
-            }
-        }
-        
-        // State interaction functions
-        function handleStateClick(event) {
-            const path = event.target;
-            const stateData = findStateData(path);
-            
-            if (stateData) {
-                // Check if this state is already selected
-                if (selectedState === stateData.state) {
-                    // Unselect the state
-                    unselectState();
-                    return;
-                }
-                
-                // Remove previous selection
-                const previousSelected = svgMap.querySelector('.selected');
-                if (previousSelected) {
-                    previousSelected.classList.remove('selected');
-                    previousSelected.style.strokeWidth = '0.5';
-                }
-                
-                // Select current state
-                path.classList.add('selected');
-                path.style.strokeWidth = '2';
-                selectedState = stateData.state;
-                
-                // Show state details
-                showStateDetails(stateData);
-                
-                // Load state-specific events and update feeds
-                loadStateEvents(stateData.state);
-                updateStateSpecificFeeds(stateData.state);
-            }
-        }
-        
-        function unselectState() {
-            // Remove selection from map
-            const selectedPath = svgMap.querySelector('.selected');
-            if (selectedPath) {
-                selectedPath.classList.remove('selected');
-                selectedPath.style.strokeWidth = '0.5';
-            }
-            
-            // Reset state
-            selectedState = null;
-            
-            // Reset sidebar to default view
-            document.getElementById('stateName').textContent = 'Select a State';
-            document.getElementById('stateContent').innerHTML = `
-                <div style="margin-top: 20px;">
-                    <h4 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Risk Levels</h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #dc3545; border-radius: 2px;"></div>
-                            <span>High Risk (≥60%)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #ffc107; border-radius: 2px;"></div>
-                            <span>Medium Risk (40-59%)</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 16px; height: 16px; background: #28a745; border-radius: 2px;"></div>
-                            <span>Low Risk (<40%)</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; opacity: 0.7; margin-top: 20px; font-size: 12px;">
-                    Click on a state to view detailed fake news analysis
-                </div>
-                
-                <div style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px;">
-                    <h3 style="font-size: 17px; margin-bottom: 18px; color: #dc3545; display: flex; align-items: center; gap: 10px; font-weight: 700;">
-                        <span style="width: 10px; height: 10px; background: #dc3545; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                        🚨 Misinformation Alerts
-                    </h3>
-                    <div id="misinformation-feed" style="max-height: 350px; overflow-y: auto; font-size: 15px; border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 10px; background: rgba(220, 53, 69, 0.05); margin-bottom: 25px; padding: 18px;">
-                        <div style="opacity: 0.7; text-align: center; padding: 50px;">
-                            <div style="font-size: 32px; margin-bottom: 18px;">🚨</div>
-                            <div style="font-size: 17px; font-weight: 600;">Loading misinformation alerts...</div>
-                            <div style="font-size: 15px; margin-top: 12px; opacity: 0.8;">Scanning for fake news</div>
-                        </div>
-                    </div>
-                    
-                    <h3 style="font-size: 18px; margin-bottom: 20px; color: #138808; display: flex; align-items: center; gap: 12px; font-weight: 700;">
-                        <span style="width: 12px; height: 12px; background: #138808; border-radius: 50%; animation: pulse 2s infinite;"></span>
-                        ✅ Verified Real News
-                    </h3>
-                    <div id="real-news-feed" style="max-height: 450px; overflow-y: auto; font-size: 15px; border: 1px solid rgba(19, 136, 8, 0.3); border-radius: 10px; background: rgba(19, 136, 8, 0.05); padding: 18px;">
-                        <div style="opacity: 0.7; text-align: center; padding: 50px;">
-                            <div style="font-size: 32px; margin-bottom: 18px;">📰</div>
-                            <div style="font-size: 17px; font-weight: 600;">Loading verified news...</div>
-                            <div style="font-size: 15px; margin-top: 12px; opacity: 0.8;">Fetching latest real news updates</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Restore global feeds
-            updateLiveFeeds();
-        }
-        
-        function handleStateHover(event) {
-            const path = event.target;
-            const stateData = findStateData(path);
-            
-            if (stateData) {
-                showTooltip(event, stateData);
-            }
-        }
-        
-        function handleStateLeave(event) {
-            hideTooltip();
-        }
-        
-        function showTooltip(event, stateData) {
-            let tooltip = document.getElementById('tooltip');
-            
-            // Create tooltip if it doesn't exist
-            if (!tooltip) {
-                tooltip = document.createElement('div');
-                tooltip.id = 'tooltip';
-                tooltip.style.cssText = `
-                    position: absolute;
-                    background: rgba(0, 0, 0, 0.9);
-                    color: white;
-                    padding: 10px;
-                    border-radius: 6px;
-                    font-size: 12px;
-                    z-index: 1000;
-                    pointer-events: none;
-                    max-width: 200px;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                `;
-                document.body.appendChild(tooltip);
-            }
-            
-            const fakePercentage = (stateData.fake_probability * 100).toFixed(2);
-            const aiConfidence = stateData.ai_confidence ? (stateData.ai_confidence * 100).toFixed(1) : 'N/A';
-            
-            tooltip.innerHTML = `
-                <div style="font-weight: bold; margin-bottom: 4px;">${stateData.state}</div>
-                <div>Total Events: ${stateData.event_count || 0}</div>
-                <div>Fake News: ${stateData.fake_count || 0} (${fakePercentage}%)</div>
-                <div>Real News: ${stateData.real_count || 0}</div>
-                <div>AI Confidence: ${aiConfidence}%</div>
-                <div>Risk Level: <span style="color: ${stateData.risk_level === 'high' ? '#dc3545' : stateData.risk_level === 'medium' ? '#ffc107' : '#138808'};">${stateData.risk_level || 'low'}</span></div>
-            `;
-            
-            tooltip.style.display = 'block';
-            tooltip.style.left = event.pageX + 10 + 'px';
-            tooltip.style.top = event.pageY - 10 + 'px';
-        }
-        
-        function hideTooltip() {
-            const tooltip = document.getElementById('tooltip');
-            if (tooltip) {
-                tooltip.style.display = 'none';
-            }
-        }
-        
-
-        
-        // Test Colors Debug Function
-        function testMapColors() {
-            if (!svgMap) {
-                console.log('SVG map not loaded yet');
-                return;
-            }
-            
-            const paths = svgMap.querySelectorAll('path');
-            console.log(`Testing colors on ${paths.length} paths`);
-            
-            paths.forEach((path, index) => {
-                // Apply different colors to test
-                const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
-                const color = colors[index % colors.length];
-                path.style.fill = color;
-                path.style.stroke = '#ffffff';
-                path.style.strokeWidth = '1';
-            });
-            
-            console.log('Test colors applied - click states to see interaction');
-        }
-        
-        // Add additional controls to zoom controls
-        function addAdditionalControls() {
+        // Add test colors button to zoom controls
+        function addTestColorsButton() {
             const zoomControls = document.querySelector('.zoom-controls');
-            if (zoomControls) {
-                // Add center button
-                const centerButton = document.createElement('button');
-                centerButton.className = 'zoom-btn center-btn';
-                centerButton.onclick = centerMap;
-                centerButton.title = 'Center Map';
-                centerButton.textContent = '⌖';
-                zoomControls.appendChild(centerButton);
-                
-                // Add test colors button
+            if (zoomControls && !document.querySelector('.test-colors-btn')) {
                 const testButton = document.createElement('button');
-                testButton.className = 'zoom-btn';
+                testButton.className = 'zoom-btn test-colors-btn';
                 testButton.onclick = testMapColors;
                 testButton.title = 'Test Colors';
                 testButton.textContent = '🎨';
@@ -2406,8 +1844,9 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeEnhancedHeatmap();
-            // Add additional controls after a short delay
-            setTimeout(addAdditionalControls, 1000);
+            setupZoomAndPan();
+            initializeMapBounds();
+            setTimeout(addTestColorsButton, 1000);
         });
     </script>
 </body>
