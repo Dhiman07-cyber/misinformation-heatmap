@@ -48,6 +48,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+# ─── JSON SERIALIZATION HELPER ────────────────────────────────────────────────
+from datetime import datetime, date
+
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default (datetime, date)."""
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+def safe_json_dumps(data):
+    """json.dumps with datetime support."""
+    return json.dumps(data, default=json_serial)
+
 import uvicorn
 
 # ─── COLORIZED LOGGING ──────────────────────────────────────────────────────
@@ -373,7 +387,7 @@ async def get_live_events(limit: int = Query(10, ge=1, le=100)):
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
             "classification":   r["fake_news_verdict"] or "uncertain",
             "confidence":       round(r["fake_news_confidence"] or 0.5, 2),
-            "timestamp":        r["timestamp"],
+            "timestamp":        r["timestamp"].isoformat() if hasattr(r["timestamp"], "isoformat") else str(r["timestamp"] or ""),
         })
 
     return {
@@ -389,10 +403,10 @@ async def sse_stream():
     async def event_generator():
         while True:
             stats = await get_stats()
-            yield f"event: stats\ndata: {json.dumps(stats)}\n\n"
+            yield f"event: stats\ndata: {safe_json_dumps(stats)}\n\n"
             
             events_data = await get_live_events(limit=12)
-            yield f"event: live_events\ndata: {json.dumps(events_data)}\n\n"
+            yield f"event: live_events\ndata: {safe_json_dumps(events_data)}\n\n"
             
             await asyncio.sleep(5)
             
