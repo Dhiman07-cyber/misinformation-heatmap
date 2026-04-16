@@ -71,14 +71,19 @@ class IndicBERTProcessor:
         """Initialize IndicBERT model"""
         try:
             logger.info("🧠 Loading IndicBERT for Indian language understanding...")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-            self.model = AutoModel.from_pretrained(self.model_name)
+            hf_token = os.environ.get("HUGGINGFACE_TOKEN") or os.environ.get("HF_TOKEN")
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.model_name, token=hf_token
+            )
+            self.model = AutoModel.from_pretrained(
+                self.model_name, token=hf_token
+            )
             self.model.to(self.device)
             self.model.eval()
             logger.info("✅ IndicBERT loaded successfully")
         except Exception as e:
             logger.error(f"❌ Failed to load IndicBERT: {e}")
-            logger.info("📥 Downloading IndicBERT model (this may take a few minutes)...")
+            logger.info("📥 Falling back to rule-based analysis without IndicBERT...")
             # Fallback to basic model
             self.tokenizer = None
             self.model = None

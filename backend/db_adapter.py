@@ -33,27 +33,26 @@ class PostgresWrapper:
         return self.conn.cursor()
         
     def execute(self, query, params=()):
-        # Naive translation of SQLite '?' to Postgres '%s' for parameterized queries
-        # Note: This is a simple replace and assumes ? is only used for parameters
+        # Translate SQLite '?' to Postgres '%s' for parameterized queries
         pg_query = query.replace("?", "%s")
         
-        # Translate SQLite functions to Postgres
+        # Translate SQLite datetime functions to Postgres
         if "datetime('now'" in pg_query:
-            # Quick hacks for specific queries used in the app
             pg_query = pg_query.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
             pg_query = pg_query.replace("datetime('now', '-6 hours')", "NOW() - INTERVAL '6 hours'")
             pg_query = pg_query.replace("datetime('now', '-7 days')", "NOW() - INTERVAL '7 days'")
-            
-            # For dynamic ones like '-{days} days' -> the string is already formatted in python
-            # Example: "datetime('now', '-7 days')" -> we will handle this string replace specifically
             import re
             pg_query = re.sub(r"datetime\('now', '-(\d+) days'\)", r"NOW() - INTERVAL '\1 days'", pg_query)
         
-        # Translate SQLite INSERT OR REPLACE to Postgres ON CONFLICT DO UPDATE
-        if "INSERT OR REPLACE INTO events" in pg_query:
-            # Very hacky but safe replacement for the specific insertion pattern
+        # Translate SQLite INSERT OR REPLACE to Postgres INSERT ... ON CONFLICT DO NOTHING
+        # SQLite: INSERT OR REPLACE INTO table (cols) VALUES (...)
+        # Postgres: INSERT INTO table (cols) VALUES (...) ON CONFLICT (event_id) DO NOTHING
+        if "INSERT OR REPLACE INTO" in pg_query:
             pg_query = pg_query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
-            pg_query += " ON CONFLICT (event_id) DO NOTHING"
+            # Find the last closing paren and insert the ON CONFLICT clause before any trailing whitespace
+            last_paren = pg_query.rfind(")")
+            if last_paren != -1:
+                pg_query = pg_query[:last_paren + 1] + " ON CONFLICT (event_id) DO NOTHING" + pg_query[last_paren + 1:]
             
         cursor = self.conn.cursor()
         try:
