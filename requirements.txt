@@ -12,8 +12,8 @@ feedparser
 
 # Machine Learning (lightweight versions)
 scikit-learn
-# transformers  # Large package - install separately if needed
-# torch  # Large package - install separately if needed
+transformers
+torch
 
 # NLP and Text Processing
 nltk
