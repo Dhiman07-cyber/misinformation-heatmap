@@ -302,6 +302,12 @@
     </footer>
 
     <script>
+        // ── API Configuration ──
+        // Defaults to relative paths (local). Put your HF Space URL here for Netlify deployments!
+        const API_BASE = window.location.hostname.includes('netlify.app') 
+            ? 'https://[your-huggingface-space-name].hf.space' 
+            : '';
+
         // ── Navbar scroll effect ──
         window.addEventListener('scroll', () => {
             document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
@@ -310,7 +316,7 @@
         // ── Fetch and display stats ──
         async function loadStats() {
             try {
-                const r = await fetch('/api/v1/stats');
+                const r = await fetch(API_BASE + '/api/v1/stats');
                 if (!r.ok) return;
                 const d = await r.json();
                 const el = document.getElementById('stat-events');
@@ -323,7 +329,7 @@
         // ── Fetch and display live ticker ──
         async function loadTicker() {
             try {
-                const r = await fetch('/api/v1/events/live?limit=6');
+                const r = await fetch(API_BASE + '/api/v1/events/live?limit=6');
                 if (!r.ok) return;
                 const d = await r.json();
                 const events = d.events || [];

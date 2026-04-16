@@ -219,17 +219,17 @@ def cleanup_old_events():
     """Delete events older than 7 days to prevent unbounded database growth"""
     try:
         import os
+        from db_adapter import get_db_connection
         data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
         db_path = os.path.join(data_dir, 'enhanced_fake_news.db')
         
-        if not os.path.exists(db_path):
-            return
-            
-        conn = sqlite3.connect(db_path)
+        # Don't check for db_path if Postgres is used via environ
+        conn = get_db_connection(db_path)
         cursor = conn.cursor()
         
         cursor.execute("DELETE FROM events WHERE timestamp < datetime('now', '-7 days')")
-        deleted = cursor.rowcount
+        # Handle SQLite cursor vs Postgres wrapper differences in reporting deleted rows
+        deleted = getattr(cursor, 'rowcount', 0)
         conn.commit()
         conn.close()
         
@@ -290,14 +290,15 @@ async def process_event_with_fake_news_detection(event: Dict) -> Optional[Dict]:
         return None
 
 def store_event_in_database(event: Dict):
-    """Store event in enhanced_fake_news.db — the same DB the API server reads from."""
+    """Store event in db using the seamless DB adapter."""
     try:
         import os
+        from db_adapter import get_db_connection
         data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
         os.makedirs(data_dir, exist_ok=True)
         
         db_path = os.path.join(data_dir, 'enhanced_fake_news.db')
-        conn = sqlite3.connect(db_path)
+        conn = get_db_connection(db_path)
         cursor = conn.cursor()
         
         # Store event

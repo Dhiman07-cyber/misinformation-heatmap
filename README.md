@@ -1,3 +1,12 @@
+---
+title: Misinformation Heatmap
+emoji: 🛡️
+colorFrom: orange
+colorTo: green
+sdk: docker
+pinned: true
+---
+
 # 🛡️ Misinformation Heatmap
 
 A comprehensive AI-powered system for detecting misinformation in Indian media using advanced machine learning, IndicBERT, satellite verification, and fact-checking integration.

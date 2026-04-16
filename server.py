@@ -26,7 +26,7 @@ from typing import Optional
 ROOT_DIR     = Path(__file__).parent
 BACKEND_DIR  = ROOT_DIR / "backend"
 FRONTEND_DIR = ROOT_DIR / "frontend"
-MAP_DIR      = ROOT_DIR / "map"
+MAP_DIR      = FRONTEND_DIR / "map"
 DATA_DIR     = ROOT_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 DB_PATH = DATA_DIR / "enhanced_fake_news.db"
@@ -161,10 +161,9 @@ def _is_processing_active():
 # API server reads from this SAME file — single source of truth.
 DB_PATH = DATA_DIR / "enhanced_fake_news.db"
 
-def get_db() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def get_db():
+    from db_adapter import get_db_connection
+    return get_db_connection(str(DB_PATH))
 
 # ─── IN-MEMORY CACHE ─────────────────────────────────────────────────────────
 _cache: dict = {}

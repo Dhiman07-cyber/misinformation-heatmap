@@ -1154,6 +1154,11 @@
 
 
     <script>
+        // ── API Configuration ──
+        const API_BASE = window.location.hostname.includes('netlify.app') 
+            ? 'https://[your-huggingface-space-name].hf.space' 
+            : '';
+
         // Global variables
         let heatmapData = [];
         let selectedState = null;
@@ -1265,7 +1270,7 @@
                 // Show loading progress
                 updateLoadingProgress(30);
                 
-                const response = await fetch('/api/v1/heatmap/data');
+                const response = await fetch(API_BASE + '/api/v1/heatmap/data');
                 const data = await response.json();
                 
                 updateLoadingProgress(70);
@@ -1886,7 +1891,7 @@
         
         async function updateMisinformationFeed() {
             try {
-                const response = await fetch('/api/v1/events/live?limit=20');
+                const response = await fetch(API_BASE + '/api/v1/events/live?limit=20');
                 const data = await response.json();
                 
                 const misinformationFeed = document.getElementById('misinformation-feed');
@@ -1941,7 +1946,7 @@
         
         async function updateRealNewsFeed() {
             try {
-                const response = await fetch('/api/v1/events/live?limit=20');
+                const response = await fetch(API_BASE + '/api/v1/events/live?limit=20');
                 const data = await response.json();
                 
                 const realNewsFeed = document.getElementById('real-news-feed');
@@ -1994,7 +1999,7 @@
         // Legacy function for compatibility
         async function updateLiveFeed() {
             try {
-                const response = await fetch('/api/v1/events/live?limit=15');
+                const response = await fetch(API_BASE + '/api/v1/events/live?limit=15');
                 const data = await response.json();
                 
                 const liveFeed = document.getElementById('live-feed');
@@ -2079,7 +2084,7 @@
         // State-specific news feed functions
         async function updateStateSpecificFeeds(state) {
             try {
-                const response = await fetch(`/api/v1/events/state/${encodeURIComponent(state)}?limit=20`);
+                const response = await fetch(API_BASE + `/api/v1/events/state/${encodeURIComponent(state)}?limit=20`);
                 const data = await response.json();
                 
                 if (data.events && data.events.length > 0) {
