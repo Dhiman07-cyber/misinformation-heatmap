@@ -33,6 +33,15 @@ DB_PATH = DATA_DIR / "enhanced_fake_news.db"
 
 sys.path.insert(0, str(BACKEND_DIR))
 
+# Force IST timezone for all datetime.now() calls and log timestamps
+import time as _time
+os.environ.setdefault("TZ", "Asia/Kolkata")
+# Apply on Unix systems (no-op on Windows, but Dockerfile ENV handles it there)
+try:
+    _time.tzset()
+except AttributeError:
+    pass  # Windows doesn't have tzset()
+
 # ─── EARLY IMPORTS (fast) ────────────────────────────────────────────────────
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware

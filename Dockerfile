@@ -2,6 +2,12 @@ FROM python:3.9
 
 WORKDIR /app
 
+# Set timezone to IST (UTC+5:30) so logs show Indian Standard Time
+ENV TZ=Asia/Kolkata
+RUN apt-get update && apt-get install -y tzdata && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt .
 
 # Install dependencies, adding psycopg2 for PostgreSQL support
