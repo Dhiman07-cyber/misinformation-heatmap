@@ -300,7 +300,11 @@ def store_event_in_database(event: Dict):
         db_path = os.path.join(data_dir, 'enhanced_fake_news.db')
         conn = get_db_connection(db_path)
         cursor = conn.cursor()
-        
+        # Cast numpy types → native Python types so psycopg2 can serialize them
+        confidence = float(event['fake_news_confidence']) if event['fake_news_confidence'] is not None else None
+        score      = float(event['fake_news_score'])      if event['fake_news_score']      is not None else None
+        cross_ref  = float(event['cross_reference_score'])if event['cross_reference_score']is not None else None
+
         # Store event
         cursor.execute('''
             INSERT OR REPLACE INTO events 
@@ -313,10 +317,10 @@ def store_event_in_database(event: Dict):
         ''', (
             event['event_id'], event['source'], event['title'], event['content'],
             event['summary'], event['url'], event['state'], event['category'],
-            event['fake_news_verdict'], event['fake_news_confidence'], event['fake_news_score'],
+            event['fake_news_verdict'], confidence, score,
             event['ml_classification_result'], event['linguistic_analysis_result'], 
             event['source_credibility_result'], event['fact_check_result'],
-            event['satellite_verification_result'], event['cross_reference_score'],
+            event['satellite_verification_result'], cross_ref,
             event['indian_context_result'], event['indic_bert_embeddings'], event['timestamp']
         ))
         
