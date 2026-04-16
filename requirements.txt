@@ -18,6 +18,8 @@ torch
 # NLP and Text Processing
 nltk
 textblob
+protobuf
+sentencepiece
 
 # Geospatial and Maps
 geopy

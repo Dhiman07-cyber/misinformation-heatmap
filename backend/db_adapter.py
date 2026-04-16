@@ -22,46 +22,76 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres"):
 else:
     HAS_POSTGRES = False
 
+def _translate_query(query: str) -> str:
+    """Translate SQLite-flavoured SQL to PostgreSQL."""
+    pg = query.replace("?", "%s")
+
+    # datetime() → INTERVAL
+    if "datetime('now'" in pg:
+        import re
+        pg = pg.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
+        pg = pg.replace("datetime('now', '-6 hours')",  "NOW() - INTERVAL '6 hours'")
+        pg = pg.replace("datetime('now', '-7 days')",   "NOW() - INTERVAL '7 days'")
+        pg = re.sub(r"datetime\('now', '-(\d+) days'\)", r"NOW() - INTERVAL '\1 days'", pg)
+
+    # INSERT OR REPLACE → INSERT ... ON CONFLICT DO NOTHING
+    if "INSERT OR REPLACE INTO" in pg:
+        pg = pg.replace("INSERT OR REPLACE INTO", "INSERT INTO")
+        last_paren = pg.rfind(")")
+        if last_paren != -1:
+            pg = pg[:last_paren + 1] + " ON CONFLICT (event_id) DO NOTHING" + pg[last_paren + 1:]
+
+    return pg
+
+
+class PostgresCursor:
+    """Thin cursor wrapper that applies SQL translation before every execute()."""
+
+    def __init__(self, raw_cursor):
+        self._cur = raw_cursor
+
+    def execute(self, query, params=()):
+        try:
+            self._cur.execute(_translate_query(query), params)
+        except Exception as e:
+            logger.error(f"Postgres cursor error: {e}\nQuery: {_translate_query(query)}")
+            raise
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+    @property
+    def rowcount(self):
+        return self._cur.rowcount
+
+    def __iter__(self):
+        return iter(self._cur)
+
+
 class PostgresWrapper:
     """Wrapper that mimics SQLite connection and cursor behaviors for PostgreSQL"""
-    
+
     def __init__(self, conn):
         self.conn = conn
         self.conn.autocommit = True
-        
+
     def cursor(self):
-        return self.conn.cursor()
+        return PostgresCursor(self.conn.cursor())
         
     def execute(self, query, params=()):
-        # Translate SQLite '?' to Postgres '%s' for parameterized queries
-        pg_query = query.replace("?", "%s")
-        
-        # Translate SQLite datetime functions to Postgres
-        if "datetime('now'" in pg_query:
-            pg_query = pg_query.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
-            pg_query = pg_query.replace("datetime('now', '-6 hours')", "NOW() - INTERVAL '6 hours'")
-            pg_query = pg_query.replace("datetime('now', '-7 days')", "NOW() - INTERVAL '7 days'")
-            import re
-            pg_query = re.sub(r"datetime\('now', '-(\d+) days'\)", r"NOW() - INTERVAL '\1 days'", pg_query)
-        
-        # Translate SQLite INSERT OR REPLACE to Postgres INSERT ... ON CONFLICT DO NOTHING
-        # SQLite: INSERT OR REPLACE INTO table (cols) VALUES (...)
-        # Postgres: INSERT INTO table (cols) VALUES (...) ON CONFLICT (event_id) DO NOTHING
-        if "INSERT OR REPLACE INTO" in pg_query:
-            pg_query = pg_query.replace("INSERT OR REPLACE INTO", "INSERT INTO")
-            # Find the last closing paren and insert the ON CONFLICT clause before any trailing whitespace
-            last_paren = pg_query.rfind(")")
-            if last_paren != -1:
-                pg_query = pg_query[:last_paren + 1] + " ON CONFLICT (event_id) DO NOTHING" + pg_query[last_paren + 1:]
-            
-        cursor = self.conn.cursor()
+        """Translate and execute directly on the connection (for conn.execute() callers)."""
+        pg_query = _translate_query(query)
+        raw_cursor = self.conn.cursor()
         try:
-            cursor.execute(pg_query, params)
+            raw_cursor.execute(pg_query, params)
         except Exception as e:
             logger.error(f"Postgres execution error: {e}\nQuery: {pg_query}\nParams: {params}")
             self.conn.rollback()
             raise
-        return cursor
+        return PostgresCursor(raw_cursor)
         
     def commit(self):
         # We set autocommit=True, so this is just a dummy method for compatibility
