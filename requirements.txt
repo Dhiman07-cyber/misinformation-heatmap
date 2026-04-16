@@ -21,6 +21,7 @@ textblob
 
 # Geospatial and Maps
 geopy
+googlemaps
 
 # Database
 sqlalchemy
