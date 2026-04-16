@@ -7,6 +7,7 @@ COPY requirements.txt .
 # Install dependencies, adding psycopg2 for PostgreSQL support
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir psycopg2-binary==2.9.9
+RUN python -m nltk.downloader vader_lexicon
 
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs
