@@ -281,7 +281,7 @@ async def get_stats():
                     SUM(CASE WHEN fake_news_verdict = 'real'      THEN 1 ELSE 0 END) AS real,
                     SUM(CASE WHEN fake_news_verdict = 'uncertain' THEN 1 ELSE 0 END) AS uncertain
                 FROM events
-                WHERE timestamp > datetime('now', '-24 hours')
+                WHERE timestamp > NOW() - INTERVAL '24 hours'
             """).fetchone()
             total, fake_n, real_n, uncertain = (row[k] or 0 for k in ("total","fake","real","uncertain"))
     except Exception as exc:
@@ -323,7 +323,7 @@ async def get_heatmap_data(days: int = Query(7, ge=1, le=30)):
                     SUM(CASE WHEN fake_news_verdict = 'real' THEN 1 ELSE 0 END)          AS real_count
                 FROM events
                 WHERE state IS NOT NULL
-                  AND timestamp > datetime('now', '-{days} days')
+                  AND timestamp > NOW() - INTERVAL '{days} days'
                 GROUP BY state
                 ORDER BY event_count DESC
                 LIMIT 50
@@ -372,9 +372,9 @@ async def get_live_events(limit: int = Query(10, ge=1, le=100)):
                 SELECT title, content, source, state,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events
-                WHERE timestamp > datetime('now', '-6 hours')
+                WHERE timestamp > NOW() - INTERVAL '24 hours'
                 ORDER BY timestamp DESC
-                LIMIT ?
+                LIMIT %s
             """, (limit,)).fetchall()
     except Exception as exc:
         logger.error(f"Live events error: {exc}")

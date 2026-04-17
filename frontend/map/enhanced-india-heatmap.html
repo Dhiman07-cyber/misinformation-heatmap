@@ -1282,27 +1282,27 @@
         // Initialize the enhanced heatmap
         async function initializeEnhancedHeatmap() {
             try {
-                // Load the SVG map
+                // Load SVG first (map structure needed before colours)
                 await loadSVGMap();
-                
-                // Load heatmap data
-                await loadHeatmapData();
-                
-                // Update status bar and live feeds
-                await updateStatusBar();
-                await updateLiveFeeds();
-                
+
+                // Fire all data fetches in parallel — no sequential waiting
+                await Promise.all([
+                    loadHeatmapData(),
+                    updateStatusBar(),
+                    updateLiveFeeds(),
+                ]);
+
                 // Optimized refresh intervals for better performance
                 setInterval(async () => {
                     await loadHeatmapData();
                 }, 60000); // Update map every 60 seconds (less frequent)
-                
+
                 setInterval(async () => {
                     await updateStatusBar();
                 }, 30000); // Update status every 30 seconds
-                
+
                 setInterval(updateLiveFeeds, 15000); // Update live feeds every 15 seconds (less frequent)
-                
+
             } catch (error) {
                 console.error('Failed to initialize heatmap:', error);
                 // Hide loading screen and show map without data
