@@ -1841,6 +1841,124 @@
             }
         }
 
+        // ── Update Status Bar from /api/v1/stats ──────────────────────────────
+        async function updateStatusBar() {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 5000);
+                const res = await fetch(API_BASE + '/api/v1/stats', { signal: ctrl.signal });
+                clearTimeout(timer);
+                const data = await res.json();
+
+                const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+                setText('total-events', (data.total_events || 0).toLocaleString('en-IN'));
+                setText('active-states', (data.total_states || 0) + ' States');
+                const lastUpd = data.last_updated
+                    ? new Date(data.last_updated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST'
+                    : 'Just now';
+                setText('last-update', lastUpd);
+                setText('classification-accuracy', ((data.classification_accuracy || 0) * 100).toFixed(1) + '%');
+
+                const navStatus = document.getElementById('nav-status');
+                if (navStatus) navStatus.textContent = data.processing_active ? 'Live — Ingesting' : 'System Ready';
+            } catch (err) {
+                console.warn('updateStatusBar failed:', err.message);
+            }
+        }
+
+        // ── Update Misinformation & Real News feeds ────────────────────────────
+        async function updateLiveFeeds() {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 5000);
+                const res = await fetch(API_BASE + '/api/v1/events/live?limit=20', { signal: ctrl.signal });
+                clearTimeout(timer);
+                const data = await res.json();
+                const events = data.events || [];
+
+                const fake = events.filter(e => e.classification === 'fake');
+                const real = events.filter(e => e.classification === 'real');
+
+                renderFeed('misinformation-feed', fake, 'fake');
+                renderFeed('real-news-feed', real, 'real');
+            } catch (err) {
+                console.warn('updateLiveFeeds failed:', err.message);
+            }
+        }
+
+        function renderFeed(containerId, items, type) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            if (!items.length) {
+                el.innerHTML = `<div style="opacity:0.6;text-align:center;padding:30px 20px;font-size:13px;">No ${type === 'fake' ? 'misinformation' : 'verified'} events found yet.</div>`;
+                return;
+            }
+            const accent = type === 'fake' ? '#dc3545' : '#138808';
+            el.innerHTML = items.map(ev => `
+                <div style="padding:12px;border-radius:8px;margin-bottom:10px;background:rgba(255,255,255,0.6);border-left:3px solid ${accent};font-size:13px;line-height:1.4;">
+                    <div style="font-weight:600;color:#2d3748;margin-bottom:4px;">${ev.title || 'Untitled'}</div>
+                    <div style="color:#718096;font-size:11px;">${ev.state || 'India'} · ${ev.source || 'Unknown'} · ${ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}) : ''}</div>
+                </div>`).join('');
+        }
+
+        // ── Load state-specific events on map click ────────────────────────────
+        async function loadStateEvents(stateName) {
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 5000);
+                const res = await fetch(`${API_BASE}/api/v1/events/live?limit=40`, { signal: ctrl.signal });
+                clearTimeout(timer);
+                const data = await res.json();
+                const all = data.events || [];
+                const stateEvents = all.filter(e =>
+                    (e.state || '').toLowerCase() === stateName.toLowerCase() ||
+                    (e.state || '').toLowerCase() === 'national'
+                );
+                const fake = stateEvents.filter(e => e.classification === 'fake');
+                const real = stateEvents.filter(e => e.classification === 'real');
+                renderFeed('misinformation-feed', fake.length ? fake : all.filter(e => e.classification === 'fake').slice(0, 5), 'fake');
+                renderFeed('real-news-feed', real.length ? real : all.filter(e => e.classification === 'real').slice(0, 5), 'real');
+            } catch (err) {
+                console.warn('loadStateEvents failed:', err.message);
+            }
+        }
+
+        // ── Show state details in the info panel ──────────────────────────────
+        function showStateDetails(stateData) {
+            const nameEl = document.getElementById('stateName');
+            if (nameEl) nameEl.textContent = stateData.state;
+
+            const contentEl = document.getElementById('stateContent');
+            if (!contentEl) return;
+
+            const riskColor = stateData.risk_level === 'high' ? '#dc3545'
+                            : stateData.risk_level === 'medium' ? '#ffc107'
+                            : stateData.risk_level === 'low_medium' ? '#fd7e14'
+                            : '#138808';
+            const fakePercent = ((stateData.fake_probability || 0) * 100).toFixed(1);
+            const aiConf = ((stateData.ai_confidence || 0) * 100).toFixed(1);
+
+            contentEl.innerHTML = `
+                <div class="state-stats">
+                    <div class="stat-row"><span class="stat-label">Total Events</span><span class="stat-value">${(stateData.event_count || 0).toLocaleString('en-IN')}</span></div>
+                    <div class="stat-row"><span class="stat-label">Fake News</span><span class="stat-value" style="color:#dc3545;">${(stateData.fake_count || 0).toLocaleString('en-IN')} (${fakePercent}%)</span></div>
+                    <div class="stat-row"><span class="stat-label">Real News</span><span class="stat-value" style="color:#138808;">${(stateData.real_count || 0).toLocaleString('en-IN')}</span></div>
+                    <div class="stat-row"><span class="stat-label">AI Confidence</span><span class="stat-value">${aiConf}%</span></div>
+                    <div class="stat-row"><span class="stat-label">Risk Level</span><span class="risk-badge" style="background:${riskColor};color:${stateData.risk_level === 'medium' ? '#1a1a1a' : '#fff'}">${(stateData.risk_level || 'low').toUpperCase().replace('_',' ')}</span></div>
+                </div>
+                <div style="margin-top:24px;border-top:1px solid var(--border-accent);padding-top:24px;">
+                    <div class="news-section">
+                        <h3 style="color:var(--high-risk);"><span style="width:12px;height:12px;background:var(--high-risk);border-radius:50%;display:inline-block;margin-right:8px;"></span>🚨 Misinformation Alerts</h3>
+                        <div id="misinformation-feed" class="news-feed misinformation-feed"><div style="text-align:center;padding:20px;opacity:0.6;font-size:13px;">Loading...</div></div>
+                    </div>
+                    <div class="news-section">
+                        <h3 style="color:var(--green);"><span style="width:12px;height:12px;background:var(--green);border-radius:50%;display:inline-block;margin-right:8px;"></span>✅ Verified Real News</h3>
+                        <div id="real-news-feed" class="news-feed real-news-feed"><div style="text-align:center;padding:20px;opacity:0.6;font-size:13px;">Loading...</div></div>
+                    </div>
+                </div>`;
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             initializeEnhancedHeatmap();
