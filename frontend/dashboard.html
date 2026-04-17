@@ -9,6 +9,38 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        saffron: { DEFAULT: '#E87722', light: '#FF9933', dark: '#c4601a' },
+                        green: { DEFAULT: '#138808', light: '#1ea50e' },
+                        navy: '#000080',
+                        bg: '#F8F8F4',
+                        'bg-card': '#FFFFFF',
+                        border: '#E8E8E0',
+                        'text-primary': '#1A1A1A',
+                        'text-secondary': '#555555',
+                        'text-muted': '#888888',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(0,0,0,0.08)',
+                        'md': '0 4px 20px rgba(0,0,0,0.10)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '16px',
+                        'sm': '10px',
+                    },
+                }
+            }
+        }
+    </script>
     <style>
         :root {
             --saffron:       #E87722;
@@ -52,114 +84,424 @@
 
         /* ─── NAVBAR ─── */
         .navbar {
-            position: sticky; top: 0; z-index: 100;
-            height: 60px; display: flex; align-items: center; padding: 0 2rem;
-            background: rgba(248,248,244,0.9); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 0 2rem; height: 62px;
+            display: flex; align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
         }
-        .nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
-        .logo-badge { font-size: 0.6rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 5px; border-radius: 3px; }
+        .navbar.scrolled { box-shadow: var(--shadow-sm); }
+        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+        .logo { display: flex; align-items: center; gap: 2px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
         .logo .logo-name { color: var(--saffron); }
-        .nav-links { display: flex; gap: 0.25rem; }
-        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
-        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); font-weight: 600; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; color: var(--green); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(19,136,8,0.4);}50%{opacity:0.8;box-shadow:0 0 0 5px rgba(19,136,8,0);} }
-        .refresh-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); padding: 5px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-        .refresh-btn:hover { border-color: var(--saffron); color: var(--saffron); }
 
-        /* Hamburger Menu */
+        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+        .refresh-btn {
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(232, 119, 34, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .refresh-btn:hover {
+            background: linear-gradient(135deg, var(--saffron-light), var(--saffron));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.35);
+        }
+        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
+        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
+        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
+
+        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
+
+        /* Premium Hamburger Menu */
         .hamburger-btn {
             display: none;
             flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
+            border: 2px solid rgba(232, 119, 34, 0.2);
             cursor: pointer;
-            padding: 8px;
+            padding: 12px;
             z-index: 2000;
+            border-radius: 16px;
+            box-shadow: 
+                0 4px 20px rgba(232, 119, 34, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .hamburger-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 153, 51, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .hamburger-btn:hover::before {
+            left: 100%;
+        }
+        
+        .hamburger-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.1), rgba(255, 255, 255, 0.95));
+            border-color: rgba(232, 119, 34, 0.4);
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 
+                0 8px 30px rgba(232, 119, 34, 0.2),
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        .hamburger-btn:active {
+            transform: scale(0.98) translateY(0px);
+            box-shadow: 
+                0 2px 12px rgba(232, 119, 34, 0.15),
+                0 1px 4px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+        
         .hamburger-line {
-            width: 24px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s ease;
-            border-radius: 2px;
+            width: 28px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(232, 119, 34, 0.2);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
+            transform: rotate(45deg) translate(7px, 7px);
+            background: linear-gradient(90deg, #fff, #fff);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(2) {
             opacity: 0;
+            transform: scale(0);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
+            transform: rotate(-45deg) translate(7px, -7px);
+            background: linear-gradient(90deg, #fff, #fff);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+        }
+        
+        .hamburger-btn.active {
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            border-color: var(--saffron-dark);
+            box-shadow: 
+                0 8px 30px rgba(232, 119, 34, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        /* Mobile Menu Overlay */
+        /* Premium Mobile Menu Overlay */
         .mobile-menu-overlay {
             position: fixed;
             top: 0;
             right: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f4 50%, #f5f5f0 100%);
             z-index: 1500;
             transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 80px 2rem 2rem;
+            padding: 30px 3rem 3rem;
+            overflow-x: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
         }
+        
+        .mobile-menu-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(232, 119, 34, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
         .mobile-menu-overlay.active {
             transform: translateX(0);
         }
+        
         .mobile-menu-top {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
         }
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .mobile-menu-link:hover {
-            padding-left: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .mobile-menu-bottom {
+
+        /* Menu Header */
+        .mobile-menu-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.25rem;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         }
-        .mobile-menu-brand {
+        .mobile-menu-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .avatar-icon {
+            font-size: 1.8rem;
+            background: linear-gradient(180deg, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%);
+            color: #1a1a1a;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+        .mobile-menu-user {
+            flex: 1;
+            min-width: 0;
+        }
+        .mobile-menu-greeting {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .mobile-menu-username {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .mobile-menu-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mobile-menu-close:hover {
+            background: var(--saffron);
+            border-color: var(--saffron);
+        }
+        .mobile-menu-close:hover .close-icon {
+            color: #fff;
+        }
+        .close-icon {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Quick Stats */
+        .mobile-menu-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .mobile-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .mobile-stat-icon {
+            font-size: 1.5rem;
+        }
+        .mobile-stat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .mobile-stat-value {
             font-family: 'Outfit', sans-serif;
             font-size: 1.2rem;
             font-weight: 800;
-            color: #fff;
+            color: var(--saffron);
+            line-height: 1;
+        }
+        .mobile-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        /* Menu Sections */
+        .mobile-menu-section {
+            margin-bottom: 0.5rem;
+        }
+        .mobile-menu-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding-left: 0.25rem;
+        }
+        
+        .mobile-menu-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 1rem 1.25rem;
+            margin: 0.25rem 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .menu-link-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .menu-link-text {
+            flex: 1;
+        }
+        .menu-link-arrow {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+        .mobile-menu-link:hover {
+            background: linear-gradient(135deg, rgba(232, 119, 34, 0.06), rgba(232, 119, 34, 0.02));
+            border-color: var(--saffron);
+            color: var(--saffron);
+            transform: translateX(6px);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.1);
+        }
+        .mobile-menu-link:hover .menu-link-arrow {
+            transform: translateX(4px);
+            color: var(--saffron);
+        }
+        
+                .mobile-menu-link::before {
+            display: none;
+        }
+        .mobile-menu-link:hover::before {
+            display: none;
+        }
+        
+        .mobile-menu-link:active {
+            transform: translateX(5px) scale(0.98);
+        }
+
+        /* Feature Highlights */
+        .mobile-menu-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .mobile-menu-feature:hover {
+            border-color: var(--saffron);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.08);
+            transform: translateX(4px);
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .feature-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .feature-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .feature-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .mobile-menu-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-menu-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .mobile-menu-brand .logo-badge {
-            background: #fff;
-            color: var(--saffron);
+            background: var(--saffron);
+            color: #fff;
         }
         .mobile-menu-brand .logo-name {
-            color: #fff;
+            color: var(--saffron);
         }
         .mobile-menu-tags {
             display: flex;
@@ -174,8 +516,9 @@
             text-transform: uppercase;
         }
         .menu-tag.alpha {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--saffron);
             color: #fff;
+            box-shadow: 0 2px 6px rgba(255, 153, 51, 0.3);
         }
         .menu-tag.live {
             background: #fff;
@@ -184,40 +527,232 @@
         }
 
         /* ─── MAIN LAYOUT ─── */
-        .main { position: relative; z-index: 1; padding: 2rem; max-width: 1400px; margin: 0 auto; }
-        .page-header { margin-bottom: 2rem; }
+        .main { position: relative; z-index: 1; padding: 5rem 2rem 2rem; max-width: 1400px; margin: 0 auto; }
+        .page-header { margin-bottom: 2rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-top: 1rem; }
+        .page-header-left { flex: 1; }
         .page-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
         .page-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
         .last-updated { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
 
         /* ─── STAT CARDS ─── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 2rem; }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.5rem; position: relative;
-            overflow: hidden; transition: all 0.25s; box-shadow: var(--shadow-sm);
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4,1fr); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
         }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-        .stat-card.total::before  { background: var(--blue); }
-        .stat-card.fake::before   { background: var(--red); }
-        .stat-card.real::before   { background: var(--green); }
-        .stat-card.uncertain::before { background: var(--amber); }
-        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-        .stat-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
-        .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
-        .stat-icon { font-size: 1.4rem; }
-        .stat-value { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 900; line-height: 1; }
-        .stat-card.total  .stat-value { color: var(--blue); }
-        .stat-card.fake   .stat-value { color: var(--red); }
-        .stat-card.real   .stat-value { color: var(--green); }
-        .stat-card.uncertain .stat-value { color: var(--amber); }
-        .stat-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
-        .stat-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
-        .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; width: 0; }
-        .stat-card.total  .stat-bar-fill { background: var(--blue); }
-        .stat-card.fake   .stat-bar-fill { background: var(--red); }
-        .stat-card.real   .stat-bar-fill { background: var(--green); }
-        .stat-card.uncertain .stat-bar-fill { background: var(--amber); }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.06),
+                0 2px 16px rgba(0,0,0,0.04),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            cursor: pointer;
+            transform-style: preserve-3d;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-light));
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .stat-card.total::before  { 
+            background: linear-gradient(90deg, #2563eb, #60a5fa, #93c5fd);
+        }
+        .stat-card.fake::before   { 
+            background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+        }
+        .stat-card.real::before   { 
+            background: linear-gradient(90deg, #138808, #22c55e, #4ade80);
+        }
+        .stat-card.uncertain::before { 
+            background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.12),
+                0 8px 24px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+        
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+        
+        .stat-card:active {
+            transform: translateY(-4px) scale(1.01);
+        }
+        
+        .stat-header { 
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: space-between; 
+            margin-bottom: 1.5rem; 
+        }
+        
+        .stat-label { 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            color: var(--text-secondary);
+            line-height: 1.2;
+        }
+        
+        .stat-icon { 
+            font-size: 1.8rem;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
+            box-shadow: 
+                0 4px 12px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 
+                0 6px 20px rgba(0,0,0,0.12),
+                inset 0 1px 0 rgba(255,255,255,0.95);
+        }
+        
+        .stat-value { 
+            font-family: 'Outfit', sans-serif; 
+            font-size: 2.8rem; 
+            font-weight: 900; 
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+        
+        .stat-card.total  .stat-value { 
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-card.fake   .stat-value { 
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-card.real   .stat-value { 
+            background: linear-gradient(135deg, #138808, #22c55e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-card.uncertain .stat-value { 
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-desc { 
+            font-size: 0.85rem; 
+            color: var(--text-secondary); 
+            margin-top: 0.5rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        
+        .stat-bar { 
+            height: 6px; 
+            background: rgba(0,0,0,0.08); 
+            border-radius: 3px; 
+            margin-top: 1.5rem; 
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .stat-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+            border-radius: 3px;
+        }
+        
+        .stat-bar-fill { 
+            height: 100%; 
+            border-radius: 3px; 
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-bar-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .stat-card.total  .stat-bar-fill { 
+            background: linear-gradient(90deg, #2563eb, #60a5fa, #93c5fd);
+        }
+        .stat-card.fake   .stat-bar-fill { 
+            background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+        }
+        .stat-card.real   .stat-bar-fill { 
+            background: linear-gradient(90deg, #138808, #22c55e, #4ade80);
+        }
+        .stat-card.uncertain .stat-bar-fill { 
+            background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
+        }
 
         /* ─── GRID ROWS ─── */
         .row { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
@@ -284,16 +819,46 @@
         .metric-badge.red { background: rgba(220,38,38,0.1); color: var(--red); }
 
         /* ─── MAP LINK ─── */
-        .map-link { display: inline-flex; align-items: center; gap: 6px; background: var(--saffron); color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; }
+        .map-link { display: inline-flex; align-items: center; gap: 4px; background: var(--saffron); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; white-space: nowrap; }
         .map-link:hover { background: var(--saffron-dark); }
 
         .empty-feed { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.88rem; }
         .empty-icon { font-size: 2rem; margin-bottom: 8px; }
 
+        /* Mobile Refresh Button */
+        .mobile-refresh-btn {
+            display: none;
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(232, 119, 34, 0.25);
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .mobile-refresh-btn:hover {
+            background: linear-gradient(135deg, var(--saffron-light), var(--saffron));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.35);
+        }
+        
+        .mobile-refresh-btn:active {
+            transform: translateY(0px);
+        }
+
         /* Enhanced Mobile Responsiveness */
         @media (max-width: 1200px) {
             .navbar { padding: 0 1rem; }
-            .main { padding: 1.5rem; }
+            .main { padding: 5rem 1.5rem 1.5rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
             .row-2, .row-2b { grid-template-columns: 1fr; gap: 1rem; }
             .coverage-grid { grid-template-columns: repeat(2, 1fr); }
@@ -307,12 +872,12 @@
         }
         
         @media (max-width: 768px) {
-            .navbar { padding: 0 1rem; height: auto; }
-            .nav-inner { flex-direction: column; gap: 0.75rem; padding: 0.75rem 0; }
-            .nav-links { order: 2; }
-            .nav-right { order: 1; }
-            .main { padding: 1rem; }
-            .page-header { margin-bottom: 1.5rem; }
+            .navbar { padding: 0 1rem; }
+            .nav-links { gap: 0.5rem; }
+            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
+            .main { padding: 5rem 1rem 1rem; overflow-x: hidden; }
+            .panel { overflow-x: hidden; }
+            .page-header { margin-bottom: 1.5rem; flex-direction: row; align-items: center; }
             .page-title { font-size: 1.5rem; }
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
             .stat-card { padding: 1.25rem; }
@@ -328,17 +893,21 @@
         
         @media (max-width: 480px) {
             .navbar { padding: 0 0.75rem; }
-            .logo { font-size: 0.9rem; }
+            .logo { font-size: 1rem; }
             .logo-badge { font-size: 0.55rem; }
-            .nav-inner { padding: 0.5rem 0; }
-            .nav-link { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-            .refresh-btn { font-size: 0.7rem; padding: 4px 10px; }
+            .nav-links { display: none; }
             .status-pill { display: none; }
+            .refresh-btn { display: none; }
+            .mobile-refresh-btn { display: flex; }
             .hamburger-btn { display: flex; }
-            .main { padding: 0.75rem; }
-            .page-title { font-size: 1.3rem; }
-            .page-sub { font-size: 0.8rem; }
-            .stats-grid { grid-template-columns: 1fr; gap: 0.5rem; }
+            .main { padding: 5rem 0.75rem 0.75rem; overflow-x: hidden; }
+            .panel { overflow-x: hidden; }
+            .page-header { flex-direction: row; align-items: flex-start; gap: 0.5rem; }
+            .page-title { font-size: 1.1rem; }
+            .page-sub { font-size: 0.75rem; }
+            .last-updated { font-size: 0.7rem; }
+            .mobile-refresh-btn { padding: 6px 10px; font-size: 0.75rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
             .stat-card { padding: 1rem; }
             .stat-value { font-size: 1.8rem; }
             .stat-label { font-size: 0.65rem; }
@@ -371,7 +940,7 @@
     <nav class="navbar">
         <div class="nav-inner">
             <a href="/" class="logo">
-                <span class="logo-badge">IN</span>
+                <span class="logo-badge">IND</span>
                 <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </a>
             <div class="nav-links">
@@ -397,13 +966,87 @@
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu-overlay" id="mobile-menu">
         <div class="mobile-menu-top">
-            <a href="/" class="mobile-menu-link">Home</a>
-            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
-            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
+            <!-- Menu Header -->
+            <div class="mobile-menu-header">
+                <div class="mobile-menu-avatar">
+                    <span class="avatar-icon">IND</span>
+                </div>
+                <div class="mobile-menu-user">
+                    <div class="mobile-menu-greeting">Welcome Back</div>
+                    <div class="mobile-menu-username">Misinformation Heatmap</div>
+                </div>
+                <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+                    <span class="close-icon">✕</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="mobile-menu-stats">
+                <div class="mobile-stat-item">
+                    <div class="mobile-stat-icon">📊</div>
+                    <div class="mobile-stat-info">
+                        <div class="mobile-stat-value" id="menu-total-events">—</div>
+                        <div class="mobile-stat-label">Total Events</div>
+                    </div>
+                </div>
+                <div class="mobile-stat-item">
+                    <div class="mobile-stat-icon">🎯</div>
+                    <div class="mobile-stat-info">
+                        <div class="mobile-stat-value" id="menu-accuracy">91%</div>
+                        <div class="mobile-stat-label">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Navigation</div>
+                <a href="/" class="mobile-menu-link">
+                    <span class="menu-link-icon">🏠</span>
+                    <span class="menu-link-text">Home</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+                <a href="/dashboard" class="mobile-menu-link">
+                    <span class="menu-link-icon">📈</span>
+                    <span class="menu-link-text">Dashboard</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">
+                    <span class="menu-link-icon">🗺️</span>
+                    <span class="menu-link-text">Heatmap</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+            </div>
+
+            <!-- Feature Highlights -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Features</div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-content">
+                        <div class="feature-title">AI-Powered Detection</div>
+                        <div class="feature-desc">5-model ML ensemble</div>
+                    </div>
+                </div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-content">
+                        <div class="feature-title">Real-Time Monitoring</div>
+                        <div class="feature-desc">34+ news sources</div>
+                    </div>
+                </div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-content">
+                        <div class="feature-title">Pan-India Coverage</div>
+                        <div class="feature-desc">All states & UTs</div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="mobile-menu-bottom">
             <div class="mobile-menu-brand">
-                <span class="logo-badge">IN</span>
+                <span class="logo-badge">IND</span>
                 <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </div>
             <div class="mobile-menu-tags">
@@ -416,9 +1059,15 @@
     <div class="main">
         <!-- Header -->
         <div class="page-header">
-            <div class="page-title">Real-Time Analytics</div>
-            <div class="page-sub">Comprehensive misinformation detection metrics across India</div>
-            <div class="last-updated" id="last-updated">Fetching data…</div>
+            <div class="page-header-left">
+                <div class="page-title">Real-Time Analytics</div>
+                <div class="page-sub">Comprehensive misinformation detection metrics across India</div>
+                <div class="last-updated" id="last-updated">Fetching data…</div>
+            </div>
+            <!-- Mobile Refresh Button -->
+            <button class="mobile-refresh-btn" onclick="refreshAll()">
+                ↻ Refresh
+            </button>
         </div>
 
         <!-- Stat Cards -->
@@ -474,12 +1123,12 @@
                 <div class="panel-body">
                     <div class="accuracy-center">
                         <div class="ring-wrap">
-                            <svg width="160" height="160" style="transform:rotate(-90deg)">
+                            <svg width="160" height="160" class="transform -rotate-90">
                                 <circle cx="80" cy="80" r="56" fill="none" stroke="#E8E8E0" stroke-width="10"/>
                                 <circle id="accuracy-ring-fill" cx="80" cy="80" r="56" fill="none"
                                     stroke="#138808" stroke-width="10" stroke-linecap="round"
                                     stroke-dasharray="351.86" stroke-dashoffset="351.86"
-                                    style="transition: stroke-dashoffset 1.5s ease"/>
+                                    class="transition-[stroke-dashoffset] duration-[1.5s] ease"/>
                             </svg>
                             <div class="ring-label">
                                 <div class="ring-pct" id="accuracy-pct">91%</div>
@@ -489,15 +1138,15 @@
                     </div>
                     <div class="metric-bar-row">
                         <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--blue);">94.2%</div>
+                            <div class="mbi-val text-blue">94.2%</div>
                             <div class="mbi-lbl">Precision</div>
                         </div>
                         <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--green);">91.7%</div>
+                            <div class="mbi-val text-green">91.7%</div>
                             <div class="mbi-lbl">Recall</div>
                         </div>
                         <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--saffron);">92.9%</div>
+                            <div class="mbi-val text-saffron">92.9%</div>
                             <div class="mbi-lbl">F1-Score</div>
                         </div>
                     </div>
@@ -513,7 +1162,7 @@
                     </div>
                     <span class="feed-count" id="events-count">Loading…</span>
                 </div>
-                <div class="panel-body" style="overflow:hidden; padding:1rem;">
+                <div class="panel-body overflow-hidden p-4">
                     <div class="activity-feed" id="activity-feed">
                         <div class="empty-feed"><div class="empty-icon">⏳</div>Loading recent activity…</div>
                     </div>
@@ -530,7 +1179,7 @@
                         <div class="panel-title">Geographic Coverage</div>
                         <div class="panel-sub">Monitoring across all Indian states and union territories</div>
                     </div>
-                    <a href="/map/enhanced-india-heatmap.html" class="map-link">🗺️ View Interactive Map</a>
+                    <a href="/map/enhanced-india-heatmap.html" class="map-link">🗺️ Explore Map</a>
                 </div>
                 <div class="panel-body">
                     <div class="coverage-grid">
@@ -547,8 +1196,8 @@
                             <div class="cov-label">Articles/Second</div>
                         </div>
                     </div>
-                    <div style="margin-top:1.25rem; padding:1rem; background:rgba(232,119,34,0.05); border:1px solid rgba(232,119,34,0.15); border-radius:12px; font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-                        🌐 Monitoring <strong style="color:var(--saffron)">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
+                    <div class="mt-5 p-4 bg-saffron/5 border border-saffron/15 rounded-xl text-sm text-text-secondary leading-relaxed">
+                        🌐 Monitoring <strong class="text-saffron">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
                     </div>
                 </div>
             </div>
@@ -598,11 +1247,19 @@
         // ── Hamburger menu toggle ──
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+
         hamburgerBtn.addEventListener('click', () => {
             hamburgerBtn.classList.toggle('active');
             mobileMenu.classList.toggle('active');
             document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        });
+
+        // Close menu with close button
+        mobileMenuClose.addEventListener('click', () => {
+            hamburgerBtn.classList.remove('active');
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
         });
 
         // Close menu when clicking on a link
@@ -651,6 +1308,11 @@
                 animateNum(document.getElementById('real-events'), d.real_events || 0);
                 animateNum(document.getElementById('uncertain-events'), d.uncertain_events || 0);
                 document.getElementById('total-states').textContent = d.total_states || 36;
+
+                // Update mobile menu stats
+                animateNum(document.getElementById('menu-total-events'), d.total_events || 0);
+                const menuAccuracy = document.getElementById('menu-accuracy');
+                menuAccuracy.textContent = Math.round((d.classification_accuracy || 0.91) * 100) + '%';
 
                 const total = d.total_events || 1;
                 setTimeout(() => {

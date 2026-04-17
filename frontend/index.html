@@ -11,6 +11,40 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        saffron: { DEFAULT: '#E87722', light: '#FF9933', dark: '#c4601a' },
+                        green: { DEFAULT: '#138808', light: '#1ea50e' },
+                        navy: '#000080',
+                        bg: '#FAFAF7',
+                        'bg-card': '#FFFFFF',
+                        'bg-card-hover': '#F5F5F0',
+                        border: '#E8E8E0',
+                        'text-primary': '#1A1A1A',
+                        'text-secondary': '#555555',
+                        'text-muted': '#888888',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'sm': '0 2px 8px rgba(0,0,0,0.08)',
+                        'md': '0 4px 20px rgba(0,0,0,0.10)',
+                        'lg': '0 8px 40px rgba(0,0,0,0.12)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '16px',
+                        'sm': '10px',
+                    },
+                }
+            }
+        }
+    </script>
     <style>
         :root {
             --saffron:        #E87722;
@@ -46,6 +80,12 @@
             max-width: 100vw;
         }
 
+        /* Custom CSS for complex animations and effects */
+        html { scroll-behavior: smooth; }
+        
+        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
+        @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+
         /* ─── NAVBAR ─── */
         .navbar {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
@@ -58,7 +98,7 @@
         }
         .navbar.scrolled { box-shadow: var(--shadow-sm); }
         .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
+        .logo { display: flex; align-items: center; gap: 2px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
         .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
         .logo .logo-name { color: var(--saffron); }
 
@@ -71,92 +111,402 @@
         .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
 
-        /* Hamburger Menu */
+        /* Premium Hamburger Menu */
         .hamburger-btn {
             display: none;
             flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
+            border: 2px solid rgba(232, 119, 34, 0.2);
             cursor: pointer;
-            padding: 8px;
-            z-index: 2001;
+            padding: 12px;
+            z-index: 2000;
+            border-radius: 16px;
+            box-shadow: 
+                0 4px 20px rgba(232, 119, 34, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
         }
+        
+        .hamburger-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 153, 51, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .hamburger-btn:hover::before {
+            left: 100%;
+        }
+        
+        .hamburger-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 153, 51, 0.1), rgba(255, 255, 255, 0.95));
+            border-color: rgba(232, 119, 34, 0.4);
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 
+                0 8px 30px rgba(232, 119, 34, 0.2),
+                0 4px 12px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        .hamburger-btn:active {
+            transform: scale(0.98) translateY(0px);
+            box-shadow: 
+                0 2px 12px rgba(232, 119, 34, 0.15),
+                0 1px 4px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+        
         .hamburger-line {
-            width: 24px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s;
-            border-radius: 2px;
+            width: 28px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(232, 119, 34, 0.2);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
+            transform: rotate(45deg) translate(7px, 7px);
+            background: linear-gradient(90deg, #fff, #fff);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(2) {
             opacity: 0;
+            transform: scale(0);
         }
+        
         .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
+            transform: rotate(-45deg) translate(7px, -7px);
+            background: linear-gradient(90deg, #fff, #fff);
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
+        }
+        
+        .hamburger-btn.active {
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            border-color: var(--saffron-dark);
+            box-shadow: 
+                0 8px 30px rgba(232, 119, 34, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        /* Mobile Menu Overlay */
+        /* Premium Mobile Menu Overlay */
         .mobile-menu-overlay {
             position: fixed;
             top: 0;
             right: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f4 50%, #f5f5f0 100%);
             z-index: 1500;
             transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 80px 2rem 2rem;
+            padding: 30px 3rem 3rem;
+            overflow-x: hidden;
+            backdrop-filter: blur(20px);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
         }
+        
+        .mobile-menu-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(232, 119, 34, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
         .mobile-menu-overlay.active {
             transform: translateX(0);
         }
+        
         .mobile-menu-top {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
         }
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .mobile-menu-link:hover {
-            padding-left: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .mobile-menu-bottom {
+
+        /* Menu Header */
+        .mobile-menu-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.25rem;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
         }
-        .mobile-menu-brand {
+        .mobile-menu-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .avatar-icon {
+            font-size: 1.8rem;
+            background: linear-gradient(180deg, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%);
+            color: #1a1a1a;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 2px solid rgba(0, 0, 0, 0.1);
+        }
+        .mobile-menu-user {
+            flex: 1;
+            min-width: 0;
+        }
+        .mobile-menu-greeting {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .mobile-menu-username {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 2px;
+        }
+        .mobile-menu-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .mobile-menu-close:hover {
+            background: var(--saffron);
+            border-color: var(--saffron);
+        }
+        .mobile-menu-close:hover .close-icon {
+            color: #fff;
+        }
+        .close-icon {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Quick Stats */
+        .mobile-menu-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        .mobile-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .mobile-stat-icon {
+            font-size: 1.5rem;
+        }
+        .mobile-stat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .mobile-stat-value {
             font-family: 'Outfit', sans-serif;
             font-size: 1.2rem;
             font-weight: 800;
-            color: #fff;
+            color: var(--saffron);
+            line-height: 1;
+        }
+        .mobile-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        /* Menu Sections */
+        .mobile-menu-section {
+            margin-bottom: 0.5rem;
+        }
+        .mobile-menu-section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding-left: 0.25rem;
+        }
+        
+        .mobile-menu-link {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 1rem 1.25rem;
+            margin: 0.25rem 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .menu-link-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .menu-link-text {
+            flex: 1;
+        }
+        .menu-link-arrow {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+        .mobile-menu-link:hover {
+            background: linear-gradient(135deg, rgba(232, 119, 34, 0.06), rgba(232, 119, 34, 0.02));
+            border-color: var(--saffron);
+            color: var(--saffron);
+            transform: translateX(6px);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.1);
+        }
+        .mobile-menu-link:hover .menu-link-arrow {
+            transform: translateX(4px);
+            color: var(--saffron);
+        }
+        
+                .mobile-menu-link::before {
+            display: none;
+        }
+        .mobile-menu-link:hover::before {
+            display: none;
+        }
+        
+        .mobile-menu-link:active {
+            transform: translateX(5px) scale(0.98);
+        }
+
+        /* Feature Highlights */
+        .mobile-menu-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .mobile-menu-feature:hover {
+            border-color: var(--saffron);
+            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.08);
+            transform: translateX(4px);
+        }
+        .feature-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        .feature-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .feature-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .feature-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .mobile-menu-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .mobile-menu-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .mobile-menu-brand .logo-badge {
-            background: #fff;
+            background: var(--saffron);
+            color: #fff;
+        }
+        .mobile-menu-brand .logo-name {
             color: var(--saffron);
+        }
+        .mobile-menu-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .menu-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            text-transform: uppercase;
+        }
+        .menu-tag.alpha {
+            background: var(--saffron);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(255, 153, 51, 0.3);
+        }
+        .menu-tag.live {
+            background: #fff;
+            color: var(--green);
+            animation: pulse 2s infinite;
         }
 
         /* ─── HERO ─── */
@@ -203,8 +553,8 @@
         .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
         .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #FF9933 0%, #B45309 100%); color: white; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3); }
         .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255, 153, 51, 0.4); }
-        .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); text-decoration: none; transition: all 0.2s; }
-        .btn-outline:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(232,119,34,0.04); }
+        .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #138808 0%, #0d6b06 100%); color: white; font-weight: 600; font-size: 0.95rem; padding: 0.8rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid transparent; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(19, 136, 8, 0.25); }
+        .btn-outline:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 28px rgba(19, 136, 8, 0.4); background: linear-gradient(135deg, #1ea50e 0%, #138808 100%); }
 
         /* ─── STATS STRIP ─── */
         .stats-strip { position: relative; z-index: 1; padding: 5rem 2rem 5rem; background: rgba(255, 255, 255, 0.95); }
@@ -245,6 +595,7 @@
         @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
 
         .ticker-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+        .ticker-cards > :only-child { grid-column: 1 / -1; }
         .ticker-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; border-left: 3px solid var(--green); box-shadow: var(--shadow-sm); }
         .ticker-card.fake { border-left-color: #dc2626; }
         .ticker-card.uncertain { border-left-color: #f59e0b; }
@@ -303,11 +654,12 @@
             .navbar { padding: 0 0.75rem; }
             .logo { font-size: 1rem; }
             .logo-badge { font-size: 0.55rem; }
-            .nav-links { display: none; }
+            .nav-link { display: none; }
             .status-pill { display: none; }
+            .navbar > div > div:nth-child(3) { display: none; }
             .hamburger-btn { display: flex; }
             .mobile-menu-overlay { 
-                padding: 100px 1rem 1rem;
+                padding: 30px 1rem 1rem;
                 z-index: 1499;
             }
             .mobile-menu-link { font-size: 1.3rem; padding: 0.8rem 0; }
@@ -322,9 +674,9 @@
                 position: relative;
             }
             .hero h1 { font-size: 1.8rem; line-height: 1.2; }
-            .hero p { font-size: 0.9rem; }
-            .hero-actions { flex-direction: column; align-items: stretch; }
-            .btn-primary, .btn-outline { width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.8rem; }
+            .hero p { font-size: 1.1rem; line-height: 1.6; }
+            .hero-actions { flex-direction: column; align-items: stretch; gap: 1rem; }
+            .btn-primary, .btn-outline { width: 100%; justify-content: center; font-size: 1rem; padding: 1rem; font-weight: 600; }
             .stats-strip { padding: 3rem 0.75rem 3rem; }
             .stats-inner { grid-template-columns: 1fr; gap: 0.5rem; }
             .stat-pill { padding: 1rem; }
@@ -337,20 +689,20 @@
         }
     </style>
 </head>
-<body>
+<body class="font-sans bg-bg text-text-primary min-h-screen overflow-x-hidden max-w-screen">
     <!-- Navbar -->
     <nav class="navbar" id="navbar">
-        <div class="nav-inner">
-            <a href="/" class="logo">
-                <span class="logo-badge">IN</span>
+        <div class="w-full max-w-[1280px] mx-auto flex items-center justify-between">
+            <a href="/" class="logo flex items-center gap-1 font-outfit text-[1.15rem] font-extrabold no-underline text-text-primary">
+                <span class="logo-badge">IND</span>
                 <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </a>
-            <div class="nav-links">
+            <div class="flex items-center gap-1">
                 <a href="/" class="nav-link active">Home</a>
                 <a href="/dashboard" class="nav-link">Dashboard</a>
                 <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
             </div>
-            <div class="status-pill">
+            <div class="flex items-center gap-1.5 bg-green/8 border border-green/25 rounded-full py-[5px] px-[14px] text-[0.8rem] font-semibold text-green">
                 <span class="status-dot"></span>
                 <span id="nav-status">System Ready</span>
             </div>
@@ -365,13 +717,87 @@
     <!-- Mobile Menu Overlay -->
     <div class="mobile-menu-overlay" id="mobile-menu">
         <div class="mobile-menu-top">
-            <a href="/" class="mobile-menu-link">Home</a>
-            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
-            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
+            <!-- Menu Header -->
+            <div class="mobile-menu-header">
+                <div class="mobile-menu-avatar">
+                    <span class="avatar-icon">IND</span>
+                </div>
+                <div class="mobile-menu-user">
+                    <div class="mobile-menu-greeting">Welcome Back</div>
+                    <div class="mobile-menu-username">Misinformation Heatmap</div>
+                </div>
+                <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+                    <span class="close-icon">✕</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="mobile-menu-stats">
+                <div class="mobile-stat-item">
+                    <div class="mobile-stat-icon">📊</div>
+                    <div class="mobile-stat-info">
+                        <div class="mobile-stat-value" id="menu-total-events">—</div>
+                        <div class="mobile-stat-label">Total Events</div>
+                    </div>
+                </div>
+                <div class="mobile-stat-item">
+                    <div class="mobile-stat-icon">🎯</div>
+                    <div class="mobile-stat-info">
+                        <div class="mobile-stat-value" id="menu-accuracy">91%</div>
+                        <div class="mobile-stat-label">Accuracy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Navigation</div>
+                <a href="/" class="mobile-menu-link">
+                    <span class="menu-link-icon">🏠</span>
+                    <span class="menu-link-text">Home</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+                <a href="/dashboard" class="mobile-menu-link">
+                    <span class="menu-link-icon">📈</span>
+                    <span class="menu-link-text">Dashboard</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">
+                    <span class="menu-link-icon">🗺️</span>
+                    <span class="menu-link-text">Heatmap</span>
+                    <span class="menu-link-arrow">→</span>
+                </a>
+            </div>
+
+            <!-- Feature Highlights -->
+            <div class="mobile-menu-section">
+                <div class="mobile-menu-section-title">Features</div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-content">
+                        <div class="feature-title">AI-Powered Detection</div>
+                        <div class="feature-desc">5-model ML ensemble</div>
+                    </div>
+                </div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-content">
+                        <div class="feature-title">Real-Time Monitoring</div>
+                        <div class="feature-desc">34+ news sources</div>
+                    </div>
+                </div>
+                <div class="mobile-menu-feature">
+                    <div class="feature-icon">📍</div>
+                    <div class="feature-content">
+                        <div class="feature-title">Pan-India Coverage</div>
+                        <div class="feature-desc">All states & UTs</div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="mobile-menu-bottom">
             <div class="mobile-menu-brand">
-                <span class="logo-badge">IN</span>
+                <span class="logo-badge">IND</span>
                 <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
             </div>
             <div class="mobile-menu-tags">
@@ -471,7 +897,52 @@
                 <div class="ticker-live"><span class="ticker-live-dot"></span> LIVE</div>
             </div>
             <div class="ticker-cards" id="ticker-cards">
-                <div class="ticker-card"><div class="ticker-text" style="color:var(--text-muted); text-align:center;">⏳ Loading recent events…</div></div>
+                <!-- Loading skeleton cards - 3x3 grid -->
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
+                <div class="ticker-card">
+                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
+                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                </div>
             </div>
         </div>
     </section>
@@ -481,7 +952,7 @@
         <div class="cta-inner">
             <div class="cta-title">See India's Misinformation Map</div>
             <p class="cta-sub">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
-            <a href="/map/enhanced-india-heatmap.html" class="btn-primary" style="font-size:1rem; padding:1rem 2.5rem;">🗺️ Open Interactive Heatmap →</a>
+            <a href="/map/enhanced-india-heatmap.html" class="btn-primary text-base px-10 py-4">🗺️ Open Interactive Heatmap →</a>
         </div>
     </section>
 
@@ -510,12 +981,22 @@
         // ── Hamburger menu toggle ──
         const hamburgerBtn = document.getElementById('hamburger-btn');
         const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
         
         hamburgerBtn.addEventListener('click', () => {
             hamburgerBtn.classList.toggle('active');
             mobileMenu.classList.toggle('active');
             document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
         });
+
+        // Close menu when clicking close button
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
 
         // Close menu when clicking on a link
         document.querySelectorAll('.mobile-menu-link').forEach(link => {
@@ -544,6 +1025,13 @@
                 const el = document.getElementById('stat-events');
                 const n = d.total_events || 0;
                 el.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
+                
+                // Update mobile menu stats
+                const menuEventsEl = document.getElementById('menu-total-events');
+                if (menuEventsEl) {
+                    menuEventsEl.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
+                }
+                
                 document.getElementById('nav-status').textContent = d.ml_ready ? 'System Ready' : 'Loading…';
             } catch(_) {}
         }
