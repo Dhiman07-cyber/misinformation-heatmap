@@ -6,88 +6,43 @@
   <title>Interactive India Map</title>
   <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{--bg:#0f1720;--panel:#0b1220;--accent:#3b82f6}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:0;display:flex;height:100vh;overflow:hidden;overflow-x:hidden;max-width:100vw}
-    #left{flex:1;display:flex;flex-direction:column}
-    header{padding:12px 16px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);display:flex;gap:12px;align-items:center}
-    header h1{font-size:18px;margin:0}
-    #mapwrap{flex:1;overflow:hidden;position:relative}
-    #svgroot{width:100%;height:100%;touch-action:none;cursor:grab;background:linear-gradient(180deg,#071027, #082035)}
-    #tooltip{position:absolute;pointer-events:none;padding:8px 10px;background:#fff;color:#041026;border-radius:6px;font-size:13px;box-shadow:0 6px 18px rgba(4,8,16,0.6);display:none}
-    aside{width:320px;background:var(--panel);border-left:1px solid rgba(255,255,255,0.03);padding:18px;box-sizing:border-box}
-    .state-name{font-size:20px;font-weight:600;margin-bottom:6px}
-    .meta{font-size:13px;opacity:0.85}
-    .controls{display:flex;gap:8px;align-items:center}
-    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 8px;border-radius:8px;color:inherit;cursor:pointer}
-    input[type=search]{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit}
-    .legend{margin-top:12px;font-size:13px}
-    .hint{margin-top:18px;opacity:0.7;font-size:13px}
-    /* highlight style for svg paths */
-    .map-path{fill:#88A4BC;stroke:#ffffff;stroke-width:0.6}
-    .map-path:hover{fill:#3B729F}
-    .selected{fill:var(--accent) !important}
-    footer{padding-top:12px;font-size:12px;opacity:0.8}
-
-  /* Mobile Responsiveness */
-  @media (max-width: 768px) {
-    body { display: block; }
-    #left { width: 100%; height: 60vh; }
-    aside { 
-      width: 100%; 
-      border-left: none; 
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding: 12px;
-      height: 40vh;
-      overflow-y: auto;
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            saffron: { DEFAULT: '#E87722', light: '#FF9933' },
+            green: { DEFAULT: '#138808', light: '#1ea50e' },
+            navy: '#000080',
+            bg: '#0f172a',
+            panel: '#0b1220',
+            accent: '#3b82f6',
+          },
+        }
+      }
     }
-    header { padding: 8px 12px; }
-    header h1 { font-size: 16px; }
-    .controls { gap: 8px; }
-    input[type=search] { font-size: 14px; }
-    .btn { font-size: 12px; padding: 4px 6px; }
-    .state-name { font-size: 18px; }
-    .meta { font-size: 12px; }
-    .legend { font-size: 12px; }
-    .hint { font-size: 12px; }
-  }
-  
-  @media (max-width: 480px) {
-    #left { height: 50vh; }
-    aside { height: 50vh; padding: 8px; }
-    header { padding: 6px 8px; }
-    header h1 { font-size: 14px; }
-    .controls { flex-direction: column; gap: 6px; }
-    input[type=search] { padding: 6px; }
-    .btn { padding: 3px 6px; font-size: 11px; }
-    .state-name { font-size: 16px; }
-    .meta { font-size: 11px; }
-    .legend { font-size: 11px; margin-top: 8px; }
-    .hint { font-size: 11px; margin-top: 12px; }
-    footer { font-size: 10px; }
-  }
-  </style>
+  </script>
 </head>
-<body>
-  <div id="left">
-    <header>
-      <h1>Interactive India Map</h1>
-      <div class="controls flex-1">
-        <input id="search" type="search" placeholder="Search state (e.g. Karnataka)" />
-        <button id="reset" class="btn">Reset</button>
+<body class="m-0 font-sans bg-[#0f172a] text-[#e2e8f0] flex h-screen overflow-hidden overflow-x-hidden max-w-screen">
+  <div id="left" class="flex flex-col flex-1">
+    <header class="px-4 py-3 lg:px-4 lg:py-4 bg-gradient-to-r from-[rgba(255,255,255,0.02)] to-transparent flex gap-3 lg:gap-4 items-center">
+      <h1 class="text-lg lg:text-[18px] m-0 font-outfit font-extrabold text-white">Interactive India Map</h1>
+      <div class="controls flex-1 flex gap-2 lg:gap-3 items-center">
+        <input id="search" type="search" placeholder="Search state (e.g. Karnataka)" class="flex-1 px-3 py-2 lg:px-3 lg:py-2 rounded-[8px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] text-[#e2e8f0] placeholder-[#64748b] text-sm lg:text-[13px] focus:outline-none focus:border-[rgba(59,130,246,0.3)]" />
+        <button id="reset" class="bg-transparent border border-[rgba(255,255,255,0.06)] px-3 py-2 lg:px-3 lg:py-2 rounded-[8px] text-[#e2e8f0] cursor-pointer hover:bg-[rgba(255,255,255,0.05)] transition-colors text-sm lg:text-[12px] font-medium">Reset</button>
       </div>
     </header>
-    <div id="mapwrap">
-      <div id="svgroot">Loading map...</div>
-      <div id="tooltip"></div>
+    <div id="mapwrap" class="flex-1 overflow-hidden relative">
+      <div id="svgroot" class="w-full h-full touch-action-none cursor-grab bg-gradient-to-b from-[#071027] to-[#082035]">Loading map...</div>
+      <div id="tooltip" class="absolute pointer-events-none px-3 py-2.5 bg-white text-[#041026] rounded-[6px] text-[13px] shadow-[0_6px_18px_rgba(4,8,16,0.6)] hidden z-50 max-w-[250px] leading-relaxed"></div>
     </div>
   </div>
-  <aside>
-    <div class="state-name" id="stateName">Click a state</div>
-    <div class="meta" id="stateDesc">State description will appear here. Hover or click a state on the map.</div>
-    <div class="legend" id="legend"></div>
-    <div class="hint">Use mouse wheel to zoom, drag to pan. On mobile: pinch to zoom (if supported).</div>
-    <footer>Files required: <code>in.svg</code> and <code>mapdata.js</code> in same folder.</footer>
+  <aside class="w-[320px] bg-[#0b1220] border-l border-[rgba(255,255,255,0.03)] px-4.5 py-4.5 lg:px-[18px] lg:py-[18px] overflow-y-auto">
+    <div class="state-name text-xl lg:text-[20px] font-semibold mb-1.5 text-white font-outfit" id="stateName">Click a state</div>
+    <div class="meta text-[13px] opacity-85 text-[#94a3b8] leading-relaxed mb-3" id="stateDesc">State description will appear here. Hover or click a state on the map.</div>
+    <div class="legend mt-3 text-[13px] text-[#94a3b8]" id="legend"></div>
+    <div class="hint mt-4.5 opacity-70 text-[13px] text-[#94a3b8] leading-relaxed">Use mouse wheel to zoom, drag to pan. On mobile: pinch to zoom (if supported).</div>
+    <footer class="pt-3 text-[12px] opacity-80 text-[#64748b]">Files required: <code class="bg-[rgba(255,255,255,0.05)] px-1.5 py-0.5 rounded text-[#3b82f6]">in.svg</code> and <code class="bg-[rgba(255,255,255,0.05)] px-1.5 py-0.5 rounded text-[#3b82f6]">mapdata.js</code> in same folder.</footer>
   </aside>
 
   <script>
@@ -138,12 +93,30 @@
     function initMap(){
       // find the actual <svg>
       svgEl = svgRoot.querySelector('svg');
-      if(!svgEl){ svgRoot.innerHTML = '<div class="p-[18px] text-salmon">in.svg does not contain an &lt;svg&gt; root.</div>'; return; }
+      if(!svgEl){ svgRoot.innerHTML = '<div class="p-4.5 text-red-400 font-medium">in.svg does not contain an &lt;svg&gt; root.</div>'; return; }
       // wrap paths with class map-path for styling
       const paths = svgEl.querySelectorAll('path, polygon, rect, circle');
       paths.forEach(p => {
         if(!p.id) return;
         p.classList.add('map-path');
+        p.classList.add('fill-[#88A4BC]');
+        p.classList.add('stroke-[#ffffff]');
+        p.classList.add('stroke-width-[0.6]');
+        p.classList.add('transition');
+        p.classList.add('duration-200');
+        p.classList.add('ease-in-out');
+      });
+      
+      // Add hover effect via JavaScript since we can't use CSS hover on dynamically added elements
+      paths.forEach(p => {
+        p.addEventListener('mouseenter', () => {
+          p.classList.add('fill-[#3B729F]');
+        });
+        p.addEventListener('mouseleave', () => {
+          if (!p.classList.contains('selected')) {
+            p.classList.remove('fill-[#3B729F]');
+          }
+        });
       });
 
       // initial transform group
@@ -235,9 +208,13 @@
     }
 
     function selectState(id, el){
-      if(selectedEl) selectedEl.classList.remove('selected');
+      if(selectedEl) {
+        selectedEl.classList.remove('selected');
+        selectedEl.style.fill = '#88A4BC';
+      }
       selectedEl = el;
       selectedEl.classList.add('selected');
+      selectedEl.style.fill = '#3b82f6';
       const info = lookupStateInfo(id);
       stateNameEl.innerText = info.name || id;
       stateDescEl.innerText = info.desc || (mapData.main_settings && mapData.main_settings.state_description) || 'No description available.';
@@ -261,6 +238,17 @@
         if(!p.getAttribute('fill') || p.getAttribute('fill')==='none'){
           p.setAttribute('fill','#88A4BC');
         }
+        // Add hover effect
+        p.addEventListener('mouseenter', () => {
+          if (!p.classList.contains('selected')) {
+            p.style.fill = '#3B729F';
+          }
+        });
+        p.addEventListener('mouseleave', () => {
+          if (!p.classList.contains('selected')) {
+            p.style.fill = '#88A4BC';
+          }
+        });
       });
     }
 

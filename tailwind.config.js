@@ -1,9 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    "./frontend/**/*.html",
-    "./frontend/**/*.js",
-    "./frontend/**/*.jsx",
+    "./frontend/index.html",
+    "./frontend/dashboard.html",
+    "./frontend/map/**/*.html",
   ],
   theme: {
     extend: {
@@ -40,7 +40,8 @@ module.exports = {
         'sm': '10px',
       },
       animation: {
-        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse': 'pulse 2s infinite',
+        'pulse-red': 'pulse-red 1.5s infinite',
       },
       keyframes: {
         pulse: {

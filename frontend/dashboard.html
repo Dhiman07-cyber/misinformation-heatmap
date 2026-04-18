@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard — Misinformation Heatmap</title>
     <meta name="description" content="Real-time analytics dashboard for misinformation detection across India.">
-    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
+    <link rel="icon" type="image/x-icon" href="/Misinfo.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -41,1088 +41,202 @@
             }
         }
     </script>
-    <style>
-        :root {
-            --saffron:       #E87722;
-            --saffron-light: #FF9933;
-            --saffron-dark:  #c4601a;
-            --green:         #138808;
-            --green-light:   #1ea50e;
-            --navy:          #000080;
-            --red:           #dc2626;
-            --amber:         #d97706;
-            --blue:          #2563eb;
-            --bg:            #F8F8F4;
-            --bg-card:       #FFFFFF;
-            --border:        #E8E8E0;
-            --border-accent: rgba(232,119,34,0.25);
-            --text-primary:  #1A1A1A;
-            --text-secondary:#555555;
-            --text-muted:    #888888;
-            --shadow-sm:     0 2px 8px rgba(0,0,0,0.07);
-            --shadow-md:     0 4px 20px rgba(0,0,0,0.10);
-            --radius:        16px;
-            --radius-sm:     10px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            max-width: 100vw;
-        }
-
-        /* ─── BACKGROUND ─── */
-        .bg-blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.12; }
-        .blob-1 { width: 600px; height: 600px; top: -150px; left: -100px; background: var(--saffron-light); }
-        .blob-2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: var(--green-light); }
-
-        /* ─── NAVBAR ─── */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            padding: 0 2rem; height: 62px;
-            display: flex; align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s;
-        }
-        .navbar.scrolled { box-shadow: var(--shadow-sm); }
-        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo { display: flex; align-items: center; gap: 2px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
-        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
-        .logo .logo-name { color: var(--saffron); }
-
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-        .refresh-btn {
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(232, 119, 34, 0.25);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .refresh-btn:hover {
-            background: linear-gradient(135deg, var(--saffron-light), var(--saffron));
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.35);
-        }
-        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
-        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
-
-        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
-
-        /* Premium Hamburger Menu */
-        .hamburger-btn {
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
-            border: 2px solid rgba(232, 119, 34, 0.2);
-            cursor: pointer;
-            padding: 12px;
-            z-index: 2000;
-            border-radius: 16px;
-            box-shadow: 
-                0 4px 20px rgba(232, 119, 34, 0.1),
-                0 2px 8px rgba(0, 0, 0, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hamburger-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 153, 51, 0.3), transparent);
-            transition: left 0.6s ease;
-        }
-        
-        .hamburger-btn:hover::before {
-            left: 100%;
-        }
-        
-        .hamburger-btn:hover {
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.1), rgba(255, 255, 255, 0.95));
-            border-color: rgba(232, 119, 34, 0.4);
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 
-                0 8px 30px rgba(232, 119, 34, 0.2),
-                0 4px 12px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
-        
-        .hamburger-btn:active {
-            transform: scale(0.98) translateY(0px);
-            box-shadow: 
-                0 2px 12px rgba(232, 119, 34, 0.15),
-                0 1px 4px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-        
-        .hamburger-line {
-            width: 28px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 3px;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(232, 119, 34, 0.2);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(7px, 7px);
-            background: linear-gradient(90deg, #fff, #fff);
-            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-            transform: scale(0);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -7px);
-            background: linear-gradient(90deg, #fff, #fff);
-            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
-        }
-        
-        .hamburger-btn.active {
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            border-color: var(--saffron-dark);
-            box-shadow: 
-                0 8px 30px rgba(232, 119, 34, 0.4),
-                0 4px 12px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        /* Premium Mobile Menu Overlay */
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f8f4 50%, #f5f5f0 100%);
-            z-index: 1500;
-            transform: translateX(100%);
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 30px 3rem 3rem;
-            overflow-x: hidden;
-            backdrop-filter: blur(20px);
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
-        }
-        
-        .mobile-menu-overlay::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(232, 119, 34, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.04) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        
-        .mobile-menu-overlay.active {
-            transform: translateX(0);
-        }
-        
-        .mobile-menu-top {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        /* Menu Header */
-        .mobile-menu-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-        .mobile-menu-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .avatar-icon {
-            font-size: 1.8rem;
-            background: linear-gradient(180deg, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%);
-            color: #1a1a1a;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-        }
-        .mobile-menu-user {
-            flex: 1;
-            min-width: 0;
-        }
-        .mobile-menu-greeting {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .mobile-menu-username {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-top: 2px;
-        }
-        .mobile-menu-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .mobile-menu-close:hover {
-            background: var(--saffron);
-            border-color: var(--saffron);
-        }
-        .mobile-menu-close:hover .close-icon {
-            color: #fff;
-        }
-        .close-icon {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        /* Quick Stats */
-        .mobile-menu-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        .mobile-stat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-        .mobile-stat-icon {
-            font-size: 1.5rem;
-        }
-        .mobile-stat-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .mobile-stat-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--saffron);
-            line-height: 1;
-        }
-        .mobile-stat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-top: 3px;
-        }
-
-        /* Menu Sections */
-        .mobile-menu-section {
-            margin-bottom: 0.5rem;
-        }
-        .mobile-menu-section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 0.75rem;
-            padding-left: 0.25rem;
-        }
-        
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 1rem 1.25rem;
-            margin: 0.25rem 0;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: #ffffff;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-        }
-        .menu-link-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-        .menu-link-text {
-            flex: 1;
-        }
-        .menu-link-arrow {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            transition: transform 0.3s;
-        }
-        .mobile-menu-link:hover {
-            background: linear-gradient(135deg, rgba(232, 119, 34, 0.06), rgba(232, 119, 34, 0.02));
-            border-color: var(--saffron);
-            color: var(--saffron);
-            transform: translateX(6px);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.1);
-        }
-        .mobile-menu-link:hover .menu-link-arrow {
-            transform: translateX(4px);
-            color: var(--saffron);
-        }
-        
-                .mobile-menu-link::before {
-            display: none;
-        }
-        .mobile-menu-link:hover::before {
-            display: none;
-        }
-        
-        .mobile-menu-link:active {
-            transform: translateX(5px) scale(0.98);
-        }
-
-        /* Feature Highlights */
-        .mobile-menu-feature {
-            display: flex;
-            align-items: center;
-            gap: 0.875rem;
-            padding: 1rem;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 0.5rem;
-            transition: all 0.3s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-        }
-        .mobile-menu-feature:hover {
-            border-color: var(--saffron);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.08);
-            transform: translateX(4px);
-        }
-        .feature-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        .feature-content {
-            flex: 1;
-            min-width: 0;
-        }
-        .feature-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-        .feature-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        
-        .mobile-menu-bottom {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-        }
-        .mobile-menu-brand {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mobile-menu-brand .logo-badge {
-            background: var(--saffron);
-            color: #fff;
-        }
-        .mobile-menu-brand .logo-name {
-            color: var(--saffron);
-        }
-        .mobile-menu-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .menu-tag {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
-        }
-        .menu-tag.alpha {
-            background: var(--saffron);
-            color: #fff;
-            box-shadow: 0 2px 6px rgba(255, 153, 51, 0.3);
-        }
-        .menu-tag.live {
-            background: #fff;
-            color: var(--green);
-            animation: pulse 2s infinite;
-        }
-
-        /* ─── MAIN LAYOUT ─── */
-        .main { position: relative; z-index: 1; padding: 5rem 2rem 2rem; max-width: 1400px; margin: 0 auto; }
-        .page-header { margin-bottom: 2rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-top: 1rem; }
-        .page-header-left { flex: 1; }
-        .page-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
-        .page-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
-        .last-updated { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
-
-        /* ─── STAT CARDS ─── */
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(4,1fr); 
-            gap: 1.5rem; 
-            margin-bottom: 2rem; 
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 20px;
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 8px 32px rgba(0,0,0,0.06),
-                0 2px 16px rgba(0,0,0,0.04),
-                inset 0 1px 0 rgba(255,255,255,0.8);
-            cursor: pointer;
-            transform-style: preserve-3d;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--accent), var(--accent-light));
-            border-radius: 20px 20px 0 0;
-        }
-        
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .stat-card.total::before  { 
-            background: linear-gradient(90deg, #2563eb, #60a5fa, #93c5fd);
-        }
-        .stat-card.fake::before   { 
-            background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
-        }
-        .stat-card.real::before   { 
-            background: linear-gradient(90deg, #138808, #22c55e, #4ade80);
-        }
-        .stat-card.uncertain::before { 
-            background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 
-                0 20px 40px rgba(0,0,0,0.12),
-                0 8px 24px rgba(0,0,0,0.08),
-                inset 0 1px 0 rgba(255,255,255,0.9);
-        }
-        
-        .stat-card:hover::after {
-            opacity: 1;
-        }
-        
-        .stat-card:active {
-            transform: translateY(-4px) scale(1.01);
-        }
-        
-        .stat-header { 
-            display: flex; 
-            align-items: flex-start; 
-            justify-content: space-between; 
-            margin-bottom: 1.5rem; 
-        }
-        
-        .stat-label { 
-            font-size: 0.75rem; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            color: var(--text-secondary);
-            line-height: 1.2;
-        }
-        
-        .stat-icon { 
-            font-size: 1.8rem;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.6));
-            box-shadow: 
-                0 4px 12px rgba(0,0,0,0.08),
-                inset 0 1px 0 rgba(255,255,255,0.9);
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover .stat-icon {
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 
-                0 6px 20px rgba(0,0,0,0.12),
-                inset 0 1px 0 rgba(255,255,255,0.95);
-        }
-        
-        .stat-value { 
-            font-family: 'Outfit', sans-serif; 
-            font-size: 2.8rem; 
-            font-weight: 900; 
-            line-height: 1;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-        }
-        
-        .stat-card.total  .stat-value { 
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-card.fake   .stat-value { 
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-card.real   .stat-value { 
-            background: linear-gradient(135deg, #138808, #22c55e);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .stat-card.uncertain .stat-value { 
-            background: linear-gradient(135deg, #d97706, #f59e0b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .stat-desc { 
-            font-size: 0.85rem; 
-            color: var(--text-secondary); 
-            margin-top: 0.5rem;
-            font-weight: 500;
-            line-height: 1.4;
-        }
-        
-        .stat-bar { 
-            height: 6px; 
-            background: rgba(0,0,0,0.08); 
-            border-radius: 3px; 
-            margin-top: 1.5rem; 
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .stat-bar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
-            border-radius: 3px;
-        }
-        
-        .stat-bar-fill { 
-            height: 100%; 
-            border-radius: 3px; 
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stat-bar-fill::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            animation: shimmer 2s infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-        
-        .stat-card.total  .stat-bar-fill { 
-            background: linear-gradient(90deg, #2563eb, #60a5fa, #93c5fd);
-        }
-        .stat-card.fake   .stat-bar-fill { 
-            background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
-        }
-        .stat-card.real   .stat-bar-fill { 
-            background: linear-gradient(90deg, #138808, #22c55e, #4ade80);
-        }
-        .stat-card.uncertain .stat-bar-fill { 
-            background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);
-        }
-
-        /* ─── GRID ROWS ─── */
-        .row { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
-        .row-2 { grid-template-columns: 1fr 1.6fr; }
-        .row-2b { grid-template-columns: 1.6fr 1fr; }
-        .row-3 { grid-template-columns: 1fr 1fr 1fr; }
-
-        .panel {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
-            display: flex; flex-direction: column;
-        }
-        .panel-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
-        }
-        .panel-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-        .panel-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
-        .panel-badge { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 10px; }
-        .panel-body { padding: 1.5rem; flex: 1; }
-
-        /* ─── ACCURACY RING ─── */
-        .accuracy-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 0; }
-        .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-        .ring-label { position: absolute; text-align: center; }
-        .ring-pct { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--green); line-height: 1; }
-        .ring-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
-
-        .metric-bar-row { display: flex; align-items: center; justify-content: space-around; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-        .metric-bar-item { text-align: center; }
-        .mbi-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; }
-        .mbi-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-
-        /* ─── ACTIVITY FEED ─── */
-        .activity-feed { overflow-y: auto; max-height: 320px; display: flex; flex-direction: column; gap: 0.6rem; }
-        .activity-feed::-webkit-scrollbar { width: 4px; }
-        .activity-feed::-webkit-scrollbar-track { background: var(--bg); }
-        .activity-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-        .activity-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; }
-        .activity-item:hover { border-color: var(--border-accent); background: rgba(232,119,34,0.02); }
-        .activity-dot { font-size: 1.1rem; flex-shrink: 0; }
-        .activity-info { flex: 1; min-width: 0; }
-        .activity-title { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .activity-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 3px; font-size: 0.72rem; color: var(--text-muted); }
-        .activity-tag { font-weight: 700; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; }
-        .activity-tag.fake { background: rgba(220,38,38,0.1); color: var(--red); }
-        .activity-tag.real { background: rgba(19,136,8,0.1); color: var(--green); }
-        .activity-tag.uncertain { background: rgba(217,119,6,0.1); color: var(--amber); }
-        .feed-count { font-size: 0.78rem; color: var(--text-muted); }
-
-        /* ─── COVERAGE ─── */
-        .coverage-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-        .cov-item { text-align: center; padding: 1rem; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); }
-        .cov-val { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--saffron); }
-        .cov-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-
-        /* ─── HEALTH METRICS ─── */
-        .metric-row { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
-        .metric-row:last-child { border-bottom: none; }
-        .metric-name { font-size: 0.85rem; color: var(--text-secondary); }
-        .metric-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 10px; }
-        .metric-badge.green { background: rgba(19,136,8,0.1); color: var(--green); }
-        .metric-badge.amber { background: rgba(217,119,6,0.1); color: var(--amber); }
-        .metric-badge.red { background: rgba(220,38,38,0.1); color: var(--red); }
-
-        /* ─── MAP LINK ─── */
-        .map-link { display: inline-flex; align-items: center; gap: 4px; background: var(--saffron); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 5px 10px; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; white-space: nowrap; }
-        .map-link:hover { background: var(--saffron-dark); }
-
-        .empty-feed { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.88rem; }
-        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
-
-        /* Mobile Refresh Button */
-        .mobile-refresh-btn {
-            display: none;
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(232, 119, 34, 0.25);
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .mobile-refresh-btn:hover {
-            background: linear-gradient(135deg, var(--saffron-light), var(--saffron));
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.35);
-        }
-        
-        .mobile-refresh-btn:active {
-            transform: translateY(0px);
-        }
-
-        /* Enhanced Mobile Responsiveness */
-        @media (max-width: 1200px) {
-            .navbar { padding: 0 1rem; }
-            .main { padding: 5rem 1.5rem 1.5rem; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .row-2, .row-2b { grid-template-columns: 1fr; gap: 1rem; }
-            .coverage-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        
-        @media (max-width: 1024px) {
-            .nav-links { gap: 0.5rem; }
-            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
-            .row-2, .row-2b { grid-template-columns: 1fr; }
-            .coverage-grid { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 768px) {
-            .navbar { padding: 0 1rem; }
-            .nav-links { gap: 0.5rem; }
-            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
-            .main { padding: 5rem 1rem 1rem; overflow-x: hidden; }
-            .panel { overflow-x: hidden; }
-            .page-header { margin-bottom: 1.5rem; flex-direction: row; align-items: center; }
-            .page-title { font-size: 1.5rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-            .stat-card { padding: 1.25rem; }
-            .stat-value { font-size: 2rem; }
-            .row-3 { grid-template-columns: 1fr; }
-            .panel-header { padding: 1rem; }
-            .panel-body { padding: 1rem; }
-            .activity-feed { max-height: 250px; }
-            .coverage-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-            .cov-item { padding: 0.75rem; }
-            .metric-row { padding: 0.5rem 0; font-size: 0.8rem; }
-        }
-        
-        @media (max-width: 480px) {
-            .navbar { padding: 0 0.75rem; }
-            .logo { font-size: 1rem; }
-            .logo-badge { font-size: 0.55rem; }
-            .nav-links { display: none; }
-            .status-pill { display: none; }
-            .refresh-btn { display: none; }
-            .mobile-refresh-btn { display: flex; }
-            .hamburger-btn { display: flex; }
-            .main { padding: 5rem 0.75rem 0.75rem; overflow-x: hidden; }
-            .panel { overflow-x: hidden; }
-            .page-header { flex-direction: row; align-items: flex-start; gap: 0.5rem; }
-            .page-title { font-size: 1.1rem; }
-            .page-sub { font-size: 0.75rem; }
-            .last-updated { font-size: 0.7rem; }
-            .mobile-refresh-btn { padding: 6px 10px; font-size: 0.75rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-            .stat-card { padding: 1rem; }
-            .stat-value { font-size: 1.8rem; }
-            .stat-label { font-size: 0.65rem; }
-            .stat-desc { font-size: 0.7rem; }
-            .panel-header { padding: 0.75rem; }
-            .panel-title { font-size: 0.85rem; }
-            .panel-sub { font-size: 0.75rem; }
-            .panel-body { padding: 0.75rem; }
-            .activity-feed { max-height: 200px; gap: 0.4rem; }
-            .activity-item { padding: 0.5rem; }
-            .activity-title { font-size: 0.75rem; }
-            .activity-meta { font-size: 0.65rem; }
-            .coverage-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-            .cov-item { padding: 0.5rem; }
-            .cov-val { font-size: 1.5rem; }
-            .cov-label { font-size: 0.7rem; }
-            .metric-row { padding: 0.4rem 0; font-size: 0.75rem; }
-            .metric-name { font-size: 0.75rem; }
-            .metric-badge { font-size: 0.65rem; padding: 2px 6px; }
-        }
-    </style>
 </head>
-<body>
-    <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
+<body class="font-sans bg-[#F8F8F4] text-[#1A1A1A] min-h-screen overflow-x-hidden max-w-screen scroll-smooth">
+    <!-- Background Blobs -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div class="absolute w-[600px] h-[600px] top-[-150px] left-[-100px] bg-[#FF9933] rounded-full blur-[90px] opacity-[0.12]"></div>
+        <div class="absolute w-[500px] h-[500px] bottom-[-100px] right-[-100px] bg-[#1ea50e] rounded-full blur-[90px] opacity-[0.12]"></div>
     </div>
-
     <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-inner">
-            <a href="/" class="logo">
-                <span class="logo-badge">IND</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
+    <nav class="fixed top-0 left-0 right-0 z-[1000] px-4 sm:px-8 h-[62px] flex items-center bg-white/95 backdrop-blur-xl border-b border-black/10 transition-shadow duration-300" id="navbar">
+        <div class="w-full max-w-[1280px] mx-auto flex items-center justify-between">
+            <a href="/" class="flex items-center gap-[2px] font-outfit text-[1.15rem] font-extrabold no-underline text-[#1A1A1A]">
+                <img src="ind.png" alt="IND" class="w-10 h-10 object-contain rounded" style="width: 40px; height: 24px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display:none; font-size: 20px; font-weight: bold; color: #E87722;">🇮🇳</span>
+                <span>Misinformation</span><span class="text-[#E87722]">&nbsp;Heatmap</span>
             </a>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/dashboard" class="nav-link active">Dashboard</a>
-                <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
+            <div class="hidden md:flex items-center gap-[2px]">
+                <a href="/" class="text-[#555555] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 hover:text-[#E87722] hover:bg-[rgba(232,119,34,0.07)]">Home</a>
+                <a href="/dashboard" class="text-[#E87722] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 bg-[rgba(232,119,34,0.07)] border border-[rgba(232,119,34,0.2)]">Dashboard</a>
+                <a href="/map/enhanced-india-heatmap.html" class="text-[#555555] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 hover:text-[#E87722] hover:bg-[rgba(232,119,34,0.07)]">Heatmap</a>
             </div>
-            <div class="nav-right">
-                <div class="status-pill">
-                    <span class="status-dot"></span>
+            <div class="hidden md:flex items-center gap-3">
+                <div class="flex items-center gap-[6px] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.25)] rounded-full py-[5px] px-[14px] text-[0.8rem] font-semibold text-[#138808]">
+                    <span class="w-[7px] h-[7px] rounded-full bg-[#138808] animate-pulse"></span>
                     <span id="system-status">Connecting…</span>
                 </div>
-                <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
-                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
+                <button class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] text-white font-semibold text-[0.85rem] px-4 py-2 rounded-[10px] border-[1.5px] border-transparent transition-all duration-[0.3s] shadow-[0_4px_16px_rgba(59,130,246,0.25)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-[0_8px_28px_rgba(59,130,246,0.4)] hover:bg-gradient-to-br hover:from-[#60a5fa] hover:to-[#3b82f6]" onclick="refreshAll()" title="Refresh Data">
+                    <span>↻</span>
+                    <span class="hidden sm:inline">Refresh</span>
                 </button>
             </div>
+            <button class="flex md:hidden flex-col gap-[6px] bg-gradient-to-br from-white/90 to-white/95 border-2 border-[rgba(232,119,34,0.2)] cursor-pointer p-3 z-[2000] rounded-[16px] shadow-[0_4px_20px_rgba(232,119,34,0.1),0_2px_8px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1] relative overflow-hidden hover:bg-gradient-to-br hover:from-[rgba(255,153,51,0.1)] hover:to-white/95 hover:border-[rgba(232,119,34,0.4)] hover:scale-105 hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(232,119,34,0.2),0_4px_12px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] active:scale-95 active:translate-y-0 active:shadow-[0_2px_12px_rgba(232,119,34,0.15),0_1px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)]" id="hamburger-btn" aria-label="Toggle menu">
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="sr-only">↻ Refresh</span>
+            </button>
         </div>
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu">
-        <div class="mobile-menu-top">
+    <div class="fixed top-0 right-0 w-full h-full bg-gradient-to-br from-white via-[#f8f8f4] to-[#f5f5f0] z-[1500] translate-x-full transition-transform duration-[0.5s] cubic-bezier(0.4,0,0.2,1] flex flex-col justify-between px-4 sm:px-6 py-8 overflow-x-hidden backdrop-blur-xl shadow-[-10px_0_40px_rgba(0,0,0,0.08)]" id="mobile-menu">
+        <style>
+            #mobile-menu.active {
+                transform: translateX(0) !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            #mobile-menu:not(.active) {
+                transform: translateX(100%) !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+            #hamburger-btn.active span:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px) !important;
+            }
+            #hamburger-btn.active span:nth-child(2) {
+                opacity: 0 !important;
+            }
+            #hamburger-btn.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px) !important;
+            }
+        </style>
+        <div class="flex flex-col gap-6">
             <!-- Menu Header -->
-            <div class="mobile-menu-header">
-                <div class="mobile-menu-avatar">
-                    <span class="avatar-icon">IND</span>
+            <div class="flex items-center gap-4 p-5 bg-white rounded-[16px] border border-[#E8E8E0] shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+                <div class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                    <img src="ind.png" alt="IND" class="w-10 h-10 object-contain rounded" style="width: 40px; height: 40px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display:none; font-size: 32px;">🇮🇳</span>
                 </div>
-                <div class="mobile-menu-user">
-                    <div class="mobile-menu-greeting">Welcome Back</div>
-                    <div class="mobile-menu-username">Misinformation Heatmap</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-[0.75rem] text-[#888888] font-medium">Welcome to</div>
+                    <div class="font-outfit text-base font-bold text-[#1A1A1A] mt-[2px]">Misinformation Heatmap</div>
                 </div>
-                <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
-                    <span class="close-icon">✕</span>
+                <button class="mobile-menu-link w-[36px] h-[36px] rounded-[10px] border border-[#E8E8E0] bg-[#FAFAF7] flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:bg-[#E87722] hover:border-[#E87722]" id="mobile-menu-close" aria-label="Close menu">
+                    <span class="text-[1.2rem] text-[#555555] hover:text-white">✕</span>
                 </button>
             </div>
 
             <!-- Quick Stats -->
-            <div class="mobile-menu-stats">
-                <div class="mobile-stat-item">
-                    <div class="mobile-stat-icon">📊</div>
-                    <div class="mobile-stat-info">
-                        <div class="mobile-stat-value" id="menu-total-events">—</div>
-                        <div class="mobile-stat-label">Total Events</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    <div class="text-[1.5rem]">📊</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-total-events">—</div>
+                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Total Events</div>
                     </div>
                 </div>
-                <div class="mobile-stat-item">
-                    <div class="mobile-stat-icon">🎯</div>
-                    <div class="mobile-stat-info">
-                        <div class="mobile-stat-value" id="menu-accuracy">91%</div>
-                        <div class="mobile-stat-label">Accuracy</div>
+                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    <div class="text-[1.5rem]">🎯</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-accuracy">91%</div>
+                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Accuracy</div>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation Links -->
-            <div class="mobile-menu-section">
-                <div class="mobile-menu-section-title">Navigation</div>
-                <a href="/" class="mobile-menu-link">
-                    <span class="menu-link-icon">🏠</span>
-                    <span class="menu-link-text">Home</span>
-                    <span class="menu-link-arrow">→</span>
+            <div class="mb-2">
+                <div class="text-[0.75rem] font-bold uppercase tracking-[1px] text-[#888888] mb-3 pl-1">Navigation</div>
+                <a href="/" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">🏠</span>
+                    <span class="flex-1">Home</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
-                <a href="/dashboard" class="mobile-menu-link">
-                    <span class="menu-link-icon">📈</span>
-                    <span class="menu-link-text">Dashboard</span>
-                    <span class="menu-link-arrow">→</span>
+                <a href="/dashboard" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">📈</span>
+                    <span class="flex-1">Dashboard</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
-                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">
-                    <span class="menu-link-icon">🗺️</span>
-                    <span class="menu-link-text">Heatmap</span>
-                    <span class="menu-link-arrow">→</span>
+                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">🗺️</span>
+                    <span class="flex-1">Heatmap</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
-            </div>
-
-            <!-- Feature Highlights -->
-            <div class="mobile-menu-section">
-                <div class="mobile-menu-section-title">Features</div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-content">
-                        <div class="feature-title">AI-Powered Detection</div>
-                        <div class="feature-desc">5-model ML ensemble</div>
-                    </div>
-                </div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">🌐</div>
-                    <div class="feature-content">
-                        <div class="feature-title">Real-Time Monitoring</div>
-                        <div class="feature-desc">34+ news sources</div>
-                    </div>
-                </div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">📍</div>
-                    <div class="feature-content">
-                        <div class="feature-title">Pan-India Coverage</div>
-                        <div class="feature-desc">All states & UTs</div>
-                    </div>
-                </div>
             </div>
         </div>
-        <div class="mobile-menu-bottom">
-            <div class="mobile-menu-brand">
-                <span class="logo-badge">IND</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
+        <div class="flex flex-col items-center gap-4 pt-8 border-t border-[#E8E8E0]">
+            <div class="font-outfit text-[1.1rem] font-bold text-[#1A1A1A] flex items-center gap-2">
+                <img src="ind.png" alt="IND" class="w-8 h-8 object-contain rounded" style="width: 32px; height: 32px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';"><span style="display:none; font-size: 20px;">🇮🇳</span>
+                <span>Misinformation</span><span class="text-[#E87722]">&nbsp;Heatmap</span>
             </div>
-            <div class="mobile-menu-tags">
-                <span class="menu-tag alpha">Alpha v1.0</span>
-                <span class="menu-tag live">● Live</span>
+            <div class="flex gap-2 flex-wrap">
+                <span class="text-[0.7rem] font-bold px-[10px] py-[4px] rounded-[12px] uppercase bg-[#E87722] text-white shadow-[0_2px_6px_rgba(255,153,51,0.3)]">Alpha v1.0</span>
+                <span class="text-[0.7rem] font-bold px-[10px] py-[4px] rounded-[12px] uppercase bg-white text-[#138808] animate-pulse">● Live</span>
             </div>
         </div>
     </div>
 
-    <div class="main">
+    <div class="relative z-[1] px-4 sm:px-8 pt-[100px] pb-8 sm:pb-12">
         <!-- Header -->
-        <div class="page-header">
-            <div class="page-header-left">
-                <div class="page-title">Real-Time Analytics</div>
-                <div class="page-sub">Comprehensive misinformation detection metrics across India</div>
-                <div class="last-updated" id="last-updated">Fetching data…</div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+            <div class="w-full sm:w-auto">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="font-outfit text-[1.5rem] sm:text-[2rem] font-extrabold text-[#1A1A1A]">Real-Time Analytics</div>
+                    <!-- Mobile Refresh Button -->
+                    <button class="md:hidden flex items-center justify-center gap-2 bg-gradient-to-br from-[#3b82f6] to-[#1d4ed8] text-white font-semibold text-[0.85rem] px-5 py-2.5 rounded-[10px] border-[1.5px] border-transparent transition-all duration-[0.3s] shadow-[0_4px_16px_rgba(59,130,246,0.25)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-[0_8px_28px_rgba(59,130,246,0.4)] hover:bg-gradient-to-br hover:from-[#60a5fa] hover:to-[#3b82f6] whitespace-nowrap" onclick="refreshAll()">
+                        <span>↻</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+                <div class="text-[#555555] text-[0.9rem] sm:text-[1rem] mb-3">Comprehensive misinformation detection metrics across India</div>
+                <div class="text-[0.75rem] sm:text-[0.8rem] text-[#888888] font-medium" id="last-updated">Fetching data…</div>
             </div>
-            <!-- Mobile Refresh Button -->
-            <button class="mobile-refresh-btn" onclick="refreshAll()">
-                ↻ Refresh
-            </button>
         </div>
 
         <!-- Stat Cards -->
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-header">
-                    <div class="stat-label">Total Events</div>
-                    <div class="stat-icon">📊</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 mb-8">
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-[0.85rem] font-semibold text-[#555555]">Total Events</div>
+                    <div class="text-[1.5rem]">📊</div>
                 </div>
-                <div class="stat-value" id="total-events">—</div>
-                <div class="stat-desc">Processed in real-time</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-total"></div></div>
+                <div class="font-outfit text-[2.2rem] font-black text-[#E87722] leading-none mb-2" id="total-events">—</div>
+                <div class="text-[0.75rem] text-[#888888] font-medium mb-3">Processed in real-time</div>
+                <div class="h-[6px] bg-[#E8E8E0] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#E87722] to-[#FF9933] rounded-full transition-all duration-500" id="bar-total" style="width: 0%"></div></div>
             </div>
-            <div class="stat-card fake">
-                <div class="stat-header">
-                    <div class="stat-label">Misinformation</div>
-                    <div class="stat-icon">🚨</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(220,38,38,0.3)]">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-[0.85rem] font-semibold text-[#555555]">Misinformation</div>
+                    <div class="text-[1.5rem]">🚨</div>
                 </div>
-                <div class="stat-value" id="fake-events">—</div>
-                <div class="stat-desc">High confidence detections</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-fake"></div></div>
+                <div class="font-outfit text-[2.2rem] font-black text-[#dc2626] leading-none mb-2" id="fake-events">—</div>
+                <div class="text-[0.75rem] text-[#888888] font-medium mb-3">High confidence detections</div>
+                <div class="h-[6px] bg-[#E8E8E0] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#dc2626] to-[#ef4444] rounded-full transition-all duration-500" id="bar-fake" style="width: 0%"></div></div>
             </div>
-            <div class="stat-card real">
-                <div class="stat-header">
-                    <div class="stat-label">Verified News</div>
-                    <div class="stat-icon">✅</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(19,136,8,0.3)]">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-[0.85rem] font-semibold text-[#555555]">Verified News</div>
+                    <div class="text-[1.5rem]">✅</div>
                 </div>
-                <div class="stat-value" id="real-events">—</div>
-                <div class="stat-desc">Authenticated sources</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-real"></div></div>
+                <div class="font-outfit text-[2.2rem] font-black text-[#138808] leading-none mb-2" id="real-events">—</div>
+                <div class="text-[0.75rem] text-[#888888] font-medium mb-3">Authenticated sources</div>
+                <div class="h-[6px] bg-[#E8E8E0] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#138808] to-[#1ea50e] rounded-full transition-all duration-500" id="bar-real" style="width: 0%"></div></div>
             </div>
-            <div class="stat-card uncertain">
-                <div class="stat-header">
-                    <div class="stat-label">Under Review</div>
-                    <div class="stat-icon">⚠️</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(245,158,11,0.3)]">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-[0.85rem] font-semibold text-[#555555]">Under Review</div>
+                    <div class="text-[1.5rem]">⚠️</div>
                 </div>
-                <div class="stat-value" id="uncertain-events">—</div>
-                <div class="stat-desc">Requires human verification</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-uncertain"></div></div>
+                <div class="font-outfit text-[2.2rem] font-black text-[#f59e0b] leading-none mb-2" id="uncertain-events">—</div>
+                <div class="text-[0.75rem] text-[#888888] font-medium mb-3">Requires human verification</div>
+                <div class="h-[6px] bg-[#E8E8E0] rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-[#f59e0b] to-[#fbbf24] rounded-full transition-all duration-500" id="bar-uncertain" style="width: 0%"></div></div>
             </div>
         </div>
 
         <!-- Row: AI Performance + Live Activity -->
-        <div class="row row-2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- AI Performance -->
-            <div class="panel">
-                <div class="panel-header">
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <div class="p-6 border-b border-[#E8E8E0]">
                     <div>
-                        <div class="panel-title">AI Detection Performance</div>
-                        <div class="panel-sub">Multi-layered analysis system accuracy</div>
+                        <div class="font-outfit text-[1.25rem] font-extrabold text-[#1A1A1A] mb-1">AI Detection Performance</div>
+                        <div class="text-[0.85rem] text-[#555555]">Multi-layered analysis system accuracy</div>
                     </div>
                 </div>
-                <div class="panel-body">
-                    <div class="accuracy-center">
-                        <div class="ring-wrap">
+                <div class="p-6">
+                    <div class="flex flex-col items-center justify-center mb-6">
+                        <div class="relative">
                             <svg width="160" height="160" class="transform -rotate-90">
                                 <circle cx="80" cy="80" r="56" fill="none" stroke="#E8E8E0" stroke-width="10"/>
                                 <circle id="accuracy-ring-fill" cx="80" cy="80" r="56" fill="none"
@@ -1130,108 +244,111 @@
                                     stroke-dasharray="351.86" stroke-dashoffset="351.86"
                                     class="transition-[stroke-dashoffset] duration-[1.5s] ease"/>
                             </svg>
-                            <div class="ring-label">
-                                <div class="ring-pct" id="accuracy-pct">91%</div>
-                                <div class="ring-sub">Overall Accuracy</div>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <div class="font-outfit text-[2rem] font-black text-[#138808] leading-none" id="accuracy-pct">91%</div>
+                                <div class="text-[0.75rem] text-[#888888] font-medium mt-1">Overall Accuracy</div>
                             </div>
                         </div>
                     </div>
-                    <div class="metric-bar-row">
-                        <div class="metric-bar-item">
-                            <div class="mbi-val text-blue">94.2%</div>
-                            <div class="mbi-lbl">Precision</div>
+                    <div class="flex justify-around">
+                        <div class="text-center">
+                            <div class="font-outfit text-[1.5rem] font-black text-[#3b82f6] leading-none mb-1">94.2%</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium">Precision</div>
                         </div>
-                        <div class="metric-bar-item">
-                            <div class="mbi-val text-green">91.7%</div>
-                            <div class="mbi-lbl">Recall</div>
+                        <div class="text-center">
+                            <div class="font-outfit text-[1.5rem] font-black text-[#138808] leading-none mb-1">91.7%</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium">Recall</div>
                         </div>
-                        <div class="metric-bar-item">
-                            <div class="mbi-val text-saffron">92.9%</div>
-                            <div class="mbi-lbl">F1-Score</div>
+                        <div class="text-center">
+                            <div class="font-outfit text-[1.5rem] font-black text-[#E87722] leading-none mb-1">92.9%</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium">F1-Score</div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Live Activity -->
-            <div class="panel">
-                <div class="panel-header">
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <div class="p-6 border-b border-[#E8E8E0] flex items-center justify-between">
                     <div>
-                        <div class="panel-title">Live Activity</div>
-                        <div class="panel-sub">Recent classifications</div>
+                        <div class="font-outfit text-[1.25rem] font-extrabold text-[#1A1A1A] mb-1">Live Activity</div>
+                        <div class="text-[0.85rem] text-[#555555]">Recent classifications</div>
                     </div>
-                    <span class="feed-count" id="events-count">Loading…</span>
+                    <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1" id="events-count">Loading…</span>
                 </div>
-                <div class="panel-body overflow-hidden p-4">
-                    <div class="activity-feed" id="activity-feed">
-                        <div class="empty-feed"><div class="empty-icon">⏳</div>Loading recent activity…</div>
+                <div class="p-4 overflow-hidden max-h-[320px]">
+                    <div class="space-y-3" id="activity-feed">
+                        <div class="flex items-center justify-center gap-2 py-8 text-[#888888] text-[0.85rem]">
+                            <span class="text-[1.2rem]">⏳</span>
+                            <span>Loading recent activity…</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Row: Coverage + Health -->
-        <div class="row row-2b">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Geographic Coverage -->
-            <div class="panel">
-                <div class="panel-header">
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <div class="p-6 border-b border-[#E8E8E0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <div class="panel-title">Geographic Coverage</div>
-                        <div class="panel-sub">Monitoring across all Indian states and union territories</div>
+                        <div class="font-outfit text-[1.25rem] font-extrabold text-[#1A1A1A] mb-1">Geographic Coverage</div>
+                        <div class="text-[0.85rem] text-[#555555]">Monitoring across all Indian states and union territories</div>
                     </div>
-                    <a href="/map/enhanced-india-heatmap.html" class="map-link">🗺️ Explore Map</a>
+                    <a href="/map/enhanced-india-heatmap.html" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#FF9933] to-[#B45309] text-white font-bold text-[0.85rem] px-5 py-2.5 rounded-[10px] no-underline transition-all duration-200 shadow-[0_4px_20px_rgba(255,153,51,0.3)] hover:-translate-y-[2px] hover:shadow-[0_6px_24px_rgba(255,153,51,0.4)] w-full sm:w-auto justify-center">🗺️ Explore Map</a>
                 </div>
-                <div class="panel-body">
-                    <div class="coverage-grid">
-                        <div class="cov-item">
-                            <div class="cov-val" id="total-states">36</div>
-                            <div class="cov-label">States &amp; UTs</div>
+                <div class="p-6">
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="text-center p-4 bg-[#F8F8F4] rounded-[12px]">
+                            <div class="font-outfit text-[2rem] font-black text-[#E87722] leading-none" id="total-states">36</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium mt-1">States &amp; UTs</div>
                         </div>
-                        <div class="cov-item">
-                            <div class="cov-val">34+</div>
-                            <div class="cov-label">News Sources</div>
+                        <div class="text-center p-4 bg-[#F8F8F4] rounded-[12px]">
+                            <div class="font-outfit text-[2rem] font-black text-[#138808] leading-none">34+</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium mt-1">News Sources</div>
                         </div>
-                        <div class="cov-item">
-                            <div class="cov-val">100+</div>
-                            <div class="cov-label">Articles/Second</div>
+                        <div class="text-center p-4 bg-[#F8F8F4] rounded-[12px]">
+                            <div class="font-outfit text-[2rem] font-black text-[#000080] leading-none">100+</div>
+                            <div class="text-[0.75rem] text-[#888888] font-medium mt-1">Articles/Second</div>
                         </div>
                     </div>
-                    <div class="mt-5 p-4 bg-saffron/5 border border-saffron/15 rounded-xl text-sm text-text-secondary leading-relaxed">
-                        🌐 Monitoring <strong class="text-saffron">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
+                    <div class="p-4 bg-[rgba(232,119,34,0.05)] border border-[rgba(232,119,34,0.15)] rounded-[16px] text-[0.85rem] text-[#555555] leading-relaxed">
+                        🌐 Monitoring <strong class="text-[#E87722]">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
                     </div>
                 </div>
             </div>
 
             <!-- System Health -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">System Health</div>
-                    <div class="panel-badge" id="health-badge">Checking…</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                <div class="p-6 border-b border-[#E8E8E0] flex items-center justify-between">
+                    <div class="font-outfit text-[1.25rem] font-extrabold text-[#1A1A1A]">System Health</div>
+                    <div class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1" id="health-badge">Checking…</div>
                 </div>
-                <div class="panel-body">
-                    <div class="metric-row">
-                        <span class="metric-name">API Server</span>
-                        <span class="metric-badge green" id="health-api">● Online</span>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">API Server</span>
+                        <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1" id="health-api">● Online</span>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">Data Processing</span>
-                        <span class="metric-badge amber" id="health-proc">● Checking</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">Data Processing</span>
+                        <span class="text-[0.8rem] font-semibold text-[#f59e0b] bg-[rgba(245,158,11,0.08)] border border-[rgba(245,158,11,0.2)] rounded-full px-3 py-1" id="health-proc">● Checking</span>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">Database</span>
-                        <span class="metric-badge green" id="health-db">● Connected</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">Database</span>
+                        <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1" id="health-db">● Connected</span>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">ML Models</span>
-                        <span class="metric-badge green" id="health-ml">● Checking</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">ML Models</span>
+                        <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1" id="health-ml">● Checking</span>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">RSS Feeds</span>
-                        <span class="metric-badge green">● 34+ Active</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">RSS Feeds</span>
+                        <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1">● 34+ Active</span>
                     </div>
-                    <div class="metric-row">
-                        <span class="metric-name">GDELT Source</span>
-                        <span class="metric-badge green">● Connected</span>
+                    <div class="flex items-center justify-between">
+                        <span class="text-[0.9rem] font-medium text-[#555555]">GDELT Source</span>
+                        <span class="text-[0.8rem] font-semibold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3 py-1">● Connected</span>
                     </div>
                 </div>
             </div>
@@ -1366,7 +483,7 @@
 
                 const feed = document.getElementById('activity-feed');
                 if (events.length === 0) {
-                    feed.innerHTML = `<div class="empty-feed"><div class="empty-icon">📭</div><p>No recent events</p></div>`;
+                    feed.innerHTML = `<div class="flex items-center justify-center py-8 text-[#888888] text-[0.85rem]">Fetching live events...</div>`;
                     return;
                 }
 
@@ -1376,16 +493,18 @@
                     const time = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true}) : '—';
                     const title = (ev.title || 'Processing event…').substring(0, 90);
                     const conf  = ev.confidence ? Math.round(ev.confidence * 100) + '%' : '';
-                    return `<div class="activity-item">
-                        <div class="activity-dot">${icon}</div>
-                        <div class="activity-info">
-                            <div class="activity-title" title="${(ev.title||'').replace(/"/g,'&quot;')}">${title}</div>
-                            <div class="activity-meta">
-                                <span class="activity-tag ${cls}">${cls.toUpperCase()}</span>
-                                <span>${ev.source || 'Unknown'}</span>
-                                <span>📍 ${ev.state || 'India'}</span>
-                                ${conf ? `<span>${conf}</span>` : ''}
-                                <span>🕐 ${time}</span>
+                    const bgColor = cls === 'fake' ? 'bg-[rgba(220,38,38,0.08)] border-[rgba(220,38,38,0.2)]' : cls === 'real' ? 'bg-[rgba(19,136,8,0.08)] border-[rgba(19,136,8,0.2)]' : 'bg-[rgba(245,158,11,0.08)] border-[rgba(245,158,11,0.2)]';
+                    const textColor = cls === 'fake' ? 'text-[#dc2626]' : cls === 'real' ? 'text-[#138808]' : 'text-[#f59e0b]';
+                    return `<div class="flex items-start gap-3 p-4 bg-white border border-[#E8E8E0] rounded-[10px] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200">
+                        <div class="text-[1.2rem] flex-shrink-0 mt-0.5">${icon}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-semibold text-[0.85rem] text-[#1A1A1A] leading-snug mb-2 truncate" title="${(ev.title||'').replace(/"/g,'&quot;')}">${title}</div>
+                            <div class="flex flex-wrap items-center gap-2 text-[0.75rem]">
+                                <span class="px-2 py-[2px] rounded-[6px] font-bold text-[0.7rem] ${bgColor} ${textColor}">${cls.toUpperCase()}</span>
+                                <span class="text-[#888888]">${ev.source || 'Unknown'}</span>
+                                <span class="text-[#888888]">📍 ${ev.state || 'India'}</span>
+                                ${conf ? `<span class="text-[#888888]">${conf}</span>` : ''}
+                                <span class="text-[#888888]">🕐 ${time}</span>
                             </div>
                         </div>
                     </div>`;
@@ -1410,3 +529,16 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
