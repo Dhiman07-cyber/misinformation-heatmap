@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Misinformation Heatmap — Real-Time AI Detection Across India</title>
     <meta name="description" content="AI-powered platform detecting misinformation across all 36 Indian states in real-time using IndicBERT, satellite verification, and fact-checking networks.">
-    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="/public/Misinfo.ico">
-    <link rel="icon" type="image/vnd.microsoft.icon" href="/public/Misinfo.ico">
+    <link rel="icon" type="image/x-icon" href="/Misinfo.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/Misinfo.ico">
+    <link rel="icon" type="image/vnd.microsoft.icon" href="/Misinfo.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -22,7 +22,6 @@
                         navy: '#000080',
                         bg: '#FAFAF7',
                         'bg-card': '#FFFFFF',
-                        'bg-card-hover': '#F5F5F0',
                         border: '#E8E8E0',
                         'text-primary': '#1A1A1A',
                         'text-secondary': '#555555',
@@ -35,7 +34,6 @@
                     boxShadow: {
                         'sm': '0 2px 8px rgba(0,0,0,0.08)',
                         'md': '0 4px 20px rgba(0,0,0,0.10)',
-                        'lg': '0 8px 40px rgba(0,0,0,0.12)',
                     },
                     borderRadius: {
                         'DEFAULT': '16px',
@@ -45,923 +43,260 @@
             }
         }
     </script>
-    <style>
-        :root {
-            --saffron:        #E87722;
-            --saffron-light:  #FF9933;
-            --saffron-dark:   #c4601a;
-            --green:          #138808;
-            --green-light:    #1ea50e;
-            --navy:           #000080;
-            --bg:             #FAFAF7;
-            --bg-card:        #FFFFFF;
-            --bg-card-hover:  #F5F5F0;
-            --border:         #E8E8E0;
-            --border-accent:  rgba(232,119,34,0.3);
-            --text-primary:   #1A1A1A;
-            --text-secondary: #555555;
-            --text-muted:     #888888;
-            --shadow-sm:      0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md:      0 4px 20px rgba(0,0,0,0.10);
-            --shadow-lg:      0 8px 40px rgba(0,0,0,0.12);
-            --radius:         16px;
-            --radius-sm:      10px;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            max-width: 100vw;
-        }
-
-        /* Custom CSS for complex animations and effects */
-        html { scroll-behavior: smooth; }
-        
-        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
-        @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
-
-        /* ─── NAVBAR ─── */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            padding: 0 2rem; height: 62px;
-            display: flex; align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s;
-        }
-        .navbar.scrolled { box-shadow: var(--shadow-sm); }
-        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo { display: flex; align-items: center; gap: 2px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
-        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
-        .logo .logo-name { color: var(--saffron); }
-
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
-        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
-
-        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
-
-        /* Premium Hamburger Menu */
-        .hamburger-btn {
-            display: none;
-            flex-direction: column;
-            gap: 6px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.95));
-            border: 2px solid rgba(232, 119, 34, 0.2);
-            cursor: pointer;
-            padding: 12px;
-            z-index: 2000;
-            border-radius: 16px;
-            box-shadow: 
-                0 4px 20px rgba(232, 119, 34, 0.1),
-                0 2px 8px rgba(0, 0, 0, 0.05),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hamburger-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 153, 51, 0.3), transparent);
-            transition: left 0.6s ease;
-        }
-        
-        .hamburger-btn:hover::before {
-            left: 100%;
-        }
-        
-        .hamburger-btn:hover {
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.1), rgba(255, 255, 255, 0.95));
-            border-color: rgba(232, 119, 34, 0.4);
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 
-                0 8px 30px rgba(232, 119, 34, 0.2),
-                0 4px 12px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.9);
-        }
-        
-        .hamburger-btn:active {
-            transform: scale(0.98) translateY(0px);
-            box-shadow: 
-                0 2px 12px rgba(232, 119, 34, 0.15),
-                0 1px 4px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-        
-        .hamburger-line {
-            width: 28px;
-            height: 3px;
-            background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 3px;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(232, 119, 34, 0.2);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(7px, 7px);
-            background: linear-gradient(90deg, #fff, #fff);
-            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-            transform: scale(0);
-        }
-        
-        .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -7px);
-            background: linear-gradient(90deg, #fff, #fff);
-            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.5);
-        }
-        
-        .hamburger-btn.active {
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            border-color: var(--saffron-dark);
-            box-shadow: 
-                0 8px 30px rgba(232, 119, 34, 0.4),
-                0 4px 12px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        /* Premium Mobile Menu Overlay */
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f8f4 50%, #f5f5f0 100%);
-            z-index: 1500;
-            transform: translateX(100%);
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 30px 3rem 3rem;
-            overflow-x: hidden;
-            backdrop-filter: blur(20px);
-            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08);
-        }
-        
-        .mobile-menu-overlay::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(232, 119, 34, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(19, 136, 8, 0.04) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        
-        .mobile-menu-overlay.active {
-            transform: translateX(0);
-        }
-        
-        .mobile-menu-top {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        /* Menu Header */
-        .mobile-menu-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-        .mobile-menu-avatar {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--saffron), var(--saffron-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .avatar-icon {
-            font-size: 1.8rem;
-            background: linear-gradient(180deg, #FF9933 33.33%, #FFFFFF 33.33%, #FFFFFF 66.66%, #138808 66.66%);
-            color: #1a1a1a;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            border: 2px solid rgba(0, 0, 0, 0.1);
-        }
-        .mobile-menu-user {
-            flex: 1;
-            min-width: 0;
-        }
-        .mobile-menu-greeting {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .mobile-menu-username {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-top: 2px;
-        }
-        .mobile-menu-close {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .mobile-menu-close:hover {
-            background: var(--saffron);
-            border-color: var(--saffron);
-        }
-        .mobile-menu-close:hover .close-icon {
-            color: #fff;
-        }
-        .close-icon {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-        }
-
-        /* Quick Stats */
-        .mobile-menu-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-        }
-        .mobile-stat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-        .mobile-stat-icon {
-            font-size: 1.5rem;
-        }
-        .mobile-stat-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .mobile-stat-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--saffron);
-            line-height: 1;
-        }
-        .mobile-stat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-top: 3px;
-        }
-
-        /* Menu Sections */
-        .mobile-menu-section {
-            margin-bottom: 0.5rem;
-        }
-        .mobile-menu-section-title {
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 0.75rem;
-            padding-left: 0.25rem;
-        }
-        
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            padding: 1rem 1.25rem;
-            margin: 0.25rem 0;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            background: #ffffff;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-        }
-        .menu-link-icon {
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-        .menu-link-text {
-            flex: 1;
-        }
-        .menu-link-arrow {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            transition: transform 0.3s;
-        }
-        .mobile-menu-link:hover {
-            background: linear-gradient(135deg, rgba(232, 119, 34, 0.06), rgba(232, 119, 34, 0.02));
-            border-color: var(--saffron);
-            color: var(--saffron);
-            transform: translateX(6px);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.1);
-        }
-        .mobile-menu-link:hover .menu-link-arrow {
-            transform: translateX(4px);
-            color: var(--saffron);
-        }
-        
-                .mobile-menu-link::before {
-            display: none;
-        }
-        .mobile-menu-link:hover::before {
-            display: none;
-        }
-        
-        .mobile-menu-link:active {
-            transform: translateX(5px) scale(0.98);
-        }
-
-        /* Feature Highlights */
-        .mobile-menu-feature {
-            display: flex;
-            align-items: center;
-            gap: 0.875rem;
-            padding: 1rem;
-            background: #ffffff;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 0.5rem;
-            transition: all 0.3s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-        }
-        .mobile-menu-feature:hover {
-            border-color: var(--saffron);
-            box-shadow: 0 4px 12px rgba(232, 119, 34, 0.08);
-            transform: translateX(4px);
-        }
-        .feature-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        .feature-content {
-            flex: 1;
-            min-width: 0;
-        }
-        .feature-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-        .feature-desc {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        
-        .mobile-menu-bottom {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-        }
-        .mobile-menu-brand {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mobile-menu-brand .logo-badge {
-            background: var(--saffron);
-            color: #fff;
-        }
-        .mobile-menu-brand .logo-name {
-            color: var(--saffron);
-        }
-        .mobile-menu-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .menu-tag {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
-        }
-        .menu-tag.alpha {
-            background: var(--saffron);
-            color: #fff;
-            box-shadow: 0 2px 6px rgba(255, 153, 51, 0.3);
-        }
-        .menu-tag.live {
-            background: #fff;
-            color: var(--green);
-            animation: pulse 2s infinite;
-        }
-
-        /* ─── HERO ─── */
-        .hero {
-            position: relative; z-index: 1; padding: 140px 2rem 100px;
-            text-align: center;
-            /* Premium Indian Tricolor inspired gradient with smooth transitions */
-            background: linear-gradient(135deg,
-                #FF9933 0%,                    /* Saffron */
-                #FFB84D 15%,                   /* Light saffron transition */
-                #FFF5E6 30%,                   /* Warm cream */
-                #F8F8F8 45%,                   /* Soft off-white */
-                #F0F8F0 60%,                   /* Light green tint */
-                #E8F5E8 75%,                   /* Soft green */
-                #138808 100%                   /* Green */
-            );
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .hero::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                rgba(255,255,255,0.1) 0%, 
-                rgba(255,255,255,0) 70%);
-            pointer-events: none;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23FF9933" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23138808" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="%23FF9933" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: var(--saffron); background: rgba(255, 153, 51, 0.2); border: 1px solid rgba(255, 153, 51, 0.4); border-radius: 20px; padding: 6px 16px; margin-bottom: 2rem; letter-spacing: 0.5px; text-transform: uppercase; }
-        .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 900; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.5rem; background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.7; }
-        .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #FF9933 0%, #B45309 100%); color: white; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3); }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255, 153, 51, 0.4); }
-        .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #138808 0%, #0d6b06 100%); color: white; font-weight: 600; font-size: 0.95rem; padding: 0.8rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid transparent; text-decoration: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 16px rgba(19, 136, 8, 0.25); }
-        .btn-outline:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 28px rgba(19, 136, 8, 0.4); background: linear-gradient(135deg, #1ea50e 0%, #138808 100%); }
-
-        /* ─── STATS STRIP ─── */
-        .stats-strip { position: relative; z-index: 1; padding: 5rem 2rem 5rem; background: rgba(255, 255, 255, 0.95); }
-        .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
-        .stat-pill {
-            background: rgba(255, 255, 255, 0.8); border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 1.75rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);
-            transition: all 0.25s;
-        }
-        .stat-pill:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border-accent); }
-        .stat-pill .val { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--saffron); line-height: 1; }
-        .stat-pill .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
-
-        /* ─── FEATURES ─── */
-        .features { position: relative; z-index: 1; padding: 5rem 2rem; background: rgba(255, 255, 255, 0.9); }
-        .section-header { text-align: center; margin-bottom: 3.5rem; }
-        .section-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--green); background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .section-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; }
-        .section-sub { color: var(--text-secondary); font-size: 1rem; }
-
-        .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-        .feature-card {
-            background: white; border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 2rem; transition: all 0.25s; box-shadow: var(--shadow-sm);
-        }
-        .feature-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-accent); transform: translateY(-2px); }
-        .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
-        .feature-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
-        .feature-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
-
-        /* ─── LIVE TICKER ─── */
-        .ticker-section { position: relative; z-index:1; padding: 3rem 2rem; }
-        .ticker-inner { max-width: 1100px; margin: 0 auto; }
-        .ticker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .ticker-title { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
-        .ticker-live { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #dc2626; }
-        .ticker-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
-
-        .ticker-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-        .ticker-cards > :only-child { grid-column: 1 / -1; }
-        .ticker-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; border-left: 3px solid var(--green); box-shadow: var(--shadow-sm); }
-        .ticker-card.fake { border-left-color: #dc2626; }
-        .ticker-card.uncertain { border-left-color: #f59e0b; }
-        .ticker-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 0.6rem; }
-        .ticker-badge.real { background: rgba(19,136,8,0.1); color: var(--green); }
-        .ticker-badge.fake { background: rgba(220,38,38,0.1); color: #dc2626; }
-        .ticker-badge.uncertain { background: rgba(245,158,11,0.1); color: #d97706; }
-        .ticker-text { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 0.4rem; }
-        .ticker-meta { font-size: 0.75rem; color: var(--text-muted); }
-
-        /* ─── CTA ─── */
-        .cta-section { position: relative; z-index:1; padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, rgba(232,119,34,0.06), rgba(19,136,8,0.04)); }
-        .cta-inner { max-width: 600px; margin: 0 auto; }
-        .cta-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; }
-        .cta-sub { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1rem; line-height: 1.6; }
-
-        /* ─── FOOTER ─── */
-        .footer { position: relative; z-index:1; border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.82rem; }
-        .footer-flag { display: inline-flex; gap: 4px; margin-bottom: 8px; }
-        .flag-stripe { width: 18px; height: 8px; border-radius: 2px; }
-
-        /* ---- RESPONSIVE ---- */
-        @media (max-width: 1200px) {
-            .hero { padding: 120px 1.5rem 80px; }
-            .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .features-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-        }
-        
-        @media (max-width: 768px) {
-            .navbar { padding: 0 1rem; }
-            .nav-links { gap: 0.5rem; }
-            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
-            .hero { 
-                padding: 80px 1rem 60px;
-                height: 100vh;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-            .hero h1 { font-size: 2.2rem; }
-            .hero p { font-size: 1rem; max-width: 100%; }
-            .hero-actions { gap: 0.75rem; }
-            .btn-primary, .btn-outline { font-size: 0.85rem; padding: 0.7rem 1.5rem; }
-            .stats-strip { padding: 4rem 1rem 4rem; }
-            .stats-inner { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-            .stat-pill { padding: 1.25rem 1rem; }
-            .features-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .feature-card { padding: 1.5rem; }
-            .ticker-cards { grid-template-columns: 1fr; gap: 0.75rem; }
-            .cta-section { padding: 3rem 1rem; }
-        }
-        
-        @media (max-width: 480px) {
-            .navbar { padding: 0 0.75rem; }
-            .logo { font-size: 1rem; }
-            .logo-badge { font-size: 0.55rem; }
-            .nav-link { display: none; }
-            .status-pill { display: none; }
-            .navbar > div > div:nth-child(3) { display: none; }
-            .hamburger-btn { display: flex; }
-            .mobile-menu-overlay { 
-                padding: 30px 1rem 1rem;
-                z-index: 1499;
-            }
-            .mobile-menu-link { font-size: 1.3rem; padding: 0.8rem 0; }
-            .hero { 
-                padding: 60px 0.75rem 40px;
-                height: 100vh;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-            }
-            .hero h1 { font-size: 1.8rem; line-height: 1.2; }
-            .hero p { font-size: 1.1rem; line-height: 1.6; }
-            .hero-actions { flex-direction: column; align-items: stretch; gap: 1rem; }
-            .btn-primary, .btn-outline { width: 100%; justify-content: center; font-size: 1rem; padding: 1rem; font-weight: 600; }
-            .stats-strip { padding: 3rem 0.75rem 3rem; }
-            .stats-inner { grid-template-columns: 1fr; gap: 0.5rem; }
-            .stat-pill { padding: 1rem; }
-            .stat-pill .val { font-size: 1.8rem; }
-            .features { padding: 3rem 0.75rem; }
-            .feature-card { padding: 1.25rem; }
-            .ticker-section { padding: 2rem 0.75rem; }
-            .ticker-card { padding: 1rem; }
-            .footer { padding: 1.5rem 0.75rem; }
-        }
-    </style>
 </head>
-<body class="font-sans bg-bg text-text-primary min-h-screen overflow-x-hidden max-w-screen">
+<body class="font-sans bg-[#FAFAF7] text-[#1A1A1A] min-h-screen overflow-x-hidden max-w-screen scroll-smooth">
     <!-- Navbar -->
-    <nav class="navbar" id="navbar">
+    <nav class="fixed top-0 left-0 right-0 z-[1000] px-4 sm:px-8 h-[62px] flex items-center bg-white/95 backdrop-blur-xl border-b border-black/10 transition-shadow duration-300" id="navbar">
         <div class="w-full max-w-[1280px] mx-auto flex items-center justify-between">
-            <a href="/" class="logo flex items-center gap-1 font-outfit text-[1.15rem] font-extrabold no-underline text-text-primary">
-                <span class="logo-badge">IND</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
+            <a href="/" class="flex items-center gap-[2px] font-outfit text-[1.15rem] font-extrabold no-underline text-[#1A1A1A]">
+                <img src="ind.png" alt="IND" class="w-10 h-10 object-contain rounded" style="width: 40px; height: 24px;">
+                <span>Misinformation</span><span class="text-[#E87722]">&nbsp;Heatmap</span>
             </a>
-            <div class="flex items-center gap-1">
-                <a href="/" class="nav-link active">Home</a>
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
+            <div class="hidden md:flex items-center gap-[2px]">
+                <a href="/" class="text-[#555555] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 hover:text-[#E87722] hover:bg-[rgba(232,119,34,0.07)] active:text-[#E87722] active:bg-[rgba(232,119,34,0.1)] active:border active:border-[rgba(232,119,34,0.2)]">Home</a>
+                <a href="/dashboard" class="text-[#555555] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 hover:text-[#E87722] hover:bg-[rgba(232,119,34,0.07)]">Dashboard</a>
+                <a href="/map/enhanced-india-heatmap.html" class="text-[#555555] no-underline text-[0.88rem] font-medium px-[9px] py-[6px] rounded-[10px] transition-all duration-200 hover:text-[#E87722] hover:bg-[rgba(232,119,34,0.07)]">Heatmap</a>
             </div>
-            <div class="flex items-center gap-1.5 bg-green/8 border border-green/25 rounded-full py-[5px] px-[14px] text-[0.8rem] font-semibold text-green">
-                <span class="status-dot"></span>
+            <div class="hidden md:flex items-center gap-[6px] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.25)] rounded-full py-[5px] px-[14px] text-[0.8rem] font-semibold text-[#138808]">
+                <span class="w-[7px] h-[7px] rounded-full bg-[#138808] animate-pulse"></span>
                 <span id="nav-status">System Ready</span>
             </div>
-            <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
+            <button class="flex md:hidden flex-col gap-[6px] bg-gradient-to-br from-white/90 to-white/95 border-2 border-[rgba(232,119,34,0.2)] cursor-pointer p-3 z-[2000] rounded-[16px] shadow-[0_4px_20px_rgba(232,119,34,0.1),0_2px_8px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) relative overflow-hidden hover:bg-gradient-to-br hover:from-[rgba(255,153,51,0.1)] hover:to-white/95 hover:border-[rgba(232,119,34,0.4)] hover:scale-105 hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(232,119,34,0.2),0_4px_12px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] active:scale-95 active:translate-y-0 active:shadow-[0_2px_12px_rgba(232,119,34,0.15),0_1px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)]" id="hamburger-btn" aria-label="Toggle menu">
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
             </button>
         </div>
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu">
-        <div class="mobile-menu-top">
+    <div class="fixed top-0 right-0 w-full h-full bg-gradient-to-br from-white via-[#f8f8f4] to-[#f5f5f0] z-[1500] translate-x-full transition-transform duration-[0.5s] cubic-bezier(0.4,0,0.2,1) flex flex-col justify-between px-4 sm:px-6 py-8 overflow-x-hidden backdrop-blur-xl shadow-[-10px_0_40px_rgba(0,0,0,0.08)]" id="mobile-menu">
+        <style>
+            #mobile-menu.active {
+                transform: translateX(0) !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            #mobile-menu:not(.active) {
+                transform: translateX(100%) !important;
+                opacity: 0 !important;
+                visibility: hidden !important;
+            }
+            #hamburger-btn.active span:nth-child(1) {
+                transform: rotate(45deg) translate(6px, 6px) !important;
+            }
+            #hamburger-btn.active span:nth-child(2) {
+                opacity: 0 !important;
+            }
+            #hamburger-btn.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(6px, -6px) !important;
+            }
+        </style>
+        <div class="flex flex-col gap-6">
             <!-- Menu Header -->
-            <div class="mobile-menu-header">
-                <div class="mobile-menu-avatar">
-                    <span class="avatar-icon">IND</span>
+            <div class="flex items-center gap-4 p-5 bg-white rounded-[16px] border border-[#E8E8E0] shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+                <div class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center flex-shrink-0">
+                    <img src="ind.png" alt="IND" class="w-10 h-10 object-contain rounded" style="width: 40px; height: 40px;">
                 </div>
-                <div class="mobile-menu-user">
-                    <div class="mobile-menu-greeting">Welcome Back</div>
-                    <div class="mobile-menu-username">Misinformation Heatmap</div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-[0.75rem] text-[#888888] font-medium">Welcome to</div>
+                    <div class="font-outfit text-base font-bold text-[#1A1A1A] mt-[2px]">Misinformation Heatmap</div>
                 </div>
-                <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
-                    <span class="close-icon">✕</span>
+                <button class="w-[36px] h-[36px] rounded-[10px] border border-[#E8E8E0] bg-[#FAFAF7] flex items-center justify-center cursor-pointer transition-all duration-200 flex-shrink-0 hover:bg-[#E87722] hover:border-[#E87722]" id="mobile-menu-close" aria-label="Close menu">
+                    <span class="text-[1.2rem] text-[#555555] hover:text-white">✕</span>
                 </button>
             </div>
 
             <!-- Quick Stats -->
-            <div class="mobile-menu-stats">
-                <div class="mobile-stat-item">
-                    <div class="mobile-stat-icon">📊</div>
-                    <div class="mobile-stat-info">
-                        <div class="mobile-stat-value" id="menu-total-events">—</div>
-                        <div class="mobile-stat-label">Total Events</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    <div class="text-[1.5rem]">📊</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-total-events">—</div>
+                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Total Events</div>
                     </div>
                 </div>
-                <div class="mobile-stat-item">
-                    <div class="mobile-stat-icon">🎯</div>
-                    <div class="mobile-stat-info">
-                        <div class="mobile-stat-value" id="menu-accuracy">91%</div>
-                        <div class="mobile-stat-label">Accuracy</div>
+                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                    <div class="text-[1.5rem]">🎯</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-accuracy">91%</div>
+                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Accuracy</div>
                     </div>
                 </div>
             </div>
 
             <!-- Navigation Links -->
-            <div class="mobile-menu-section">
-                <div class="mobile-menu-section-title">Navigation</div>
-                <a href="/" class="mobile-menu-link">
-                    <span class="menu-link-icon">🏠</span>
-                    <span class="menu-link-text">Home</span>
-                    <span class="menu-link-arrow">→</span>
+            <div class="mb-2">
+                <div class="text-[0.75rem] font-bold uppercase tracking-[1px] text-[#888888] mb-3 pl-1">Navigation</div>
+                <a href="/" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">🏠</span>
+                    <span class="flex-1">Home</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
-                <a href="/dashboard" class="mobile-menu-link">
-                    <span class="menu-link-icon">📈</span>
-                    <span class="menu-link-text">Dashboard</span>
-                    <span class="menu-link-arrow">→</span>
+                <a href="/dashboard" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">📈</span>
+                    <span class="flex-1">Dashboard</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
-                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">
-                    <span class="menu-link-icon">🗺️</span>
-                    <span class="menu-link-text">Heatmap</span>
-                    <span class="menu-link-arrow">→</span>
+                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                    <span class="text-[1.3rem] flex-shrink-0">🗺️</span>
+                    <span class="flex-1">Heatmap</span>
+                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
                 </a>
             </div>
-
-            <!-- Feature Highlights -->
-            <div class="mobile-menu-section">
-                <div class="mobile-menu-section-title">Features</div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-content">
-                        <div class="feature-title">AI-Powered Detection</div>
-                        <div class="feature-desc">5-model ML ensemble</div>
-                    </div>
+            <div class="flex flex-col items-center gap-4 pt-8 border-t border-[#E8E8E0]">
+                <div class="font-outfit text-[1.1rem] font-bold text-[#1A1A1A] flex items-center gap-2">
+                    <img src="ind.png" alt="IND" class="w-8 h-8 object-contain rounded" style="width: 32px; height: 32px;">
+                    <span>Misinformation</span><span class="text-[#E87722]">&nbsp;Heatmap</span>
                 </div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">🌐</div>
-                    <div class="feature-content">
-                        <div class="feature-title">Real-Time Monitoring</div>
-                        <div class="feature-desc">34+ news sources</div>
-                    </div>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="text-[0.7rem] font-bold px-[10px] py-[4px] rounded-[12px] uppercase bg-[#E87722] text-white shadow-[0_2px_6px_rgba(255,153,51,0.3)]">Alpha v1.0</span>
+                    <span class="text-[0.7rem] font-bold px-[10px] py-[4px] rounded-[12px] uppercase bg-white text-[#138808] animate-pulse">● Live</span>
                 </div>
-                <div class="mobile-menu-feature">
-                    <div class="feature-icon">📍</div>
-                    <div class="feature-content">
-                        <div class="feature-title">Pan-India Coverage</div>
-                        <div class="feature-desc">All states & UTs</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="mobile-menu-bottom">
-            <div class="mobile-menu-brand">
-                <span class="logo-badge">IND</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
-            </div>
-            <div class="mobile-menu-tags">
-                <span class="menu-tag alpha">Alpha v1.0</span>
-                <span class="menu-tag live">● Live</span>
             </div>
         </div>
     </div>
 
     <!-- Hero -->
-    <section class="hero">
-        <div class="hero-eyebrow">⚡ Powered by IndicBERT &amp; 5-Model Ensemble AI</div>
-        <h1>
+    <section class="relative z-[1] px-4 sm:px-8 py-[80px] sm:py-[100px] pt-[120px] sm:pt-[140px] text-center bg-gradient-to-br from-[#FF9933] via-[#FFB84D] via-[#FFF5E6] via-[#F8F8F8] via-[#F0F8F0] via-[#E8F5E8] to-[#138808] flex flex-col justify-center items-center min-h-screen w-full">
+        <div class="inline-flex items-center gap-2 text-[0.75rem] sm:text-[0.82rem] font-semibold text-[#E87722] bg-[rgba(255,153,51,0.2)] border border-[rgba(255,153,51,0.4)] rounded-full px-3 sm:px-4 py-1 sm:py-1.5 mb-6 sm:mb-8 tracking-[0.5px] uppercase">⚡ Powered by IndicBERT & 5-Model Ensemble AI</div>
+        <h1 class="font-outfit text-[clamp(2rem,8vw,4rem)] font-black leading-[1.1] tracking-[-1px] mb-4 sm:mb-6 bg-gradient-to-br from-[#FF9933] via-[#B45309] to-[#138808] bg-clip-text text-transparent px-2">
             Combating Fake News<br>
             Across India
         </h1>
-        <p>An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>, covering all 36 states and union territories in real-time.</p>
-        <div class="hero-actions">
-            <a href="/map/enhanced-india-heatmap.html" class="btn-primary">🗺️ Explore Live Heatmap</a>
-            <a href="/dashboard" class="btn-outline">📊 View Dashboard</a>
+        <p class="text-[0.95rem] sm:text-[1.1rem] text-[#555555] max-w-[580px] mx-auto mb-8 sm:mb-10 leading-[1.6] sm:leading-[1.7] px-4">An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>, covering all 36 states and union territories in real-time.</p>
+        <div class="flex items-center justify-center gap-3 sm:gap-4 flex-wrap px-2 max-w-full">
+            <a href="/map/enhanced-india-heatmap.html" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#FF9933] to-[#B45309] text-white font-bold text-[0.85rem] sm:text-[0.95rem] px-5 sm:px-8 py-2.5 sm:py-3 rounded-[10px] no-underline transition-all duration-200 shadow-[0_4px_20px_rgba(255,153,51,0.3)] hover:-translate-y-[2px] hover:shadow-[0_6px_24px_rgba(255,153,51,0.4)]">🗺️ Explore Live Heatmap</a>
+            <a href="/dashboard" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#138808] to-[#0d6b06] text-white font-semibold text-[0.85rem] sm:text-[0.95rem] px-4 sm:px-7 py-2.5 sm:py-3 rounded-[10px] border-[1.5px] border-transparent no-underline transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] shadow-[0_4px_16px_rgba(19,136,8,0.25)] hover:-translate-y-[2px] hover:scale-[1.02] hover:shadow-[0_8px_28px_rgba(19,136,8,0.4)] hover:bg-gradient-to-br hover:from-[#1ea50e] hover:to-[#138808]">📊 View Dashboard</a>
         </div>
     </section>
 
     <!-- Stats strip -->
-    <div class="stats-strip">
-        <div class="section-header">
-            <div class="section-tag">Real-Time Metrics</div>
-            <h2 class="section-title">Platform Performance Overview</h2>
-            <p class="section-sub">Live statistics showcasing our AI-powered misinformation detection capabilities across India</p>
+    <div class="relative z-[1] px-4 sm:px-8 py-16 sm:py-20 bg-white/95">
+        <div class="text-center mb-10 sm:mb-14">
+            <div class="inline-block text-[0.75rem] font-bold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3.5 py-1 mb-4 uppercase tracking-[0.5px]">Real-Time Metrics</div>
+            <h2 class="font-outfit text-xl sm:text-2xl font-extrabold text-[#1A1A1A] mb-3">Platform Performance Overview</h2>
+            <p class="text-[#555555] text-sm sm:text-base px-4">Live statistics showcasing our AI-powered misinformation detection capabilities across India</p>
         </div>
-        <div class="stats-inner">
-            <div class="stat-pill">
-                <div class="val" id="stat-events">—</div>
-                <div class="lbl">Events Analyzed</div>
+        <div class="max-w-[900px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5">
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-4 sm:p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="font-outfit text-[1.8rem] sm:text-[2.2rem] font-black text-[#E87722] leading-none" id="stat-events">—</div>
+                <div class="text-[0.75rem] sm:text-[0.8rem] text-[#888888] mt-1.5 font-medium">Events Analyzed</div>
             </div>
-            <div class="stat-pill">
-                <div class="val" style="color:var(--green);">91%</div>
-                <div class="lbl">Detection Accuracy</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-4 sm:p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="font-outfit text-[1.8rem] sm:text-[2.2rem] font-black text-[#138808] leading-none">91%</div>
+                <div class="text-[0.75rem] sm:text-[0.8rem] text-[#888888] mt-1.5 font-medium">Detection Accuracy</div>
             </div>
-            <div class="stat-pill">
-                <div class="val" style="color:var(--navy);">36</div>
-                <div class="lbl">States &amp; UTs</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-4 sm:p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="font-outfit text-[1.8rem] sm:text-[2.2rem] font-black text-[#000080] leading-none">36</div>
+                <div class="text-[0.75rem] sm:text-[0.8rem] text-[#888888] mt-1.5 font-medium">States &amp; UTs</div>
             </div>
-            <div class="stat-pill">
-                <div class="val">34+</div>
-                <div class="lbl">News Sources</div>
+            <div class="bg-white/80 border border-[#E8E8E0] rounded-[16px] p-4 sm:p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-250 hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="font-outfit text-[1.8rem] sm:text-[2.2rem] font-black text-[#E87722] leading-none">34+</div>
+                <div class="text-[0.75rem] sm:text-[0.8rem] text-[#888888] mt-1.5 font-medium">News Sources</div>
             </div>
         </div>
     </div>
 
     <!-- Features -->
-    <section class="features">
-        <div class="section-header">
-            <div class="section-tag">How It Works</div>
-            <h2 class="section-title">Multi-Layer Detection Engine</h2>
-            <p class="section-sub">Every article passes through 5 specialized models before a verdict is issued</p>
+    <section class="relative z-[1] px-4 sm:px-8 py-16 sm:py-20 bg-white/90">
+        <div class="text-center mb-10 sm:mb-14">
+            <div class="inline-block text-[0.75rem] font-bold text-[#138808] bg-[rgba(19,136,8,0.08)] border border-[rgba(19,136,8,0.2)] rounded-full px-3.5 py-1 mb-4 uppercase tracking-[0.5px]">How It Works</div>
+            <h2 class="font-outfit text-xl sm:text-2xl font-extrabold text-[#1A1A1A] mb-3 px-2">Multi-Layer Detection Engine</h2>
+            <p class="text-[#555555] text-sm sm:text-base px-4">Every article passes through 5 specialized models before a verdict is issued</p>
         </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🧠</div>
-                <div class="feature-title">IndicBERT NLP</div>
-                <div class="feature-desc">State-of-the-art multilingual transformer trained on Indian languages including Hindi, Tamil, Telugu, and 20+ more.</div>
+        <div class="max-w-[1100px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">🧠</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">IndicBERT NLP</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">State-of-the-art multilingual transformer trained on Indian languages including Hindi, Tamil, Telugu, and 20+ more.</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔍</div>
-                <div class="feature-title">Fact-Check Engine</div>
-                <div class="feature-desc">Cross-references against debunked claims from Alt News, Boom Live, The Quint WebQoof, and India Today Fact Check.</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">🔍</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">Fact-Check Engine</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">Cross-references against debunked claims from Alt News, Boom Live, The Quint WebQoof, and India Today Fact Check.</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">📡</div>
-                <div class="feature-title">Real-Time RSS Ingestion</div>
-                <div class="feature-desc">Monitors 34+ Indian news sources including TOI, The Hindu, NDTV, Indian Express, and regional outlets every 2 minutes.</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">📡</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">Real-Time RSS Ingestion</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">Monitors 34+ Indian news sources including TOI, The Hindu, NDTV, Indian Express, and regional outlets every 2 minutes.</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🗺️</div>
-                <div class="feature-title">Geographic Mapping</div>
-                <div class="feature-desc">200+ city-to-state mappings identify the precise geographic origin of each misinformation event.</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">🗺️</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">Geographic Mapping</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">200+ city-to-state mappings identify the precise geographic origin of each misinformation event.</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <div class="feature-title">Ensemble Classifier</div>
-                <div class="feature-desc">5-model ensemble combining linguistic analysis, source credibility, ML classification, and cross-reference scoring.</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">📊</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">Ensemble Classifier</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">5-model ensemble combining linguistic analysis, source credibility, ML classification, and cross-reference scoring.</div>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon">🌐</div>
-                <div class="feature-title">GDELT Integration</div>
-                <div class="feature-desc">Pulls India-specific news from the Global Database of Events — the world's largest open-source news index. Zero cost, unlimited volume.</div>
+            <div class="bg-white border border-[#E8E8E0] rounded-[16px] p-5 sm:p-8 transition-all duration-250 shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.10)] hover:-translate-y-[8px] hover:border-[rgba(232,119,34,0.3)]">
+                <div class="text-xl sm:text-2xl mb-3 sm:mb-4">🌐</div>
+                <div class="text-sm sm:text-base font-bold text-[#1A1A1A] mb-2">GDELT Integration</div>
+                <div class="text-[0.8rem] sm:text-[0.88rem] text-[#555555] leading-[1.5] sm:leading-[1.6]">Pulls India-specific news from the Global Database of Events — the world's largest open-source news index. Zero cost, unlimited volume.</div>
             </div>
         </div>
     </section>
 
     <!-- Live Ticker -->
-    <section class="ticker-section">
-        <div class="ticker-inner">
-            <div class="ticker-header">
-                <div class="ticker-title">Live Activity Feed</div>
-                <div class="ticker-live"><span class="ticker-live-dot"></span> LIVE</div>
+    <section class="relative z-[1] px-4 sm:px-8 py-8 sm:py-12">
+        <div class="max-w-[1100px] mx-auto">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
+                <div class="font-outfit text-[1.2rem] sm:text-[1.4rem] font-extrabold text-[#1A1A1A]">Live Activity Feed</div>
+                <div class="flex items-center gap-[6px] text-[0.75rem] sm:text-[0.8rem] font-semibold text-[#dc2626]"><span class="w-[8px] h-[8px] rounded-full bg-[#dc2626] animate-pulse"></span> LIVE</div>
             </div>
-            <div class="ticker-cards" id="ticker-cards">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" id="ticker-cards">
                 <!-- Loading skeleton cards - 3x3 grid -->
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#dc2626] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
+                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
+                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
+                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
                 </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
-                </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
-                </div>
-                <div class="ticker-card">
-                    <div class="ticker-badge" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="ticker-text" style="color:var(--text-muted);">Fetching news events...</div>
-                    <div class="ticker-meta" style="color:var(--text-muted);">Loading source • Loading location</div>
-                </div>
-            </div>
+                            </div>
         </div>
     </section>
 
     <!-- CTA -->
-    <section class="cta-section">
-        <div class="cta-inner">
-            <div class="cta-title">See India's Misinformation Map</div>
-            <p class="cta-sub">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
-            <a href="/map/enhanced-india-heatmap.html" class="btn-primary text-base px-10 py-4">🗺️ Open Interactive Heatmap →</a>
+    <section class="relative z-[1] px-8 py-20 text-center bg-gradient-to-br from-[rgba(232,119,34,0.06)] to-[rgba(19,136,8,0.04)]">
+        <div class="max-w-[600px] mx-auto">
+            <div class="font-outfit text-2xl font-extrabold text-[#1A1A1A] mb-4">See India's Misinformation Map</div>
+            <p class="text-[#555555] mb-8 text-base leading-[1.6]">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
+            <a href="/map/enhanced-india-heatmap.html" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#FF9933] to-[#B45309] text-white font-bold text-base px-10 py-4 rounded-[10px] no-underline transition-all duration-200 shadow-[0_4px_20px_rgba(255,153,51,0.3)] hover:-translate-y-[2px] hover:shadow-[0_6px_24px_rgba(255,153,51,0.4)]">🗺️ Open Interactive Heatmap →</a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-flag">
-            <div class="flag-stripe" style="background:#FF9933;"></div>
-            <div class="flag-stripe" style="background:#FFFFFF; border:1px solid #ddd;"></div>
-            <div class="flag-stripe" style="background:#138808;"></div>
+    <footer class="relative z-[1] border-t border-[#E8E8E0] px-8 py-8 text-center text-[#888888] text-[0.82rem]">
+        <div class="inline-flex gap-1 mb-2">
+            <div class="w-[18px] h-[8px] rounded-[2px] bg-[#FF9933]"></div>
+            <div class="w-[18px] h-[8px] rounded-[2px] bg-[#FFFFFF] border border-[#ddd]"></div>
+            <div class="w-[18px] h-[8px] rounded-[2px] bg-[#138808]"></div>
         </div>
         <div>Made with ❤️ for India &nbsp;·&nbsp; Powered by IndicBERT &amp; GDELT &nbsp;·&nbsp; Local-first, Zero-cost architecture</div>
     </footer>
@@ -983,7 +318,12 @@
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuClose = document.getElementById('mobile-menu-close');
         
+        console.log('Hamburger button element:', hamburgerBtn);
+        console.log('Mobile menu element:', mobileMenu);
+        console.log('Mobile menu close element:', mobileMenuClose);
+        
         hamburgerBtn.addEventListener('click', () => {
+            console.log('Hamburger button clicked!');
             hamburgerBtn.classList.toggle('active');
             mobileMenu.classList.toggle('active');
             document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
@@ -992,6 +332,7 @@
         // Close menu when clicking close button
         if (mobileMenuClose) {
             mobileMenuClose.addEventListener('click', () => {
+                console.log('Mobile menu close button clicked!');
                 hamburgerBtn.classList.remove('active');
                 mobileMenu.classList.remove('active');
                 document.body.style.overflow = '';
@@ -1001,6 +342,7 @@
         // Close menu when clicking on a link
         document.querySelectorAll('.mobile-menu-link').forEach(link => {
             link.addEventListener('click', () => {
+                console.log('Mobile menu link clicked!');
                 hamburgerBtn.classList.remove('active');
                 mobileMenu.classList.remove('active');
                 document.body.style.overflow = '';
