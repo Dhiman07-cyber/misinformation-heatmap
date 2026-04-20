@@ -43,7 +43,7 @@ except AttributeError:
     pass  # Windows doesn't have tzset()
 
 # ─── EARLY IMPORTS (fast) ────────────────────────────────────────────────────
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -265,8 +265,10 @@ async def dashboard():
 
 # ─── API: STATS ──────────────────────────────────────────────────────────────
 @app.get("/api/v1/stats", tags=["Analytics"])
-async def get_stats():
+async def get_stats(response: Response = None):
     """Aggregate stats for the last 24 hours (30 s cache)."""
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=30"
     cached = _cache_get("stats", 30)
     if cached:
         return cached
@@ -304,8 +306,10 @@ async def get_stats():
 
 # ─── API: HEATMAP DATA ───────────────────────────────────────────────────────
 @app.get("/api/v1/heatmap/data", tags=["Analytics"])
-async def get_heatmap_data(days: int = Query(7, ge=1, le=30)):
+async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1, le=30)):
     """State-wise misinformation event counts (60 s cache)."""
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=60"
     cache_key = f"heatmap_{days}"
     cached = _cache_get(cache_key, 60)
     if cached:
@@ -363,13 +367,21 @@ async def get_heatmap_data(days: int = Query(7, ge=1, le=30)):
 
 # ─── API: LIVE EVENTS ────────────────────────────────────────────────────────
 @app.get("/api/v1/events/live", tags=["Events"])
-async def get_live_events(limit: int = Query(10, ge=1, le=100)):
+async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=100)):
     """Recent events from the last hour."""
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=30"
+        
+    cache_key = f"live_events_{limit}"
+    cached = _cache_get(cache_key, 30)
+    if cached:
+        return cached
+
     rows = []
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, content, source, state,
+                SELECT title, SUBSTR(content, 1, 150) as content, source, state,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events
                 WHERE timestamp > NOW() - INTERVAL '24 hours'
@@ -393,11 +405,13 @@ async def get_live_events(limit: int = Query(10, ge=1, le=100)):
             "timestamp":        r["timestamp"].isoformat() if hasattr(r["timestamp"], "isoformat") else str(r["timestamp"] or ""),
         })
 
-    return {
+    result = {
         "events":           events,
         "total_count":      len(events),
         "processing_active": _is_processing_active(),
     }
+    _cache_set(cache_key, result)
+    return result
 
 # ─── API: SSE STREAM ─────────────────────────────────────────────────────────
 @app.get("/api/v1/stream", tags=["Events"])
@@ -417,12 +431,20 @@ async def sse_stream():
 
 # ─── API: STATE EVENTS ───────────────────────────────────────────────────────
 @app.get("/api/v1/events/state/{state}", tags=["Events"])
-async def get_state_events(state: str, limit: int = Query(10, ge=1, le=50)):
+async def get_state_events(state: str, response: Response = None, limit: int = Query(10, ge=1, le=50)):
+    if response:
+        response.headers["Cache-Control"] = "public, max-age=30"
+        
+    cache_key = f"state_events_{state}_{limit}"
+    cached = _cache_get(cache_key, 30)
+    if cached:
+        return cached
+
     rows = []
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, content, source,
+                SELECT title, SUBSTR(content, 1, 150) as content, source,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events WHERE state = ?
                 ORDER BY timestamp DESC LIMIT ?
@@ -443,7 +465,9 @@ async def get_state_events(state: str, limit: int = Query(10, ge=1, le=50)):
             "timestamp":        r["timestamp"],
         })
 
-    return {"state": state, "events": events, "total_count": len(events)}
+    result = {"state": state, "events": events, "total_count": len(events)}
+    _cache_set(cache_key, result)
+    return result
 
 # ─── API: ANALYZE ────────────────────────────────────────────────────────────
 @app.post("/api/v1/analyze", tags=["Analysis"])
