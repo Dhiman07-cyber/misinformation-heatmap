@@ -147,3 +147,6 @@ frontend/node_modules/
 temp/
 tmp/
 processing/
+
+# Local maintenance snippets
+supabase_maintenance.sql
