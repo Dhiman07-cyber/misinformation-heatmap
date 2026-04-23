@@ -216,7 +216,7 @@ async def high_volume_processing_loop():
             await asyncio.sleep(30)  # Wait 30 seconds on error
 
 def cleanup_old_events():
-    """Delete events older than 7 days to prevent unbounded database growth"""
+    """Delete events older than 24 hours to prevent unbounded database growth"""
     try:
         import os
         from db_adapter import get_db_connection
@@ -227,7 +227,7 @@ def cleanup_old_events():
         conn = get_db_connection(db_path)
         cursor = conn.cursor()
         
-        cursor.execute("DELETE FROM events WHERE timestamp < datetime('now', '-7 days')")
+        cursor.execute("DELETE FROM events WHERE timestamp < datetime('now', '-24 hours')")
         # Handle SQLite cursor vs Postgres wrapper differences in reporting deleted rows
         deleted = getattr(cursor, 'rowcount', 0)
         conn.commit()
