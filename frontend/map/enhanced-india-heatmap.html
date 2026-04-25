@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+        content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>Misinformation Heatmap - India</title>
     <link rel="icon" type="image/x-icon" href="/Misinfo.ico">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -653,6 +653,9 @@
                             path.classList.add('map-path');
                             path.style.cursor = 'pointer';
                             path.style.transition = 'all 0.2s ease';
+                            path.style.fill = '#88A4BC';
+                            path.style.stroke = '#ffffff';
+                            path.style.strokeWidth = '0.5';
                             path.addEventListener('click', handleStateClick);
                             path.addEventListener('mouseenter', handleStateHover);
                             path.addEventListener('mouseleave', handleStateLeave);
@@ -866,16 +869,14 @@
             }
 
             function getColorForRisk(fakeRatio, riskLevel) {
-                // Use actual fake news ratios for meaningful colors
+                // Use test button colors: red for high, orange for medium, green for low
                 if (riskLevel === 'insufficient_data') {
                     return '#88A4BC'; // Gray for insufficient data
                 }
 
-                if (fakeRatio > 0.1) return '#dc3545'; // High risk - red (>10% fake)
-                if (fakeRatio > 0.05) return '#ff6b35'; // Medium risk - orange (5-10% fake)
-                if (fakeRatio > 0.02) return '#ffc107'; // Low-medium risk - yellow (2-5% fake)
-                if (fakeRatio > 0.001) return '#FF9933'; // Low risk - saffron (0.1-2% fake)
-                return '#138808'; // Very low risk - green (<0.1% fake)
+                if (riskLevel === 'high') return '#dc3545'; // High risk - red
+                if (riskLevel === 'medium') return '#ff6b35'; // Medium risk - orange
+                return '#138808'; // Low risk - green
             }
 
             function handleStateClick(event) {
@@ -1035,55 +1036,6 @@
                 const tooltip = document.getElementById('state-tooltip');
                 if (tooltip) {
                     tooltip.remove();
-                }
-            }
-
-            // Test Colors Debug Function - Toggle between colored and default
-            let isTestColorsActive = false;
-            let originalColors = new Map();
-
-            function testMapColors() {
-                if (!svgMap) {
-                    console.log('SVG map not loaded yet');
-                    return;
-                }
-
-                const paths = svgMap.querySelectorAll('path');
-
-                if (!isTestColorsActive) {
-                    // First click - save original colors and apply test colors
-                    paths.forEach(path => {
-                        originalColors.set(path, {
-                            fill: path.style.fill || getComputedStyle(path).fill,
-                            stroke: path.style.stroke || getComputedStyle(path).stroke,
-                            strokeWidth: path.style.strokeWidth || getComputedStyle(path).strokeWidth
-                        });
-
-                        // Apply different colors to test
-                        const colors = ['#dc3545', '#ff6b35', '#FF9933', '#ffc107', '#138808'];
-                        const pathIndex = Array.from(paths).indexOf(path);
-                        const color = colors[pathIndex % colors.length];
-                        path.style.fill = color;
-                        path.style.stroke = '#ffffff';
-                        path.style.strokeWidth = '1';
-                    });
-
-                    isTestColorsActive = true;
-                    console.log('Test colors applied');
-                } else {
-                    // Second click - revert to original colors
-                    paths.forEach(path => {
-                        const original = originalColors.get(path);
-                        if (original) {
-                            path.style.fill = original.fill;
-                            path.style.stroke = original.stroke;
-                            path.style.strokeWidth = original.strokeWidth;
-                        }
-                    });
-
-                    isTestColorsActive = false;
-                    originalColors.clear();
-                    console.log('Original colors restored');
                 }
             }
 
@@ -1297,19 +1249,6 @@
                 svgMap.style.transform = `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px)) scale(${currentZoom})`;
 
                 console.log('Map centered with zoom:', currentZoom);
-            }
-
-            // Add test colors button to zoom controls
-            function addTestColorsButton() {
-                const zoomControls = document.querySelector('[class*="flex"][class*="flex-col"][class*="gap-2"]');
-                if (zoomControls && !document.querySelector('.test-colors-btn')) {
-                    const testButton = document.createElement('button');
-                    testButton.className = 'w-10 h-10 md:w-11 md:h-11 bg-white/95 border border-[#E8E8E0] text-[#1A1A1A] rounded-[8px] md:rounded-[12px] cursor-pointer flex items-center justify-center text-[16px] md:text-[16px] font-semibold transition-all duration-[0.3s] shadow-[0_2px_8px_rgba(0,0,0,0.10)] hover:bg-[rgba(232,119,34,0.08)] hover:border-[#E87722] hover:scale-105 hover:-translate-y-[-1px] test-colors-btn';
-                    testButton.onclick = testMapColors;
-                    testButton.title = 'Test Colors';
-                    testButton.textContent = '🎨';
-                    zoomControls.appendChild(testButton);
-                }
             }
 
             // ── Update Status Bar from /api/v1/stats ──────────────────────────────
@@ -1656,7 +1595,6 @@
                 initializeMapBounds();
                 setupKeyboardShortcuts();
                 setupDoubleClickZoom();
-                setTimeout(addTestColorsButton, 1000);
 
                 // Initialize info icon functionality
                 initializeInfoIcon();
