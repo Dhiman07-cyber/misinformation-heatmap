@@ -61,16 +61,16 @@
                 <span class="w-[7px] h-[7px] rounded-full bg-[#138808] animate-pulse"></span>
                 <span id="nav-status">System Ready</span>
             </div>
-            <button class="flex md:hidden flex-col gap-[6px] bg-gradient-to-br from-white/90 to-white/95 border-2 border-[rgba(232,119,34,0.2)] cursor-pointer p-3 z-[2000] rounded-[16px] shadow-[0_4px_20px_rgba(232,119,34,0.1),0_2px_8px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) relative overflow-hidden hover:bg-gradient-to-br hover:from-[rgba(255,153,51,0.1)] hover:to-white/95 hover:border-[rgba(232,119,34,0.4)] hover:scale-105 hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(232,119,34,0.2),0_4px_12px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] active:scale-95 active:translate-y-0 active:shadow-[0_2px_12px_rgba(232,119,34,0.15),0_1px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)]" id="hamburger-btn" aria-label="Toggle menu">
-                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
-                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
-                <span class="w-[28px] h-[3px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+            <button class="flex md:hidden flex-col gap-[5px] bg-gradient-to-br from-white/90 to-white/95 border-2 border-[rgba(232,119,34,0.2)] cursor-pointer p-2.5 z-[2000] rounded-[14px] shadow-[0_4px_20px_rgba(232,119,34,0.1),0_2px_8px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.8)] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) relative overflow-hidden hover:bg-gradient-to-br hover:from-[rgba(255,153,51,0.1)] hover:to-white/95 hover:border-[rgba(232,119,34,0.4)] hover:scale-105 hover:-translate-y-[2px] hover:shadow-[0_8px_30px_rgba(232,119,34,0.2),0_4px_12px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] active:scale-95 active:translate-y-0 active:shadow-[0_2px_12px_rgba(232,119,34,0.15),0_1px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.7)]" id="hamburger-btn" aria-label="Toggle menu">
+                <span class="w-[24px] h-[2.5px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[24px] h-[2.5px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
+                <span class="w-[24px] h-[2.5px] bg-gradient-to-r from-[#E87722] to-[#FF9933] transition-all duration-[0.4s] cubic-bezier(0.4,0,0.2,1) rounded-[3px] relative shadow-[0_2px_4px_rgba(232,119,34,0.2)]"></span>
             </button>
         </div>
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div class="fixed top-0 right-0 w-full h-full bg-gradient-to-br from-white via-[#f8f8f4] to-[#f5f5f0] z-[1500] translate-x-full transition-transform duration-[0.5s] cubic-bezier(0.4,0,0.2,1) flex flex-col justify-between px-4 sm:px-6 py-8 overflow-x-hidden backdrop-blur-xl shadow-[-10px_0_40px_rgba(0,0,0,0.08)]" id="mobile-menu">
+    <div class="fixed top-0 right-0 w-full h-full bg-gradient-to-br from-white via-[#f8f8f4] to-[#f5f5f0] z-[1500] translate-x-full transition-transform duration-[0.5s] cubic-bezier(0.4,0,0.2,1) flex flex-col px-4 sm:px-6 py-6 overflow-x-hidden backdrop-blur-xl shadow-[-10px_0_40px_rgba(0,0,0,0.08)]" id="mobile-menu">
         <style>
             #mobile-menu.active {
                 transform: translateX(0) !important;
@@ -92,9 +92,9 @@
                 transform: rotate(-45deg) translate(6px, -6px) !important;
             }
         </style>
-        <div class="flex flex-col gap-6">
+        <div class="flex-1 min-h-0 overflow-y-auto pr-1 space-y-5">
             <!-- Menu Header -->
-            <div class="flex items-center gap-4 p-5 bg-white rounded-[16px] border border-[#E8E8E0] shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+            <div class="flex items-center gap-4 p-5 bg-white rounded-[16px] border border-[#E8E8E0] shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
                 <div class="w-[52px] h-[52px] rounded-[14px] flex items-center justify-center flex-shrink-0">
                     <img src="ind.png" alt="IND" class="w-10 h-10 object-contain rounded" style="width: 40px; height: 40px;">
                 </div>
@@ -107,44 +107,49 @@
                 </button>
             </div>
 
-            <!-- Quick Stats -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                    <div class="text-[1.5rem]">📊</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-total-events">—</div>
-                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Total Events</div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-4 bg-white rounded-[12px] border border-[#E8E8E0] shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-                    <div class="text-[1.5rem]">🎯</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="font-outfit text-[1.2rem] font-extrabold text-[#E87722] leading-none" id="menu-accuracy">91%</div>
-                        <div class="text-[0.7rem] text-[#888888] font-medium mt-[3px]">Accuracy</div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Navigation Links -->
-            <div class="mb-2">
-                <div class="text-[0.75rem] font-bold uppercase tracking-[1px] text-[#888888] mb-3 pl-1">Navigation</div>
-                <a href="/" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+            <div class="bg-white rounded-[14px] border border-[#E8E8E0] shadow-[0_4px_14px_rgba(0,0,0,0.05)] p-3">
+                <div class="text-[0.72rem] font-bold uppercase tracking-[1px] text-[#888888] mb-2 px-2">Navigation</div>
+                <a href="/" class="mobile-menu-link font-outfit text-[0.98rem] font-semibold text-[#1A1A1A] no-underline p-3.5 my-1 rounded-[12px] border border-[rgba(232,119,34,0.2)] transition-all duration-[0.25s] w-full box-border flex items-center gap-3 bg-gradient-to-r from-[rgba(232,119,34,0.08)] to-white shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
                     <span class="text-[1.3rem] flex-shrink-0">🏠</span>
                     <span class="flex-1">Home</span>
-                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
+                    <span class="text-[#E87722] text-[1.05rem]">●</span>
                 </a>
-                <a href="/dashboard" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                <a href="/dashboard" class="mobile-menu-link font-outfit text-[0.98rem] font-semibold text-[#1A1A1A] no-underline p-3.5 my-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.25s] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:border-[#E87722] hover:bg-[rgba(232,119,34,0.04)]">
                     <span class="text-[1.3rem] flex-shrink-0">📈</span>
                     <span class="flex-1">Dashboard</span>
-                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
+                    <span class="text-[#888888] text-[1rem]">→</span>
                 </a>
-                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link font-outfit text-base font-semibold text-[#1A1A1A] no-underline p-4 m-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.3s] cubic-bezier(0.4,0,0.2,1] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:bg-gradient-to-br hover:from-[rgba(232,119,34,0.06)] hover:to-[rgba(232,119,34,0.02)] hover:border-[#E87722] hover:text-[#E87722] hover:translate-x-[6px] hover:shadow-[0_4px_12px_rgba(232,119,34,0.1)] active:translate-x-[5px] active:scale-[0.98]">
+                <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link font-outfit text-[0.98rem] font-semibold text-[#1A1A1A] no-underline p-3.5 my-1 rounded-[12px] border border-[#E8E8E0] transition-all duration-[0.25s] w-full box-border flex items-center gap-3 bg-white shadow-[0_2px_6px_rgba(0,0,0,0.03)] hover:border-[#E87722] hover:bg-[rgba(232,119,34,0.04)]">
                     <span class="text-[1.3rem] flex-shrink-0">🗺️</span>
                     <span class="flex-1">Heatmap</span>
-                    <span class="text-[#888888] text-[1.1rem] transition-transform duration-300 hover:translate-x-[4px] hover:text-[#E87722]">→</span>
+                    <span class="text-[#888888] text-[1rem]">→</span>
                 </a>
             </div>
-            <div class="flex flex-col items-center gap-4 pt-8 border-t border-[#E8E8E0]">
+
+            <div class="bg-white rounded-[14px] border border-[#E8E8E0] shadow-[0_4px_14px_rgba(0,0,0,0.05)] p-4">
+                <div class="font-outfit text-[0.92rem] font-bold text-[#1A1A1A] mb-3">Platform Performance Overview</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-[#F8F8F4] border border-[#E8E8E0] rounded-[10px] p-2.5">
+                        <div class="text-[0.62rem] text-[#888888] uppercase tracking-[0.4px]">Total Events</div>
+                        <div id="menu-performance-total" class="font-outfit text-[1rem] font-black text-[#E87722]">—</div>
+                    </div>
+                    <div class="bg-[#F8F8F4] border border-[#E8E8E0] rounded-[10px] p-2.5">
+                        <div class="text-[0.62rem] text-[#888888] uppercase tracking-[0.4px]">Active States</div>
+                        <div id="menu-performance-states" class="font-outfit text-[1rem] font-black text-[#138808]">—</div>
+                    </div>
+                    <div class="bg-[#F8F8F4] border border-[#E8E8E0] rounded-[10px] p-2.5">
+                        <div class="text-[0.62rem] text-[#888888] uppercase tracking-[0.4px]">Last Update</div>
+                        <div id="menu-performance-updated" class="font-outfit text-[1rem] font-black text-[#000080]">—</div>
+                    </div>
+                    <div class="bg-[#F8F8F4] border border-[#E8E8E0] rounded-[10px] p-2.5">
+                        <div class="text-[0.62rem] text-[#888888] uppercase tracking-[0.4px]">Accuracy</div>
+                        <div id="menu-performance-accuracy" class="font-outfit text-[1rem] font-black text-[#E87722]">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-auto flex flex-col items-center gap-3 pt-4 pb-1 border-t border-[#E8E8E0] bg-gradient-to-t from-[#f8f8f4] to-transparent">
                 <div class="font-outfit text-[1.1rem] font-bold text-[#1A1A1A] flex items-center gap-2">
                     <img src="ind.png" alt="IND" class="w-8 h-8 object-contain rounded" style="width: 32px; height: 32px;">
                     <span>Misinformation</span><span class="text-[#E87722]">&nbsp;Heatmap</span>
@@ -239,57 +244,6 @@
         </div>
     </section>
 
-    <!-- Live Ticker -->
-    <section class="relative z-[1] px-4 sm:px-8 py-8 sm:py-12">
-        <div class="max-w-[1100px] mx-auto">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4 sm:gap-0">
-                <div class="font-outfit text-[1.2rem] sm:text-[1.4rem] font-extrabold text-[#1A1A1A]">Live Activity Feed</div>
-                <div class="flex items-center gap-[6px] text-[0.75rem] sm:text-[0.8rem] font-semibold text-[#dc2626]"><span class="w-[8px] h-[8px] rounded-full bg-[#dc2626] animate-pulse"></span> LIVE</div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" id="ticker-cards">
-                <!-- Loading skeleton cards - 3x3 grid -->
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#dc2626] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(220,38,38,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                <div class="bg-white border border-[#E8E8E0] rounded-[10px] p-5 border-l-3 border-l-[#138808] shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                    <div class="inline-flex items-center gap-1 text-[0.7rem] font-bold px-2 py-[2px] rounded mb-[6px]" style="background: rgba(245,158,11,0.1); color: #d97706;">⏳ LOADING</div>
-                    <div class="text-[0.85rem] font-semibold text-[#888888] leading-[1.4] mb-[4px]">Fetching news events...</div>
-                    <div class="text-[0.75rem] text-[#888888]">Loading source • Loading location</div>
-                </div>
-                            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="relative z-[1] px-8 py-20 text-center bg-gradient-to-br from-[rgba(232,119,34,0.06)] to-[rgba(19,136,8,0.04)]">
-        <div class="max-w-[600px] mx-auto">
-            <div class="font-outfit text-2xl font-extrabold text-[#1A1A1A] mb-4">See India's Misinformation Map</div>
-            <p class="text-[#555555] mb-8 text-base leading-[1.6]">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
-            <a href="/map/enhanced-india-heatmap.html" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#FF9933] to-[#B45309] text-white font-bold text-base px-10 py-4 rounded-[10px] no-underline transition-all duration-200 shadow-[0_4px_20px_rgba(255,153,51,0.3)] hover:-translate-y-[2px] hover:shadow-[0_6px_24px_rgba(255,153,51,0.4)]">🗺️ Open Interactive Heatmap →</a>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer class="relative z-[1] border-t border-[#E8E8E0] px-8 py-8 text-center text-[#888888] text-[0.82rem]">
@@ -368,43 +322,24 @@
                 const n = d.total_events || 0;
                 el.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
                 
-                // Update mobile menu stats
-                const menuEventsEl = document.getElementById('menu-total-events');
-                if (menuEventsEl) {
-                    menuEventsEl.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
-                }
+                const setMenuText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = val;
+                };
+                const lastUpd = d.last_updated
+                    ? new Date(d.last_updated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })
+                    : 'Just now';
+                setMenuText('menu-performance-total', n >= 1000 ? (n/1000).toFixed(1)+'K' : n);
+                setMenuText('menu-performance-states', (d.total_states || 36) + ' States');
+                setMenuText('menu-performance-updated', lastUpd);
+                setMenuText('menu-performance-accuracy', ((d.classification_accuracy || 0.91) * 100).toFixed(1) + '%');
                 
                 document.getElementById('nav-status').textContent = d.ml_ready ? 'System Ready' : 'Loading…';
             } catch(_) {}
         }
 
-        // ── Fetch and display live ticker ──
-        async function loadTicker() {
-            try {
-                const r = await fetch(API_BASE + '/api/v1/events/live?limit=6');
-                if (!r.ok) return;
-                const d = await r.json();
-                const events = d.events || [];
-                if (events.length === 0) return;
-
-                const container = document.getElementById('ticker-cards');
-                container.innerHTML = events.slice(0,6).map(ev => {
-                    const cls = ev.classification || 'uncertain';
-                    const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
-                    const title = (ev.title || '').substring(0, 90);
-                    return `<div class="ticker-card ${cls === 'fake' ? 'fake' : cls === 'uncertain' ? 'uncertain' : ''}">
-                        <div class="ticker-badge ${cls}">${icon} ${cls.toUpperCase()}</div>
-                        <div class="ticker-text">${title}</div>
-                        <div class="ticker-meta">${ev.source || 'Unknown'} · ${ev.state || 'India'}</div>
-                    </div>`;
-                }).join('');
-            } catch(_) {}
-        }
-
         loadStats();
-        loadTicker();
         setInterval(loadStats, 30000);
-        setInterval(loadTicker, 15000);
     </script>
 </body>
 </html>
