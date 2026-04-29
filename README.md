@@ -56,7 +56,9 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 - **940-Example Dataset**: Vibrant misinformation dataset (477 fake / 463 real) with 6 source types
 - **RESTful API**: Comprehensive API with Swagger documentation
 - **Docker Support**: Easy deployment with Docker Compose
-- **Scalable Architecture**: Handles high-volume data ingestion
+- **Zero-Egress Architecture**: 100% local database storage (SQLite) eliminating cloud database bandwidth costs.
+- **Auto-Cleaning Retention**: Built-in 24-hour database retention policy to manage disk space autonomously.
+- **Scalable Architecture**: Handles high-volume data ingestion seamlessly on single-node deployments.
 
 ---
 
@@ -199,4 +201,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Last Updated: March 11, 2026*
+*Last Updated: April 2026*
