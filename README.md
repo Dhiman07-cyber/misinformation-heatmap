@@ -18,8 +18,8 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 ---
 
 ## 🌐 Live Hosted Links
-*   **Hugging Face Backend/API:** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
-*   **GitHub Repository:** [NayandG07/misinformation-heatmap](https://github.com/NayandG07/misinformation-heatmap)
+*   **Frontend Web App (Netlify):** [https://misinfo-heatmap-india.netlify.app](https://misinfo-heatmap-india.netlify.app/)
+*   **Backend API (Hugging Face):** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
 
 ---
 
