@@ -2,25 +2,30 @@
 
 This guide explains how to deploy the Misinformation Heatmap using a 100% free, production-grade architecture.
 
-## Architecture
+## Architecture (Zero-Egress Setup)
 
+*   **Backend & Database**: Hugging Face Spaces (Docker Space)
+    *   *Why?* By running both the Python API and a Local SQLite database on the same Hugging Face container, we achieve **0 GB of database egress**.
+    *   *Retention:* A native Python loop automatically cleans up data older than 24 hours, ensuring the ephemeral disk never fills up.
 *   **Frontend**: Netlify (Global CDN, fast static serving)
-*   **Backend**: Hugging Face Spaces (Docker Space, provides 16GB free RAM needed for PyTorch/Transformers)
-*   **Database**: Local SQLite (Embedded in Hugging Face Docker, completely eliminating network egress costs)
+
+---
+
+## 🌐 Live Hosted Links
+*   **Hugging Face Backend/API:** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
+*   **GitHub Repository:** [NayandG07/misinformation-heatmap](https://github.com/NayandG07/misinformation-heatmap)
 
 ---
 
 ## 🚀 Deployment Steps
 
-### 1. Database (Local SQLite)
-No cloud database setup is required. The system is configured to autonomously build and manage an internal SQLite file (`data/enhanced_fake_news.db`) on the Hugging Face server. A native Python script runs an auto-cleaning sequence every cycle to delete data older than 24 hours, ensuring the disk stays lean permanently.
-
-### 2. Backend (Hugging Face Spaces)
+### 1. Backend & Database (Hugging Face Spaces)
 1. Create a free account at [Hugging Face](https://huggingface.co).
 2. Click **New Space** -> Choose **Docker** as the Space SDK -> Choose **Blank** deployment.
-3. Upload the entire project repository to the Space (you can link it via GitHub or upload files directly).
+3. Upload the entire project repository to the Space.
 4. **Important**: Change the uploaded `Dockerfile.deploy` to `Dockerfile`.
-5. The Space will automatically build and start using Local Mode. Note the URL of your Space (e.g., `https://username-spacename.hf.space`).
+5. In your Space settings **Variables and Secrets**, ensure `MODE=local`. Do **NOT** set a `DATABASE_URL`.
+6. The Space will automatically build, boot, create a local SQLite database, and begin the 24-hour ingestion cycle automatically!
 
 ### 3. Frontend (Netlify)
 1. Open `frontend/index.html`, `frontend/dashboard.html`, and `map/enhanced-india-heatmap.html`.
@@ -36,12 +41,13 @@ Hugging Face free Spaces sleep after 48 hours of inactivity.
 
 ---
 
-## ⏪ How to Revert (Zero-Friction Fallback)
+## ⏪ How to Migrate to Postgres (Optional)
 
-If the deployment fails, gets corrupted, or you just want to run the system locally again, you don't need to rewrite any code! The system is designed with a **seamless fallback adapter**.
+If you ever need permanent, long-term storage beyond the 24-hour window, the system is designed with a **seamless fallback adapter**.
 
-**To use Cloud Postgres (Optional):**
-1. Set the `DATABASE_URL` environment variable locally or in HF secrets.
-2. The system will automatically detect the `DATABASE_URL` and instantly start writing to your external cloud database using the same data schemas.
+**To upgrade to Cloud Postgres (e.g., Supabase / Neon):**
+1. Set the `DATABASE_URL` environment variable locally or in Hugging Face secrets.
+2. Run your server normally: `uvicorn server:app --reload`
+3. The system will automatically detect the `DATABASE_URL` and instantly switch from local SQLite to your Cloud Postgres provider.
 
 It is 100% safely reversible at any time!
