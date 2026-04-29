@@ -12,8 +12,8 @@ This guide explains how to deploy the Misinformation Heatmap using a 100% free, 
 ---
 
 ## 🌐 Live Hosted Links
-*   **Hugging Face Backend/API:** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
-*   **GitHub Repository:** [NayandG07/misinformation-heatmap](https://github.com/NayandG07/misinformation-heatmap)
+*   **Frontend Web App (Netlify):** [https://misinformation-heatmap.netlify.app](https://misinformation-heatmap.netlify.app)
+*   **Backend API (Hugging Face):** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
 
 ---
 
