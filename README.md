@@ -17,6 +17,12 @@ A comprehensive AI-powered system for detecting misinformation in Indian media u
 
 ---
 
+## 🌐 Live Hosted Links
+*   **Frontend Web App (Netlify):** [https://misinfo-heatmap-india.netlify.app](https://misinfo-heatmap-india.netlify.app/)
+*   **Backend API (Hugging Face):** [https://huggingface.co/spaces/Ndg07/heatmap](https://huggingface.co/spaces/Ndg07/heatmap)
+
+---
+
 ## 📸 Screenshots & Demo
 
 ### Main Homepage
