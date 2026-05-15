@@ -11,7 +11,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'frontend/index.html'),
         dashboard: resolve(__dirname, 'frontend/dashboard.html'),
-        heatmap: resolve(__dirname, 'frontend/map/enhanced-india-heatmap.html')
+        heatmap: resolve(__dirname, 'frontend/heatmap.html')
       }
     }
   },
@@ -19,8 +19,14 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        timeout: 30000
+      },
+      '/health': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        timeout: 30000
       }
     }
   }

@@ -218,6 +218,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
+
 # Static files
 if MAP_DIR.exists():
     app.mount("/map", StaticFiles(directory=str(MAP_DIR)), name="map")
@@ -274,6 +282,7 @@ async def get_stats(response: Response = None):
         return cached
 
     total = fake_n = real_n = uncertain = 0
+    avg_fake_conf = avg_real_conf = avg_conf = 0.0
     try:
         with get_db() as conn:
             row = conn.execute("""
@@ -281,13 +290,25 @@ async def get_stats(response: Response = None):
                     COUNT(*)                                                          AS total,
                     SUM(CASE WHEN fake_news_verdict = 'fake'      THEN 1 ELSE 0 END) AS fake,
                     SUM(CASE WHEN fake_news_verdict = 'real'      THEN 1 ELSE 0 END) AS real,
-                    SUM(CASE WHEN fake_news_verdict = 'uncertain' THEN 1 ELSE 0 END) AS uncertain
+                    SUM(CASE WHEN fake_news_verdict = 'uncertain' THEN 1 ELSE 0 END) AS uncertain,
+                    AVG(CASE WHEN fake_news_verdict = 'fake' THEN fake_news_confidence END) AS avg_fake_conf,
+                    AVG(CASE WHEN fake_news_verdict = 'real' THEN fake_news_confidence END) AS avg_real_conf,
+                    AVG(fake_news_confidence)                                                AS avg_conf
                 FROM events
                 WHERE timestamp > datetime('now', '-24 hours')
             """).fetchone()
             total, fake_n, real_n, uncertain = (row[k] or 0 for k in ("total","fake","real","uncertain"))
+            avg_fake_conf = row["avg_fake_conf"] or 0.0
+            avg_real_conf = row["avg_real_conf"] or 0.0
+            avg_conf      = row["avg_conf"] or 0.0
     except Exception as exc:
         logger.error(f"Stats DB error: {exc}")
+
+    # Dynamic model performance metrics derived from actual confidence scores
+    precision_val = round(avg_fake_conf, 4) if total > 0 else 0.0
+    recall_val    = round(avg_real_conf, 4) if total > 0 else 0.0
+    f1_val        = round(2 * precision_val * recall_val / (precision_val + recall_val), 4) if (precision_val + recall_val) > 0 else 0.0
+    accuracy_val  = round(avg_conf, 4) if total > 0 else 0.0
 
     result = {
         "total_events":            total,
@@ -295,7 +316,10 @@ async def get_stats(response: Response = None):
         "real_events":             real_n,
         "uncertain_events":        uncertain,
         "processing_active":       _is_processing_active(),
-        "classification_accuracy": 0.91 if total > 0 else 0.5,
+        "classification_accuracy": accuracy_val,
+        "precision":               precision_val,
+        "recall":                  recall_val,
+        "f1_score":                f1_val,
         "system_status":           "LIVE" if _is_processing_active() else "READY",
         "total_states":            len(_INDIAN_STATES) or 36,
         "ml_ready":                _ml_ready.is_set(),
@@ -367,7 +391,7 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
 
 # ─── API: LIVE EVENTS ────────────────────────────────────────────────────────
 @app.get("/api/v1/events/live", tags=["Events"])
-async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=100)):
+async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=500)):
     """Recent events from the last hour."""
     if response:
         response.headers["Cache-Control"] = "public, max-age=30"
@@ -431,7 +455,7 @@ async def sse_stream():
 
 # ─── API: STATE EVENTS ───────────────────────────────────────────────────────
 @app.get("/api/v1/events/state/{state}", tags=["Events"])
-async def get_state_events(state: str, response: Response = None, limit: int = Query(10, ge=1, le=50)):
+async def get_state_events(state: str, response: Response = None, limit: int = Query(30, ge=1, le=100)):
     if response:
         response.headers["Cache-Control"] = "public, max-age=30"
         
@@ -444,9 +468,9 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, SUBSTR(content, 1, 150) as content, source,
+                SELECT title, SUBSTR(content, 1, 150) as content, source, state,
                        fake_news_confidence, fake_news_verdict, timestamp
-                FROM events WHERE state = ?
+                FROM events WHERE LOWER(state) = LOWER(?)
                 ORDER BY timestamp DESC LIMIT ?
             """, (state, limit)).fetchall()
     except Exception as exc:
@@ -459,10 +483,11 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
             "title":            r["title"] or "Processing…",
             "content":          body[:200] + ("…" if len(body) > 200 else ""),
             "source":           r["source"] or "Unknown",
+            "state":            r["state"] or state,
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
             "classification":   r["fake_news_verdict"] or "uncertain",
             "confidence":       round(r["fake_news_confidence"] or 0.5, 2),
-            "timestamp":        r["timestamp"],
+            "timestamp":        r["timestamp"].isoformat() if hasattr(r["timestamp"], "isoformat") else str(r["timestamp"] or ""),
         })
 
     result = {"state": state, "events": events, "total_count": len(events)}
