@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --saffron: #FF9933;
+    --india-green: #138808;
+    --ashoka-blue: #000080;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen overflow-x-hidden text-slate-950 antialiased;
+  }
+
+  button,
+  input {
+    font: inherit;
+  }
+
+  ::selection {
+    @apply bg-saffron-200 text-slate-950;
+  }
+}
+
+@layer components {
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:shadow-soft;
+  }
+
+  .menu-button {
+    @apply inline-flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white text-slate-900 shadow-card outline-none transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-saffron-500 focus-visible:ring-offset-2;
+  }
+
+  .menu-line {
+    @apply h-0.5 w-5 rounded-full bg-current transition;
+  }
+
+  .menu-button.is-open .menu-line:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .menu-button.is-open .menu-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-button.is-open .menu-line:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  .mobile-menu {
+    @apply fixed inset-0 z-50 hidden overflow-y-auto bg-white/95 backdrop-blur-xl;
+  }
+
+  .mobile-menu.is-open {
+    @apply flex;
+  }
+
+  .heatmap-control-button {
+    @apply inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-slate-200 bg-white/95 text-xs font-black text-slate-800 shadow-card outline-none transition hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-700 focus-visible:ring-2 focus-visible:ring-saffron-500 focus-visible:ring-offset-2;
+  }
+
+  .heatmap-svg {
+    @apply h-full max-h-full w-full max-w-full transition-transform duration-100 ease-out;
+    transform-origin: center center;
+    filter: drop-shadow(0 16px 22px rgba(15, 23, 42, 0.22));
+    will-change: transform;
+  }
+
+  .heatmap-path {
+    @apply cursor-pointer fill-slate-400 stroke-white outline-none transition duration-200 ease-out focus-visible:stroke-saffron-500;
+    stroke-width: 0.8;
+    filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.18));
+  }
+
+  .heatmap-path:hover {
+    @apply stroke-saffron-500 brightness-110;
+    stroke-width: 2;
+  }
+
+  .heatmap-path.selected {
+    @apply stroke-saffron-500 brightness-110;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 12px rgba(232, 119, 34, 0.42));
+  }
+
+
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes pulseSoft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-pulse-soft {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+}

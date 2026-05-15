@@ -1,0 +1,28 @@
+import { mountNavbar } from './components/navbar.js';
+import { initDashboard } from './pages/dashboard.js';
+import { initHeatmap } from './pages/heatmap.js';
+import { initHome } from './pages/home.js';
+
+const PAGE_INIT = {
+  home: initHome,
+  dashboard: initDashboard,
+  heatmap: initHeatmap
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const page = document.body?.dataset?.page || 'home';
+  mountNavbar({
+    page,
+    statusId: `${page}-nav-status`,
+    initialStatus: 'Checking'
+  });
+
+  const init = PAGE_INIT[page];
+  if (!init) return;
+
+  Promise.resolve()
+    .then(() => init())
+    .catch((error) => {
+      console.error(`[${page}] initialization failed:`, error);
+    });
+});
