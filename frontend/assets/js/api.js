@@ -1,7 +1,10 @@
 import { sanitizeApiPath, sanitizeStateParam } from './utils/security.js';
 
-const API_BASE = window.location.hostname.endsWith('.netlify.app')
-  ? 'https://ndg07-heatmap.hf.space'
+const REMOTE_API_BASE = 'https://ndg07-heatmap.hf.space';
+const LOCAL_DEV_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+const isViteDev = LOCAL_DEV_HOSTS.has(window.location.hostname) && ['5173', '4173'].includes(window.location.port);
+const API_BASE = window.location.hostname.endsWith('.netlify.app') || isViteDev
+  ? REMOTE_API_BASE
   : '';
 
 const REQUEST_TIMEOUT_MS = 45000;
@@ -12,9 +15,14 @@ const MAX_STORAGE_BYTES = 512_000;
 
 const cache = new Map();
 const inflight = new Map();
+const NON_PERSISTED_PATHS = new Set(['/api/v1/stats']);
 
 function cacheKey(path) {
   return `${API_BASE}${path}`;
+}
+
+function canPersist(path) {
+  return !NON_PERSISTED_PATHS.has(path);
 }
 
 function readStorage(key, { ignoreTtl = false } = {}) {
@@ -76,6 +84,7 @@ export function peekCached(path) {
   const key = cacheKey(safePath);
   const cached = cache.get(key);
   if (cached) return cached.data;
+  if (!canPersist(safePath)) return null;
   return readStorage(key);
 }
 
@@ -126,24 +135,25 @@ export async function fetchJson(path, options = {}) {
   const key = cacheKey(safePath);
   const cached = cache.get(key);
   const now = Date.now();
+  const useStorage = !skipStorage && canPersist(safePath);
 
   if (!force && cached && cacheMs > 0 && now - cached.time < cacheMs) {
     return cached.data;
   }
 
-  const stored = !skipStorage ? readStorage(key) : null;
-  const storedStale = !skipStorage ? readStorage(key, { ignoreTtl: true }) : null;
-  const stale = resolveFallback(key, skipStorage, cached, stored, storedStale);
+  const stored = useStorage ? readStorage(key) : null;
+  const storedStale = useStorage ? readStorage(key, { ignoreTtl: true }) : null;
+  const stale = resolveFallback(key, !useStorage, cached, stored, storedStale);
 
   if (!force && stale !== null && cacheMs > 0) {
-    runBackgroundFetch(safePath, key, { skipStorage, timeoutMs, cachedEntry: cached, stored, storedStale }).catch(() => {});
+    runBackgroundFetch(safePath, key, { skipStorage: !useStorage, timeoutMs, cachedEntry: cached, stored, storedStale }).catch(() => {});
     return stale;
   }
 
   const pending = inflight.get(key);
   if (pending) return pending;
 
-  return runBackgroundFetch(safePath, key, { skipStorage, timeoutMs, cachedEntry: cached, stored, storedStale });
+  return runBackgroundFetch(safePath, key, { skipStorage: !useStorage, timeoutMs, cachedEntry: cached, stored, storedStale });
 }
 
 export function clearApiCache() {
@@ -151,6 +161,26 @@ export function clearApiCache() {
   try {
     Object.keys(sessionStorage).forEach((k) => {
       if (k.startsWith(STORAGE_PREFIX)) sessionStorage.removeItem(k);
+    });
+  } catch {
+    // ignore
+  }
+}
+
+export function clearStateEventsCache(state) {
+  const safeState = sanitizeStateParam(state);
+  if (!safeState) return;
+  const encoded = encodeURIComponent(safeState);
+  for (const key of cache.keys()) {
+    if (key.includes(`/api/v1/events/state/${encoded}`)) {
+      cache.delete(key);
+    }
+  }
+  try {
+    Object.keys(sessionStorage).forEach((k) => {
+      if (k.startsWith(STORAGE_PREFIX) && k.includes(`/api/v1/events/state/${encoded}`)) {
+        sessionStorage.removeItem(k);
+      }
     });
   } catch {
     // ignore
@@ -168,7 +198,7 @@ function extractArray(payload, ...keys) {
 }
 
 export function getStats(options = {}) {
-  return fetchJson('/api/v1/stats', { cacheMs: 10000, ...options });
+  return fetchJson('/api/v1/stats', { ...options, cacheMs: 0, skipStorage: true });
 }
 
 export function getHealth(options = {}) {
@@ -177,7 +207,7 @@ export function getHealth(options = {}) {
 
 export async function getHeatmapData(options = {}) {
   const payload = await fetchJson('/api/v1/heatmap/data', { cacheMs: 30000, ...options });
-  return extractArray(payload, 'heatmap_data', 'data');
+  return extractArray(payload, 'heatmap', 'heatmap_data', 'data');
 }
 
 export async function getLiveEvents(limit = 20, options = {}) {
@@ -191,6 +221,8 @@ export async function getStateEvents(state, options = {}) {
   const safeState = sanitizeStateParam(state);
   if (!safeState) return [];
   const encoded = encodeURIComponent(safeState);
-  const payload = await fetchJson(`/api/v1/events/state/${encoded}`, { cacheMs: 8000, ...options });
+  const { limit = 100, ...fetchOptions } = options;
+  const safeLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || 100)));
+  const payload = await fetchJson(`/api/v1/events/state/${encoded}?limit=${safeLimit}`, { cacheMs: 8000, ...fetchOptions });
   return extractArray(payload, 'events', 'data');
 }

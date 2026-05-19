@@ -44,9 +44,9 @@ export function createMobileMenu(options = {}) {
               className: 'h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover shadow-card',
               attrs: { src: '/assets/ind.png', alt: 'India logo' }
             }),
-            createElement('span', { className: 'min-w-0' }, [
-              createElement('span', { className: 'block truncate text-sm font-black leading-tight tracking-tight text-slate-950', text: 'Misinformation' }),
-              createElement('span', { className: 'block truncate text-[11px] font-bold leading-tight text-india-green-600', text: 'Heatmap' })
+            createElement('span', { className: 'min-w-0 text-sm font-black leading-tight tracking-tight text-slate-950 whitespace-nowrap' }, [
+              createElement('span', { className: 'text-slate-950', text: 'Misinformation' }),
+              createElement('span', { className: 'text-india-green-600 ml-1', text: 'Heatmap' })
             ])
           ]),
           closeButton
@@ -65,7 +65,7 @@ export function createMobileMenu(options = {}) {
         createElement('div', {
           className: 'rounded-lg border border-slate-200 bg-white p-4 shadow-card'
         }, [
-          createElement('p', { className: 'text-xs font-black uppercase tracking-[0.18em] text-slate-500', text: 'ALPHA VERSION 1.1' }),
+          createElement('p', { className: 'text-xs font-black text-slate-500', text: 'Alpha Version 1.1' }),
           createElement('p', { className: 'mt-2 text-sm font-semibold text-slate-900', attrs: { id: 'mobile-nav-status' }, text: 'Checking live pipeline' })
         ])
       ])

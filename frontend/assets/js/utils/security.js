@@ -67,6 +67,8 @@ export function toSafeText(value, fallback = '--', maxLen = MAX_TEXT_LENGTH) {
   return text || fallback;
 }
 
+const domParser = new DOMParser();
+
 /**
  * Convert untrusted HTML-ish feed text into plain text for display.
  * The result is rendered with textContent by callers, never as HTML.
@@ -76,12 +78,22 @@ export function toSafeText(value, fallback = '--', maxLen = MAX_TEXT_LENGTH) {
  */
 export function toPlainText(value, fallback = '', maxLen = MAX_PLAIN_TEXT_LENGTH) {
   if (value === null || value === undefined) return fallback;
-  const raw = String(value).slice(0, Math.max(maxLen * 4, MAX_PLAIN_TEXT_LENGTH));
-  if (!raw.trim()) return fallback;
+  const raw = String(value).trim();
+  if (!raw) return fallback;
+  
+  // Quick path: if no tags, just sanitize and return
+  if (!raw.includes('<')) return toSafeText(raw, fallback, maxLen);
 
-  const parsed = new DOMParser().parseFromString(raw, 'text/html');
-  parsed.querySelectorAll('script, style, template, noscript').forEach((node) => node.remove());
-  return toSafeText(parsed.body?.textContent || raw, fallback, maxLen);
+  const truncated = raw.slice(0, maxLen * 4);
+  const parsed = domParser.parseFromString(truncated, 'text/html');
+  
+  // Remove dangerous tags that might have text content we don't want displayed
+  const styleScript = parsed.querySelectorAll('script, style, template, noscript');
+  for (let i = 0; i < styleScript.length; i++) {
+    styleScript[i].remove();
+  }
+  
+  return toSafeText(parsed.body?.textContent || truncated, fallback, maxLen);
 }
 
 /**

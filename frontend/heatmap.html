@@ -297,6 +297,30 @@
         transform-origin: right center;
       }
     }
+
+    /* Premium Hover & Select Scale Effects for Heatmap Paths */
+    .heatmap-path {
+      transform-box: fill-box !important;
+      transform-origin: center !important;
+      transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  filter 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      will-change: transform, filter !important;
+    }
+
+    .heatmap-path:hover {
+      transform: scale(1.045) translateY(-2px) !important;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12)) brightness(1.04) !important;
+      z-index: 50 !important;
+    }
+
+    .heatmap-path.selected {
+      transform: scale(1.06) translateY(-3px) !important;
+      filter: drop-shadow(0 12px 20px rgba(251, 146, 60, 0.22)) brightness(1.06) !important;
+      z-index: 60 !important;
+    }
   </style>
   <title>Heatmap - Misinformation Heatmap</title>
   <meta name="description"
@@ -315,17 +339,17 @@
     style="contain: strict;">
     <!-- Main Saffron Glow -->
     <div
-      class="absolute -top-[15%] -left-[10%] h-[650px] w-[650px] rounded-full bg-saffron-500/40 blur-[100px] animate-float will-change-transform transform-gpu">
+      class="absolute -top-[15%] -left-[10%] h-[650px] w-[650px] rounded-full bg-[radial-gradient(circle,rgba(255,153,51,0.28)_0%,transparent_70%)] animate-float will-change-transform transform-gpu">
     </div>
 
     <!-- Main Green Glow -->
     <div
-      class="absolute top-[25%] -right-[10%] h-[600px] w-[600px] rounded-full bg-india-green-500/35 blur-[110px] animate-float will-change-transform transform-gpu"
+      class="absolute top-[25%] -right-[10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(19,136,8,0.22)_0%,transparent_70%)] animate-float will-change-transform transform-gpu"
       style="animation-delay: 2s"></div>
 
     <!-- Ashoka Blue Glow -->
     <div
-      class="absolute top-1/2 left-1/4 h-[450px] w-[450px] rounded-full bg-ashoka-blue-500/25 blur-[120px] animate-pulse will-change-transform transform-gpu"
+      class="absolute top-1/2 left-1/4 h-[450px] w-[450px] rounded-full bg-[radial-gradient(circle,rgba(0,0,128,0.12)_0%,transparent_70%)] animate-pulse will-change-transform transform-gpu"
       style="animation-delay: 4s"></div>
 
     <!-- Subtle Saffron/Green Accent Gradients -->
@@ -364,7 +388,7 @@
         class="relative overflow-hidden bg-[#fffdf4] shadow-premium sm:rounded-2xl rounded-2xl sm:border sm:border-slate-200 flex flex-col lg:h-full isolate">
         <div class="flex items-center justify-between gap-4 border-b border-slate-200 bg-[#fdfaf0] px-5 py-4 sm:px-6">
           <div class="min-w-0">
-            <p class="text-[10px] font-bold tracking-[0.05em] text-slate-500 uppercase">Live risk map</p>
+            <p class="text-[10px] font-bold text-slate-500">Live risk map</p>
             <h2 class="mt-0.5 text-lg font-extrabold text-slate-950">State intensity surface</h2>
           </div>
           <button
@@ -382,47 +406,21 @@
         <div
           class="relative flex-1 min-h-[350px] overflow-hidden bg-[#fffdf4] rounded-b-2xl sm:min-h-[450px] lg:min-h-0"
           style="contain: layout paint;" id="india-map-viewport">
-          <!-- Floating Insights Trigger -->
-          <button id="state-insights-trigger" aria-label="Show selected state details"
-            class="invisible absolute bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-slate-950 text-white shadow-premium transition-all duration-300 hover:scale-110 active:scale-95 opacity-0 translate-y-4">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </button>
-
-          <!-- Floating State Card -->
-          <div id="state-insights-card"
-            class="invisible absolute bottom-20 right-4 z-40 w-72 origin-bottom-right scale-95 rounded-2xl border border-slate-200 bg-white/95 p-5 opacity-0 shadow-[0_20px_50px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-all duration-300">
-            <div class="mb-4 flex items-center justify-between">
-              <h3 class="text-base font-extrabold text-slate-950" id="floating-state-name">State Details</h3>
-              <span class="rounded-full px-2.5 py-1 text-[10px] font-bold" id="floating-state-badge">No data</span>
-            </div>
-            <dl class="grid grid-cols-2 gap-3">
-              <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
-                <dt class="text-[9px] font-bold text-slate-500">Events</dt>
-                <dd class="text-sm font-bold text-slate-950" id="floating-state-events">--</dd>
-              </div>
-              <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
-                <dt class="text-[9px] font-bold text-slate-500">Fake Ratio</dt>
-                <dd class="text-sm font-bold text-slate-950" id="floating-state-fake">--</dd>
-              </div>
-            </dl>
-            <button id="close-insights"
-              class="mt-4 w-full rounded-lg bg-slate-100 py-2 text-[11px] font-bold text-slate-600 transition hover:bg-slate-200">Close</button>
-          </div>
 
           <div id="heatmap-zoom-controls" class="absolute right-4 top-4 z-20 flex flex-col gap-2"
-            aria-label="Map zoom controls">
+            aria-label="Map controls">
             <button
               class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-base font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
               type="button" id="heatmap-zoom-in" aria-label="Zoom in">+</button>
+            <button
+              class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 px-2 text-[10px] font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
+              type="button" id="heatmap-zoom-reset" aria-label="Reset zoom">Reset</button>
             <button
               class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-base font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
               type="button" id="heatmap-zoom-out" aria-label="Zoom out">-</button>
             <button
               class="mt-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 px-3 text-[10px] font-bold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
-              type="button" id="heatmap-zoom-reset" aria-label="Reset zoom">Reset</button>
+              type="button" id="heatmap-state-clear" aria-label="Clear state selection">Clear</button>
           </div>
 
           <div id="heatmap-svg-root"
@@ -454,7 +452,7 @@
                 id="risk-legend-panel">
                 <div class="grid gap-2 border-t border-slate-100 px-4 py-3 text-[11px] font-bold text-slate-600">
                   <div class="flex items-center gap-3"><span
-                      class="h-3 w-3 shrink-0 rounded-full bg-emerald-600 shadow-[0_0_8px_rgba(5,150,105,0.4)]"></span><span>Least
+                      class="h-3 w-3 shrink-0 rounded-full shadow-[0_0_8px_rgba(19,136,8,0.4)]" style="background-color: #138808;"></span><span>Least
                       risk</span></div>
                   <div class="flex items-center gap-3"><span
                       class="h-3 w-3 shrink-0 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.4)]"></span><span>Low-Medium</span>
@@ -490,54 +488,28 @@
           </div>
 
           <!-- Tab Content Containers -->
-          <div class="flex-1 lg:overflow-hidden flex flex-col rounded-b-2xl lg:h-full">
+          <div class="flex-1 lg:overflow-hidden flex flex-col lg:h-full">
             <!-- Alerts Panel -->
-            <div class="flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 rounded-b-2xl custom-scrollbar lg:h-full"
+            <div class="flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 custom-scrollbar lg:h-full"
               id="panel-alerts">
               <div class="mb-5 flex items-center justify-between">
-                <h3 class="text-[10px] font-bold uppercase tracking-[0.18em] text-red-600">Misinformation alerts</h3>
+                <h3 class="text-[10px] font-bold text-red-600">Misinformation alerts</h3>
                 <div class="flex items-center gap-2">
                   <span class="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600"
                     id="heatmap-misinformation-count">--</span>
-                  <div
-                    class="group relative flex items-center rounded-lg border border-slate-200 bg-white shadow-sm ring-red-500/10 transition-all hover:border-red-200 hover:ring-4">
-                    <select id="feed-filter-select"
-                      class="feed-filter-control appearance-none py-1 pl-3 pr-8 focus:ring-0">
-                      <option value="all">All India</option>
-                      <option value="filtered">Filtered</option>
-                    </select>
-                    <svg
-                      class="pointer-events-none absolute right-2 h-2.5 w-2.5 text-slate-400 transition-colors group-hover:text-red-500"
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </div>
                 </div>
               </div>
               <div class="grid gap-4" id="heatmap-misinformation-feed"></div>
             </div>
 
             <!-- Verified News Panel (Hidden by default) -->
-            <div class="hidden flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 rounded-b-2xl custom-scrollbar lg:h-full"
+            <div class="hidden flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 custom-scrollbar lg:h-full"
               id="panel-news">
               <div class="mb-5 flex items-center justify-between">
-                <h3 class="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-600">Verified reporting</h3>
+                <h3 class="text-[10px] font-bold text-emerald-600">Verified reporting</h3>
                 <div class="flex items-center gap-2">
                   <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600"
                     id="heatmap-real-news-count">--</span>
-                  <div
-                    class="group relative flex items-center rounded-lg border border-slate-200 bg-white shadow-sm ring-emerald-500/10 transition-all hover:border-emerald-200 hover:ring-4">
-                    <select id="feed-filter-select-news"
-                      class="feed-filter-control appearance-none py-1 pl-3 pr-8 focus:ring-0">
-                      <option value="all">All India</option>
-                      <option value="filtered">Filtered</option>
-                    </select>
-                    <svg
-                      class="pointer-events-none absolute right-2 h-2.5 w-2.5 text-slate-400 transition-colors group-hover:text-emerald-500"
-                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </div>
                 </div>
               </div>
               <div class="grid gap-4" id="heatmap-real-news-feed"></div>
@@ -558,7 +530,9 @@
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      will-change: scroll-position;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      contain: content;
     }
 
     .custom-scrollbar::-webkit-scrollbar-track {
@@ -622,6 +596,12 @@
         display: none !important;
       }
     }
+
+    #event-detail-card {
+      border: 1.5px solid transparent !important;
+      background: linear-gradient(to bottom, #fffdf4, #fffdf4) padding-box, 
+                  linear-gradient(135deg, rgba(255, 153, 51, 0.4), rgba(0, 0, 128, 0.15), rgba(19, 136, 8, 0.4)) border-box !important;
+    }
   </style>
   <div id="heatmap-tooltip"
     class="pointer-events-none fixed z-[60] hidden max-w-xs rounded-xl border border-slate-800 bg-slate-950/95 px-4 py-3 text-[11px] font-semibold leading-relaxed text-white shadow-2xl backdrop-blur-md"
@@ -633,11 +613,9 @@
     role="dialog" aria-modal="true" aria-labelledby="event-detail-title" aria-hidden="true">
     <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" id="event-detail-overlay"></div>
     <div
-      class="relative w-full max-w-2xl scale-95 transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-transform duration-300"
+      class="relative w-full max-w-2xl scale-95 transform rounded-3xl bg-[#fffdf4] shadow-2xl transition-transform duration-300"
+      style="border: 1.5px solid transparent !important; background: linear-gradient(to bottom, #fffdf4, #fffdf4) padding-box, linear-gradient(135deg, rgba(255, 153, 51, 0.4), rgba(0, 0, 128, 0.15), rgba(19, 136, 8, 0.4)) border-box !important;"
       id="event-detail-card">
-      <!-- Gradient Header -->
-      <div class="h-2 w-full bg-gradient-to-r from-saffron-500 via-white to-india-green-500"></div>
-
       <div class="p-6 sm:p-8">
         <div class="flex items-start justify-between gap-4 mb-4">
           <div class="flex flex-wrap items-center gap-2" id="event-detail-badges">

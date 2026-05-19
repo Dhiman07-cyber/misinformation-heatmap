@@ -295,7 +295,6 @@ async def get_stats(response: Response = None):
                     AVG(CASE WHEN fake_news_verdict = 'real' THEN fake_news_confidence END) AS avg_real_conf,
                     AVG(fake_news_confidence)                                                AS avg_conf
                 FROM events
-                WHERE timestamp > datetime('now', '-24 hours')
             """).fetchone()
             total, fake_n, real_n, uncertain = (row[k] or 0 for k in ("total","fake","real","uncertain"))
             avg_fake_conf = row["avg_fake_conf"] or 0.0
@@ -389,6 +388,65 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
     _cache_set(cache_key, result)
     return result
 
+def fetch_balanced_events(conn, base_where_clause: str, params: tuple, limit: int):
+    """
+    Fetches a balanced mix of fake and non-fake events to prevent starvation.
+    Ensures that both categories are represented if they exist in the DB.
+    """
+    half_limit = max(1, limit // 2)
+    
+    # 1. Fetch fake events
+    fake_query = f"""
+        SELECT title, SUBSTR(content, 1, 150) as content, source, state,
+               fake_news_confidence, fake_news_verdict, timestamp
+        FROM events
+        WHERE {base_where_clause} AND fake_news_verdict = 'fake'
+        ORDER BY timestamp DESC
+        LIMIT ?
+    """
+    fake_rows = conn.execute(fake_query, params + (half_limit,)).fetchall()
+    
+    # 2. Fetch non-fake events (filling the remaining limit)
+    other_limit = max(1, limit - len(fake_rows))
+    other_query = f"""
+        SELECT title, SUBSTR(content, 1, 150) as content, source, state,
+               fake_news_confidence, fake_news_verdict, timestamp
+        FROM events
+        WHERE {base_where_clause} AND fake_news_verdict != 'fake'
+        ORDER BY timestamp DESC
+        LIMIT ?
+    """
+    other_rows = conn.execute(other_query, params + (other_limit,)).fetchall()
+    
+    # 3. If other_rows didn't fill the quota and we capped fake_rows, fetch more fake events
+    total_fetched = len(fake_rows) + len(other_rows)
+    if total_fetched < limit and len(fake_rows) == half_limit:
+        full_fake_query = f"""
+            SELECT title, SUBSTR(content, 1, 150) as content, source, state,
+                   fake_news_confidence, fake_news_verdict, timestamp
+            FROM events
+            WHERE {base_where_clause} AND fake_news_verdict = 'fake'
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """
+        fake_rows = conn.execute(full_fake_query, params + (limit - len(other_rows),)).fetchall()
+        
+    combined = list(fake_rows) + list(other_rows)
+    
+    def _get_timestamp_sort_key(row):
+        ts = row["timestamp"]
+        if ts is None:
+            return ""
+        if isinstance(ts, str):
+            return ts
+        if hasattr(ts, "isoformat"):
+            return ts.isoformat()
+        return str(ts)
+        
+    combined.sort(key=_get_timestamp_sort_key, reverse=True)
+    return combined
+
+
 # ─── API: LIVE EVENTS ────────────────────────────────────────────────────────
 @app.get("/api/v1/events/live", tags=["Events"])
 async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=500)):
@@ -404,14 +462,7 @@ async def get_live_events(response: Response = None, limit: int = Query(10, ge=1
     rows = []
     try:
         with get_db() as conn:
-            rows = conn.execute("""
-                SELECT title, SUBSTR(content, 1, 150) as content, source, state,
-                       fake_news_confidence, fake_news_verdict, timestamp
-                FROM events
-                WHERE timestamp > datetime('now', '-24 hours')
-                ORDER BY timestamp DESC
-                LIMIT ?
-            """, (limit,)).fetchall()
+            rows = fetch_balanced_events(conn, "timestamp > datetime('now', '-24 hours')", (), limit)
     except Exception as exc:
         logger.error(f"Live events error: {exc}")
 
@@ -467,12 +518,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
     rows = []
     try:
         with get_db() as conn:
-            rows = conn.execute("""
-                SELECT title, SUBSTR(content, 1, 150) as content, source, state,
-                       fake_news_confidence, fake_news_verdict, timestamp
-                FROM events WHERE LOWER(state) = LOWER(?)
-                ORDER BY timestamp DESC LIMIT ?
-            """, (state, limit)).fetchall()
+            rows = fetch_balanced_events(conn, "LOWER(state) = LOWER(?)", (state,), limit)
     except Exception as exc:
         logger.error(f"State events error [{state}]: {exc}")
 

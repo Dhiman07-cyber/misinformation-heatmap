@@ -64,10 +64,13 @@ function updateHome(data) {
   updateStatusText('home-nav-status', statusText, processing || mlReady ? 'good' : 'neutral');
   updateMobileNavStatus(statusText);
 
+  const lastUpdate = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
   updateStatsPanels([
     { label: 'Events', value: formatCount(total), className: 'text-blue-700' },
     { label: 'Risk', value: formatCount(fake), className: 'text-saffron-700' },
     { label: 'Accuracy', value: formatPercent(data.classification_accuracy), className: 'text-emerald-700' },
+    { label: 'Last Update', value: lastUpdate },
     { label: 'States', value: statesText, className: 'text-slate-950' }
   ]);
 
