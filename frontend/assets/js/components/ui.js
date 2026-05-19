@@ -1,5 +1,5 @@
 import { createElement, replaceChildren, setText, setWidth } from '../utils/dom.js';
-import { classificationLabel, formatDateTime, getEventSource, getEventState, getEventTitle, normalizeClassification } from '../utils/formatters.js';
+import { classificationLabel, formatDateTime, getEventClassification, getEventSource, getEventState, getEventTitle } from '../utils/formatters.js';
 import { badgeClassForClassification, safeUrl, sanitizeClassList, toPlainText, toSafeText } from '../utils/security.js';
 
 export const STATUS_CLASSES = {
@@ -40,7 +40,7 @@ export function renderEmptyState(container, title, detail) {
 }
 
 export function createEventItem(event, options = {}) {
-  const classification = normalizeClassification(event && event.classification);
+  const classification = getEventClassification(event);
   const type = options.type || classification;
   const tokenText = type === 'real' ? 'OK' : type === 'fake' ? 'FA' : (classificationLabel(classification) || '??').slice(0, 2).toUpperCase();
   const tokenClass = {
@@ -59,7 +59,7 @@ export function createEventItem(event, options = {}) {
   const timeText = formatDateTime(event && event.timestamp);
   // Only fields intended as summaries belong in the modal. The API's `content`
   // field is a truncated article excerpt, so showing it here overstates what we know.
-  const bodyText = toPlainText(event && (event.description || event.summary), '');
+  const bodyText = toPlainText(event && (event.description || event.summary || event.content), '');
   const hasSource = Boolean(toSafeText(sourceRaw, ''));
   const hasState = Boolean(toSafeText(stateRaw, ''));
   const hasTimestamp = timeText !== '--';
@@ -68,25 +68,25 @@ export function createEventItem(event, options = {}) {
 
   const metaBadges = [
     createElement('span', {
-      className: `inline-flex w-fit rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badgeClass}`,
+      className: `inline-flex w-fit rounded-full border px-2 py-0.5 text-[10px] font-bold ${badgeClass}`,
       text: classificationLabel(classification)
     })
   ];
   if (hasSource) {
     metaBadges.push(createElement('span', { 
-      className: 'inline-flex w-fit rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-blue-700', 
+      className: 'inline-flex w-fit rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700', 
       text: sourceText 
     }));
   }
   if (hasState) {
     metaBadges.push(createElement('span', { 
-      className: 'inline-flex w-fit rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-purple-700', 
+      className: 'inline-flex w-fit rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700', 
       text: stateText 
     }));
   }
   if (hasTimestamp) {
     metaBadges.push(createElement('span', { 
-      className: 'inline-flex w-fit rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-700', 
+      className: 'inline-flex w-fit rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-700', 
       text: timeText 
     }));
   }
@@ -213,7 +213,7 @@ export function createFeedLoadingSpinner() {
 }
 
 function createDetailBadge(text, colorClass) {
-  const base = 'inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide';
+  const base = 'inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold';
   return createElement('span', {
     className: `${base} ${sanitizeClassList(colorClass)}`,
     text

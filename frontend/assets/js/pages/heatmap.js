@@ -1,4 +1,4 @@
-import { clearApiCache, getHeatmapData, getLiveEvents, getStateEvents, getStats, peekCached } from '../api.js';
+import { clearApiCache, clearStateEventsCache, getHeatmapData, getLiveEvents, getStateEvents, getStats, peekCached } from '../api.js';
 import {
   createEventItem,
   createFeedLoadingSpinner,
@@ -14,10 +14,10 @@ import {
   formatCount,
   formatPercent,
   formatRatioAsPercent,
+  getEventClassification,
   getFakeRatio,
   getEventState,
   getEventTitle,
-  normalizeClassification,
   normalizeName,
   numberOrNull,
   riskFromRecord
@@ -58,10 +58,11 @@ let pinchStartZoom = 1;
 let mapInteractionActive = false;
 let refreshInFlight = false;
 let feedsGeneration = 0;
+let globalEventsPool = null;
 
 const FEED_DISPLAY_LIMIT = 10;
-const FEED_REVEAL_MS = 55;
 const LIVE_EVENTS_FETCH_LIMIT = 80;
+const STATE_EVENTS_FETCH_LIMIT = 100;
 
 function feedDelay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -124,7 +125,7 @@ function hydrateHeatmapFromCache() {
   }
   const payload = peekCached('/api/v1/heatmap/data');
   if (!payload) return false;
-  const rows = Array.isArray(payload) ? payload : (payload.heatmap_data || payload.data || []);
+  const rows = Array.isArray(payload) ? payload : (payload.heatmap || payload.heatmap_data || payload.data || []);
   if (!rows.length) return false;
   applyHeatmapPayload(rows);
   return true;
@@ -154,7 +155,7 @@ function updateStatsPopover() {
       minute: '2-digit',
       hour12: true
     })
-    : '--';
+    : new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   updateStatsPanels([
     { label: 'Total Events', value: formatCount(total) },
@@ -378,46 +379,38 @@ function applyHeatmapColors() {
 }
 
 function handleStateClick(event) {
+  event.stopPropagation();
   const path = event.currentTarget || event.target;
   if (!path || !svgMap) return;
+
+  const candidateState = toSafeText(path.getAttribute('name') || path.id, 'Unknown state');
+  const record = findStateData(path);
+  const stateName = record ? toSafeText(record.state || record.name) : candidateState;
+
+  if (selectedState === stateName) {
+    clearStateSelection();
+    return;
+  }
+
+  if (path.parentNode) {
+    path.parentNode.appendChild(path);
+  }
   qsa('.selected', svgMap).forEach((element) => {
     element.classList.remove('selected');
     element.style.strokeWidth = '0.75';
+    element.style.stroke = '#ffffff';
   });
   path.classList.add('selected');
   path.style.strokeWidth = '3.5';
   path.style.stroke = '#FF9933';
-  selectedStateRecord = findStateData(path);
-  selectedState = selectedStateRecord
-    ? toSafeText(selectedStateRecord.state || selectedStateRecord.name)
-    : toSafeText(path.getAttribute('name') || path.id, 'Unknown state');
+  selectedStateRecord = record;
+  selectedState = stateName;
   mapInteractionActive = true;
-  // Update filter mode to Filtered
-  qsa('.feed-filter-control').forEach(s => s.value = 'filtered');
 
   updateStatsPopover();
   updateFeeds(true);
-  showFloatingInsights(selectedStateRecord, selectedState);
 }
 
-function setupFeedFilters() {
-  const selects = qsa('.feed-filter-control');
-  selects.forEach(select => {
-    select.addEventListener('change', (e) => {
-      const mode = e.target.value;
-      // Sync other select
-      selects.forEach(s => { if (s !== select) s.value = mode; });
-
-      if (mode === 'all') {
-        clearStateSelection();
-      } else if (mode === 'filtered' && !selectedState) {
-        // If they switch to filtered but nothing is selected, show toast and revert
-        showToast('Select any state from the Map to display state-wise data');
-        selects.forEach(s => s.value = 'all');
-      }
-    });
-  });
-}
 
 function clearStateSelection() {
   selectedState = null;
@@ -430,52 +423,8 @@ function clearStateSelection() {
     });
   }
 
-  // Update filter controls to 'all'
-  qsa('.feed-filter-control').forEach(s => s.value = 'all');
-
-  // Hide floating insights
-  const trigger = qs('#state-insights-trigger');
-  const card = qs('#state-insights-card');
-  if (trigger) {
-    trigger.classList.add('invisible', 'opacity-0', 'translate-y-4');
-    trigger.classList.remove('opacity-100', 'translate-y-0');
-  }
-  if (card) {
-    card.classList.add('invisible', 'opacity-0', 'scale-95');
-    card.classList.remove('opacity-100', 'scale-100');
-  }
-
   updateStatsPopover();
   updateFeeds(true);
-}
-
-function showFloatingInsights(record, fallbackName) {
-  const trigger = qs('#state-insights-trigger');
-  const card = qs('#state-insights-card');
-  const nameEl = qs('#floating-state-name');
-  const badgeEl = qs('#floating-state-badge');
-  const eventsEl = qs('#floating-state-events');
-  const fakeEl = qs('#floating-state-fake');
-
-  if (!trigger || !card) return;
-
-  if (!record) {
-    trigger.classList.add('invisible', 'opacity-0', 'translate-y-4');
-    trigger.classList.remove('opacity-100', 'translate-y-0');
-    card.classList.add('invisible', 'opacity-0', 'scale-95');
-    card.classList.remove('opacity-100', 'scale-100');
-    return;
-  }
-
-  setText(nameEl, record.state || record.name || fallbackName);
-  const risk = riskFromRecord(record);
-  setText(badgeEl, risk.label);
-  badgeEl.className = `rounded-full px-2.5 py-1 text-[10px] font-bold ${risk.badgeClass}`;
-  setText(eventsEl, formatCount(record.event_count ?? record.total_events ?? record.events));
-  setText(fakeEl, formatRatioAsPercent(getFakeRatio(record)));
-
-  trigger.classList.remove('invisible', 'opacity-0', 'translate-y-4');
-  trigger.classList.add('opacity-100', 'translate-y-0');
 }
 
 function handleStateHover(event) {
@@ -494,8 +443,12 @@ function showTooltip(event, record, fallbackName) {
     createElement('p', { className: 'font-bold text-white', text: record ? (record.state || record.name) : fallbackName })
   ];
   if (record) {
+    const fakeCount = numberOrNull(record.fake_count ?? record.fake_events);
+    const realCount = numberOrNull(record.real_count ?? record.real_events ?? record.verified_count ?? record.verified_events);
     children.push(
       createElement('p', { text: `Events: ${formatCount(record.event_count ?? record.total_events ?? record.events)}` }),
+      createElement('p', { text: `Fake News: ${formatCount(fakeCount)}` }),
+      createElement('p', { text: `Verified News: ${formatCount(realCount)}` }),
       createElement('p', { text: `Fake ratio: ${formatRatioAsPercent(getFakeRatio(record))}` }),
       createElement('p', { text: `Risk: ${risk.label}` })
     );
@@ -549,14 +502,29 @@ function matchesNormalizedState(candidate, expected) {
   return candidate === expected || candidate.includes(expected) || expected.includes(candidate);
 }
 
-function eventMatchesState(event, stateName) {
+function getCanonicalState(stateName) {
   const norm = normalizeName(stateName);
-  if (!norm) return false;
-  const s = normalizeName(getEventState(event));
-  const l = normalizeName(event.location);
-  const r = normalizeName(event.region);
-  const t = normalizeName(getEventTitle(event));
-  return [s, l, r, t].some((candidate) => matchesNormalizedState(candidate, norm));
+  if (!norm) return null;
+  const alias = STATE_ALIASES[norm];
+  return alias ? normalizeName(alias) : norm;
+}
+
+function eventMatchesState(event, stateName) {
+  const expected = getCanonicalState(stateName);
+  if (!expected) return false;
+
+  // Primary check: state field
+  const eventState = getEventState(event);
+  if (eventState && getCanonicalState(eventState) === expected) return true;
+
+  // Secondary checks: other fields
+  const candidates = [
+    event.location,
+    event.region,
+    getEventTitle(event)
+  ].map(getCanonicalState).filter(Boolean);
+
+  return candidates.some((candidate) => candidate === expected || candidate.includes(expected) || expected.includes(candidate));
 }
 
 function dedupeEvents(events) {
@@ -568,46 +536,6 @@ function dedupeEvents(events) {
     seen.add(key);
     return true;
   });
-}
-
-async function gatherMapEvents(stateName = selectedState, forceRefresh = false) {
-  const fetchOptions = forceRefresh ? { cacheMs: 0, force: true } : {};
-
-  if (stateName) {
-    let events = [];
-    try {
-      events = await getStateEvents(stateName, fetchOptions);
-    } catch {
-      events = [];
-    }
-    if (!events.length) {
-      const global = await getLiveEvents(LIVE_EVENTS_FETCH_LIMIT, fetchOptions);
-      events = global.filter((event) => eventMatchesState(event, stateName));
-    }
-    return dedupeEvents(events);
-  }
-
-  let pool = dedupeEvents(await getLiveEvents(LIVE_EVENTS_FETCH_LIMIT, fetchOptions));
-  const active = activeMapStates();
-
-  if (pool.length < FEED_DISPLAY_LIMIT * 2 && active.length) {
-    const batches = await Promise.allSettled(
-      active.slice(0, 6).map((record) => getStateEvents(record.state || record.name, fetchOptions))
-    );
-    for (const batch of batches) {
-      if (batch.status === 'fulfilled') pool.push(...batch.value);
-    }
-    pool = dedupeEvents(pool);
-  }
-
-  if (active.length) {
-    const onMap = pool.filter((event) =>
-      active.some((record) => eventMatchesState(event, record.state || record.name))
-    );
-    if (onMap.length >= 3) pool = onMap;
-  }
-
-  return pool;
 }
 
 function feedEmptyOptions(type, stateName = selectedState) {
@@ -627,40 +555,25 @@ async function renderFeedsProgressively(fakeEvents, realEvents, generation, stat
   if (generation !== feedsGeneration) return;
   const alertsEl = qs('#heatmap-misinformation-feed');
   const newsEl = qs('#heatmap-real-news-feed');
-  const fakeList = fakeEvents.slice(0, FEED_DISPLAY_LIMIT);
-  const realList = realEvents.slice(0, FEED_DISPLAY_LIMIT);
+  const displayLimit = stateName ? 20 : FEED_DISPLAY_LIMIT;
+  const fakeList = fakeEvents.slice(0, displayLimit);
+  const realList = realEvents.slice(0, displayLimit);
 
-  if (alertsEl) replaceChildren(alertsEl, []);
-  if (newsEl) replaceChildren(newsEl, []);
-
-  if (!fakeList.length && !realList.length) {
-    renderEventList('#heatmap-misinformation-feed', [], feedEmptyOptions('fake', stateName));
-    renderEventList('#heatmap-real-news-feed', [], feedEmptyOptions('real', stateName));
-    setText('#heatmap-misinformation-count', '0 items');
-    setText('#heatmap-real-news-count', '0 items');
-    return;
+  if (alertsEl) {
+    if (fakeList.length) {
+      replaceChildren(alertsEl, fakeList.map(event => createEventItem(event, { type: 'fake' })));
+    } else {
+      renderEventList('#heatmap-misinformation-feed', [], feedEmptyOptions('fake', stateName));
+    }
+    setText('#heatmap-misinformation-count', `${fakeList.length} item${fakeList.length === 1 ? '' : 's'}`);
   }
-
-  setText('#heatmap-misinformation-count', 'Loading...');
-  setText('#heatmap-real-news-count', 'Loading...');
-
-  const steps = Math.max(fakeList.length, realList.length);
-  for (let i = 0; i < steps; i += 1) {
-    if (generation !== feedsGeneration) return;
-
-    if (i < fakeList.length && alertsEl) {
-      alertsEl.append(createEventItem(fakeList[i], { type: 'fake' }));
+  if (newsEl) {
+    if (realList.length) {
+      replaceChildren(newsEl, realList.map(event => createEventItem(event, { type: 'real' })));
+    } else {
+      renderEventList('#heatmap-real-news-feed', [], feedEmptyOptions('real', stateName));
     }
-    if (i < realList.length && newsEl) {
-      newsEl.append(createEventItem(realList[i], { type: 'real' }));
-    }
-
-    const shownFake = Math.min(i + 1, fakeList.length);
-    const shownReal = Math.min(i + 1, realList.length);
-    setText('#heatmap-misinformation-count', `${shownFake} item${shownFake === 1 ? '' : 's'}`);
-    setText('#heatmap-real-news-count', `${shownReal} item${shownReal === 1 ? '' : 's'}`);
-
-    if (i < steps - 1) await feedDelay(FEED_REVEAL_MS);
+    setText('#heatmap-real-news-count', `${realList.length} item${realList.length === 1 ? '' : 's'}`);
   }
 }
 
@@ -669,24 +582,57 @@ async function updateFeeds(forceState = false, options = {}) {
   const feedNews = qs('#heatmap-real-news-feed');
   const stateAtRequest = selectedState;
   const generation = ++feedsGeneration;
-  
-  // Show immediate loading feedback if fetching state-specific data
-  if (forceState && stateAtRequest) {
+
+  // Immediately show loading placeholder in Alerts/Verified when state is selected/clicked
+  if (stateAtRequest) {
     if (feedAlerts) replaceChildren(feedAlerts, [createFeedLoadingSpinner()]);
     if (feedNews) replaceChildren(feedNews, [createFeedLoadingSpinner()]);
   }
 
   const forceRefresh = Boolean(options.forceRefresh);
 
+  if (forceRefresh && stateAtRequest) {
+    clearStateEventsCache(stateAtRequest);
+  }
+
   try {
-    const events = await gatherMapEvents(stateAtRequest, forceRefresh);
-    if (generation !== feedsGeneration) return;
-    const filtered = stateAtRequest
-      ? events.filter((event) => eventMatchesState(event, stateAtRequest))
-      : events;
-    const fakeEvents = filtered.filter((event) => normalizeClassification(event.classification) === 'fake');
-    const realEvents = filtered.filter((event) => normalizeClassification(event.classification) === 'real');
-    await renderFeedsProgressively(fakeEvents, realEvents, generation, stateAtRequest);
+    if (stateAtRequest) {
+      // 1. Fetch latest 10 quickly
+      const fetchOptions = forceRefresh ? { cacheMs: 0, force: true } : {};
+      const events10 = await getStateEvents(stateAtRequest, { ...fetchOptions, limit: 10 });
+      if (generation !== feedsGeneration) return;
+
+      const deduped10 = dedupeEvents(events10);
+      const filtered10 = deduped10.filter((event) => eventMatchesState(event, stateAtRequest));
+      const fake10 = filtered10.filter((event) => getEventClassification(event) === 'fake');
+      const real10 = filtered10.filter((event) => getEventClassification(event) === 'real');
+
+      await renderFeedsProgressively(fake10, real10, generation, stateAtRequest);
+
+      // 2. Fetch up to 20 in the background
+      getStateEvents(stateAtRequest, { ...fetchOptions, limit: 20 })
+        .then(async (events20) => {
+          if (generation !== feedsGeneration) return;
+          const deduped20 = dedupeEvents(events20);
+          const filtered20 = deduped20.filter((event) => eventMatchesState(event, stateAtRequest));
+          const fake20 = filtered20.filter((event) => getEventClassification(event) === 'fake');
+          const real20 = filtered20.filter((event) => getEventClassification(event) === 'real');
+          await renderFeedsProgressively(fake20, real20, generation, stateAtRequest);
+        })
+        .catch((err) => {
+          console.warn('Background feed fetch failed:', err);
+        });
+    } else {
+      // No state selected: fetch only live events (global pool)
+      const fetchOptions = forceRefresh ? { cacheMs: 0, force: true } : {};
+      const events = await getLiveEvents(LIVE_EVENTS_FETCH_LIMIT, fetchOptions);
+      if (generation !== feedsGeneration) return;
+
+      const deduped = dedupeEvents(events);
+      const fakeEvents = deduped.filter((event) => getEventClassification(event) === 'fake');
+      const realEvents = deduped.filter((event) => getEventClassification(event) === 'real');
+      await renderFeedsProgressively(fakeEvents, realEvents, generation, stateAtRequest);
+    }
   } catch (error) {
     if (generation !== feedsGeneration) return;
     console.error('Feed update failed:', error);
@@ -763,27 +709,6 @@ function setupControls() {
     }
   }
 
-  // Floating Insights Logic
-  const insightsTrigger = qs('#state-insights-trigger');
-  const insightsCard = qs('#state-insights-card');
-  const insightsClose = qs('#close-insights');
-  if (insightsTrigger && insightsCard) {
-    insightsTrigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = !insightsCard.classList.contains('invisible');
-      if (isVisible) {
-        insightsCard.classList.add('invisible', 'opacity-0', 'scale-95');
-        insightsCard.classList.remove('opacity-100', 'scale-100');
-      } else {
-        insightsCard.classList.remove('invisible', 'opacity-0', 'scale-95');
-        insightsCard.classList.add('opacity-100', 'scale-100');
-      }
-    });
-    insightsClose?.addEventListener('click', () => {
-      insightsCard.classList.add('invisible', 'opacity-0', 'scale-95');
-      insightsCard.classList.remove('opacity-100', 'scale-100');
-    });
-  }
 
   // Tab Logic
   const tabAlerts = qs('#tab-alerts');
@@ -810,7 +735,20 @@ function setupControls() {
     tabNews.addEventListener('click', () => setActiveTab('news'));
   }
 
-  setupFeedFilters();
+  const stateClearButton = qs('#heatmap-state-clear');
+  if (stateClearButton) {
+    stateClearButton.addEventListener('click', clearStateSelection);
+  }
+
+  const svgRoot = qs('#heatmap-svg-root');
+  if (svgRoot) {
+    svgRoot.addEventListener('click', (event) => {
+      if (event.target && event.target.tagName !== 'path') {
+        clearStateSelection();
+      }
+    });
+  }
+
   setupEventModal();
   document.addEventListener('keydown', handleHeatmapShortcuts);
 }
@@ -1053,8 +991,8 @@ function hydrateFeedsFromCache() {
     if (onMap.length >= 3) events = onMap;
   }
 
-  const fakeEvents = events.filter((event) => normalizeClassification(event.classification) === 'fake');
-  const realEvents = events.filter((event) => normalizeClassification(event.classification) === 'real');
+  const fakeEvents = events.filter((event) => getEventClassification(event) === 'fake');
+  const realEvents = events.filter((event) => getEventClassification(event) === 'real');
   renderEventList('#heatmap-misinformation-feed', fakeEvents, { type: 'fake', limit: FEED_DISPLAY_LIMIT });
   renderEventList('#heatmap-real-news-feed', realEvents, { type: 'real', limit: FEED_DISPLAY_LIMIT });
   setText('#heatmap-misinformation-count', `${Math.min(fakeEvents.length, FEED_DISPLAY_LIMIT)} items`);

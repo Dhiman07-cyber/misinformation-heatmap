@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+  <style>
+    .page-hero { padding-top: 100px; padding-bottom: 60px; }
+    .legal-content { max-width: 800px; margin: 0 auto; padding: 40px; background: #fff; border-radius: 24px; border: 1px solid #e2e8f0; }
+    h3 { font-size: 20px; font-weight: 900; margin: 32px 0 16px; color: #0f172a; }
+    p { margin-bottom: 16px; color: #475569; line-height: 1.8; }
+    @media (min-width: 1024px) { .page-hero { padding-top: 140px; padding-bottom: 80px; } }
+  </style>
+  <title>Privacy Policy - Misinformation Heatmap</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
+</head>
+<body data-page="privacy-policy" class="min-h-screen bg-slate-50 antialiased">
+  <div data-navbar></div>
+  <main class="page-hero px-6">
+    <h1 class="text-4xl font-black text-center text-slate-950">Privacy Policy</h1>
+    <p class="text-center mt-4 text-slate-500 italic">Last updated: May 2026</p>
+  </main>
+  <section class="pb-32 px-6 lg:px-8">
+    <div class="legal-content shadow-sm">
+      <h3>1. Data Collection</h3>
+      <p>Misinformation Heatmap collects public digital signals for the purpose of identifying and verifying misinformation clusters. We do not collect private personal communications or non-public identifiable information.</p>
+      
+      <h3>2. Data Usage</h3>
+      <p>Processed data is used solely to generate geographical heatmaps and regional signal reports. Aggregated data may be shared with verified research and government partners.</p>
+      
+      <h3>3. Regional Sovereignty</h3>
+      <p>All data collected within India is stored and processed on local servers in compliance with national data protection regulations.</p>
+    </div>
+  </section>
+  <div data-footer-placeholder></div>
+  <script>
+    fetch('/contact.html').then(r => r.text()).then(html => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const footer = doc.querySelector('footer');
+      if(footer) document.querySelector('[data-footer-placeholder]').replaceWith(footer);
+    });
+  </script>
+</body>
+</html>

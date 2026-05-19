@@ -84,9 +84,9 @@ export function mountNavbar(options = {}) {
           className: 'h-9 w-9 shrink-0 rounded-lg border border-slate-200 object-cover shadow-card sm:h-11 sm:w-11 lg:h-9 lg:w-9',
           attrs: { src: '/assets/ind.png', alt: 'India logo' }
         }),
-        createElement('span', { className: 'min-w-0' }, [
-          createElement('span', { className: 'block truncate text-sm font-extrabold leading-tight tracking-tight text-slate-950 sm:text-lg lg:text-base', text: 'Misinformation' }),
-          createElement('span', { className: 'block truncate text-[11px] font-bold leading-tight text-india-green-600 sm:text-base lg:text-sm', text: 'Heatmap' })
+        createElement('span', { className: 'min-w-0 text-sm font-extrabold leading-tight tracking-tight text-slate-950 sm:text-lg lg:text-base whitespace-nowrap' }, [
+          createElement('span', { className: 'text-slate-950', text: 'Misinformation' }),
+          createElement('span', { className: 'text-india-green-600 ml-1', text: 'Heatmap' })
         ])
       ]),
       createElement('div', { className: 'hidden items-center gap-1 lg:flex', attrs: { 'data-desktop-nav': '' } }, ROUTES.map((route) => createDesktopLink(route, page))),
@@ -128,7 +128,10 @@ export function updateStatsPanels(items) {
   // Desktop specific IDs
   const idMap = {
     'Total Events': '#nav-stat-events',
+    'Events': '#nav-stat-events',
     'Active States': '#nav-stat-active',
+    'Coverage': '#nav-stat-active',
+    'States': '#nav-stat-active',
     'Last Update': '#nav-stat-update',
     'Accuracy': '#nav-stat-accuracy'
   };

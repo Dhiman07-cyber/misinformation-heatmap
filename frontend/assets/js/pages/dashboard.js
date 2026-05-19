@@ -28,16 +28,16 @@ function updateStats(stats) {
   setText('#dashboard-real-events', formatCount(real));
 
   const accuracy = numberOrNull(stats.classification_accuracy);
-  setText('#dashboard-accuracy-events', formatPercent(accuracy));
+  setText('#dashboard-under-review-events', formatCount(review));
 
   setProgress('dashboard-total-bar', total === null ? 0 : 100);
   setProgress('dashboard-fake-bar', percentOf(fake, divisor) || 0);
   setProgress('dashboard-real-bar', percentOf(real, divisor) || 0);
+  setProgress('dashboard-under-review-bar', percentOf(review, divisor) || 0);
   const normalizedAccuracy = accuracy === null ? 0 : Math.max(0, Math.min(100, Math.abs(accuracy) <= 1 ? accuracy * 100 : accuracy));
-  setProgress('dashboard-accuracy-bar', normalizedAccuracy);
 
   setText('#dashboard-accuracy-pct', formatPercent(accuracy));
-  setText('#dashboard-accuracy-badge', accuracy === null ? 'Unavailable' : 'Backend value');
+  setText('#dashboard-accuracy-badge', accuracy === null ? 'Unavailable' : 'High Confidence');
   const ring = document.getElementById('dashboard-accuracy-ring');
   if (ring) ring.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - normalizedAccuracy / 100));
 
@@ -48,13 +48,26 @@ function updateStats(stats) {
   const processing = Boolean(stats.processing_active);
   const mlReady = Boolean(stats.ml_ready);
   const statusText = processing ? 'Live processing' : mlReady ? 'System ready' : 'Stats loaded';
-  updateStatusText('dashboard-nav-status', statusText, processing || mlReady ? 'good' : 'neutral');
+  const statusState = processing || mlReady ? 'good' : 'neutral';
+  updateStatusText('dashboard-nav-status', statusText, statusState);
   updateMobileNavStatus(statusText);
+
+  // Update desktop floating pill status indicator
+  const desktopHealthDot = document.getElementById('desktop-health-dot');
+  const desktopHealthPing = document.getElementById('desktop-health-ping');
+  if (desktopHealthDot && desktopHealthPing) {
+    const isGood = statusState === 'good';
+    desktopHealthDot.className = `h-full w-full rounded-full transition-colors duration-500 ${isGood ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'}`;
+    desktopHealthPing.className = `absolute h-full w-full animate-ping rounded-full opacity-40 transition-colors duration-500 ${isGood ? 'bg-emerald-500' : 'bg-amber-500'}`;
+  }
+
+  const lastUpdate = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   updateStatsPanels([
     { label: 'Events', value: formatCount(total), className: 'text-blue-700' },
     { label: 'Risk', value: formatCount(fake), className: 'text-saffron-700' },
     { label: 'Accuracy', value: formatPercent(accuracy), className: 'text-emerald-700' },
+    { label: 'Last Update', value: lastUpdate },
     { label: 'Coverage', value: totalStates === null ? '--' : formatCount(totalStates), className: 'text-slate-950' }
   ]);
 }
@@ -64,13 +77,13 @@ function updateStatsUnavailable() {
     '#dashboard-total-events',
     '#dashboard-fake-events',
     '#dashboard-real-events',
-    '#dashboard-accuracy-events',
+    '#dashboard-under-review-events',
     '#dashboard-accuracy-pct',
     '#dashboard-precision',
     '#dashboard-recall',
     '#dashboard-f1'
   ].forEach((selector) => setText(selector, '--'));
-  ['dashboard-total-bar', 'dashboard-fake-bar', 'dashboard-real-bar', 'dashboard-accuracy-bar'].forEach((id) => setProgress(id, 0));
+  ['dashboard-total-bar', 'dashboard-fake-bar', 'dashboard-real-bar', 'dashboard-under-review-bar'].forEach((id) => setProgress(id, 0));
   setText('#dashboard-accuracy-badge', 'Connecting...');
 }
 
@@ -80,7 +93,7 @@ function updateCoverage(heatmapData) {
   const active = records.filter((record) => numberOrNull(record.event_count ?? record.total_events) > 0).length;
   const events = records.reduce((sum, record) => sum + (numberOrNull(record.event_count ?? record.total_events) || 0), 0);
   const confidences = records
-    .map((record) => numberOrNull(record.ai_confidence ?? record.confidence ?? record.classification_confidence))
+    .map((record) => numberOrNull(record.avg_confidence ?? record.ai_confidence ?? record.confidence ?? record.classification_confidence))
     .filter((value) => value !== null);
   const avgConf = confidences.length
     ? confidences.reduce((sum, value) => sum + value, 0) / confidences.length
@@ -109,30 +122,35 @@ function renderHealthIndicators(results) {
 
   const indicators = [
     {
+      id: 'gateway',
       label: 'Gateway Diagnostics',
       value: health ? toSafeText(health.status || health.message || 'Operational', 'Operational') : 'Connecting...',
       state: health ? 'good' : 'neutral',
       detail: health ? 'Primary API gateway is responding to health probes.' : 'Waiting for connection to gateway...'
     },
     {
+      id: 'analytics',
       label: 'Analytics Engine',
       value: stats ? (stats.processing_active ? 'Active' : 'Idle') : 'Connecting...',
       state: stats ? (stats.processing_active ? 'good' : 'warn') : 'neutral',
       detail: stats ? 'Derived from live processing throughput flags.' : 'Analytics engine metrics are syncing...'
     },
     {
+      id: 'neural',
       label: 'Neural Core Status',
       value: stats ? (stats.ml_ready ? 'Stable' : 'Initializing') : 'Connecting...',
       state: stats ? (stats.ml_ready ? 'good' : 'warn') : 'neutral',
       detail: stats ? 'Classification models are loaded and performing inference.' : 'Model core is warming up...'
     },
     {
+      id: 'geospatial',
       label: 'Geospatial Index',
       value: heatmap ? `${heatmap.length} nodes` : 'Connecting...',
       state: heatmap ? (heatmap.length ? 'good' : 'warn') : 'neutral',
       detail: heatmap ? 'Geographic data clusters are synchronized for mapping.' : 'Spatial indexing service is synchronizing...'
     },
     {
+      id: 'signal',
       label: 'Signal Integrity',
       value: events ? (events.length ? `${events.length} active` : 'Zero signals') : 'Connecting...',
       state: events ? (events.length ? 'good' : 'warn') : 'neutral',
@@ -140,7 +158,7 @@ function renderHealthIndicators(results) {
     }
   ];
 
-  replaceChildren('#dashboard-health-indicators', indicators.map((ind) => createHealthRow(ind, { theme: 'dark' })));
+  replaceChildren('#dashboard-health-indicators', indicators.map((ind) => createHealthRow(ind, { theme: 'light' })));
 
   const hasBad = indicators.some((indicator) => indicator.state === 'bad');
   const hasWarn = indicators.some((indicator) => indicator.state === 'warn');
@@ -176,7 +194,7 @@ function hydrateDashboardFromCache() {
   if (heatmapPayload) {
     const rows = Array.isArray(heatmapPayload)
       ? heatmapPayload
-      : (heatmapPayload.heatmap_data || heatmapPayload.data || []);
+      : (heatmapPayload.heatmap || heatmapPayload.heatmap_data || heatmapPayload.data || []);
     if (rows.length) updateCoverage(rows);
   }
   if (eventsPayload) {
@@ -192,7 +210,7 @@ function hydrateDashboardFromCache() {
         status: heatmapPayload ? 'fulfilled' : 'rejected',
         value: Array.isArray(heatmapPayload)
           ? heatmapPayload
-          : (heatmapPayload?.heatmap_data || heatmapPayload?.data || null)
+          : (heatmapPayload?.heatmap || heatmapPayload?.heatmap_data || heatmapPayload?.data || null)
       },
       events: {
         status: eventsPayload ? 'fulfilled' : 'rejected',
@@ -216,31 +234,48 @@ export async function refreshDashboard(force = false) {
   else hydrateDashboardFromCache();
 
   const fetchOptions = force ? { cacheMs: 0 } : {};
-  const results = { stats: null, heatmap: null, events: null, health: null };
+  const results = { 
+    stats: { status: 'pending', value: null }, 
+    heatmap: { status: 'pending', value: null }, 
+    events: { status: 'pending', value: null }, 
+    health: { status: 'pending', value: null } 
+  };
+
+  const updateUI = () => renderHealthIndicators(results);
 
   await Promise.allSettled([
     getStats(fetchOptions).then((value) => {
       results.stats = { status: 'fulfilled', value };
       updateStats(value);
+      updateUI();
     }).catch((reason) => {
       results.stats = { status: 'rejected', reason };
+      updateUI();
     }),
     getHeatmapData(fetchOptions).then((value) => {
-      results.heatmap = { status: 'fulfilled', value };
-      updateCoverage(value);
+      const rows = Array.isArray(value) ? value : (value?.heatmap || value?.heatmap_data || value?.data || []);
+      results.heatmap = { status: 'fulfilled', value: rows };
+      updateCoverage(rows);
+      updateUI();
     }).catch((reason) => {
       results.heatmap = { status: 'rejected', reason };
+      updateUI();
     }),
     getLiveEvents(15, fetchOptions).then((value) => {
-      results.events = { status: 'fulfilled', value };
-      renderActivity(value);
+      const list = Array.isArray(value) ? value : (value?.events || value?.data || []);
+      results.events = { status: 'fulfilled', value: list };
+      renderActivity(list);
+      updateUI();
     }).catch((reason) => {
       results.events = { status: 'rejected', reason };
+      updateUI();
     }),
     getHealth(fetchOptions).then((value) => {
       results.health = { status: 'fulfilled', value };
+      updateUI();
     }).catch((reason) => {
       results.health = { status: 'rejected', reason };
+      updateUI();
     })
   ]);
 
@@ -264,6 +299,7 @@ export function initDashboard() {
 
   const healthOverlay = document.getElementById('dashboard-health-overlay');
   const healthTrigger = document.getElementById('bottom-nav-health-trigger');
+  const desktopHealthTrigger = document.getElementById('desktop-health-trigger');
   const closeOverlay = document.getElementById('close-health-overlay');
 
   const toggleOverlay = (show) => {
@@ -280,14 +316,17 @@ export function initDashboard() {
           healthOverlay.classList.add('hidden');
           healthOverlay.classList.remove('closing');
         }
-      }, 600); // Match CSS animation duration
+      }, 300); // Match CSS animation duration (0.3s)
     }
   };
 
-  if (healthTrigger && healthOverlay) {
-    healthTrigger.addEventListener('click', () => {
-      const isActive = healthOverlay.classList.contains('active');
-      toggleOverlay(!isActive);
+  const triggers = [healthTrigger, desktopHealthTrigger].filter(Boolean);
+  if (triggers.length > 0 && healthOverlay) {
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const isActive = healthOverlay.classList.contains('active');
+        toggleOverlay(!isActive);
+      });
     });
   }
 

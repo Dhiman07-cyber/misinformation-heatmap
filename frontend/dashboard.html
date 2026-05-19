@@ -45,10 +45,10 @@
 
       /* Animation Overrides for Pro 7 (Less extreme surge) */
       #dashboard-health-overlay.active #island-toggle {
-        animation: fadeInUpPro 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: fadeInUpPro 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       #dashboard-health-overlay.closing #island-toggle {
-        animation: fadeOutDownPro 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: fadeOutDownPro 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
       @keyframes fadeInUpPro {
@@ -114,12 +114,11 @@
     <section class="mb-6 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-premium backdrop-blur-md sm:p-6 lg:p-8">
       <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-black uppercase tracking-[0.18em] text-saffron-500">Operations dashboard</p>
+          <p class="text-xs font-black text-saffron-500">Real-Time Analytics</p>
           <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl lg:text-4xl leading-tight">
-            Real-time <span class="text-ashoka-blue-500">analytics</span>
+            System <span class="text-ashoka-blue-500">Overview</span>
           </h1>
-          <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Monitor classification volume, model
-            readiness, geographic coverage, and the latest event stream from the detection pipeline.</p>
+          <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Comprehensive misinformation detection metrics across India</p>
           <p class="mt-2 text-xs font-medium text-slate-500" id="dashboard-last-updated" aria-live="polite">Waiting for
             the first update</p>
         </div>
@@ -151,7 +150,7 @@
       <article
         class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-blue-600 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
         <div class="flex flex-wrap items-start justify-between gap-2">
-          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Ingested signals</p>
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Total Events</p>
           <span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black text-blue-700 sm:text-xs lg:text-sm">All</span>
         </div>
         <p class="mt-3 text-xl font-black leading-none text-blue-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-total-events"
@@ -165,7 +164,7 @@
       <article
         class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-red-500 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
         <div class="flex flex-wrap items-start justify-between gap-2">
-          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Threat detections</p>
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Misinformation</p>
           <span class="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-700 sm:text-xs lg:text-sm">Risk</span>
         </div>
         <p class="mt-3 text-xl font-black leading-none text-red-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-fake-events"
@@ -179,7 +178,7 @@
       <article
         class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-emerald-600 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
         <div class="flex flex-wrap items-start justify-between gap-2">
-          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Verified feed</p>
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Verified News</p>
           <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700 sm:text-xs lg:text-sm">Clear</span>
         </div>
         <p class="mt-3 text-xl font-black leading-none text-emerald-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-real-events"
@@ -191,17 +190,17 @@
       </article>
 
       <article
-        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-indigo-600 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
+        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-amber-500 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
         <div class="flex flex-wrap items-start justify-between gap-2">
-          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">AI Precision</p>
-          <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black text-indigo-700 sm:text-xs lg:text-sm">Model</span>
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Under Review</p>
+          <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 sm:text-xs lg:text-sm">Pending</span>
         </div>
-        <p class="mt-3 text-xl font-black leading-none text-indigo-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-accuracy-events"
+        <p class="mt-3 text-xl font-black leading-none text-amber-600 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-under-review-events"
           aria-live="polite">--</p>
-        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">Classification confidence</p>
+        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">Requires verification</p>
         <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 sm:mt-4 sm:h-2"><span
-            class="block h-full w-0 rounded-full bg-indigo-600 transition-[width] duration-500 ease-out"
-            id="dashboard-accuracy-bar"></span></div>
+            class="block h-full w-0 rounded-full bg-amber-500 transition-[width] duration-500 ease-out"
+            id="dashboard-under-review-bar"></span></div>
       </article>
     </section>
 
@@ -276,7 +275,7 @@
           </div>
         </div>
         <div class="p-5">
-          <div class="flex max-h-[20rem] min-h-[16rem] flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar" id="dashboard-activity-feed"
+          <div class="flex max-h-[20rem] min-h-[16rem] flex-col gap-4 overflow-y-auto pt-1.5 pr-2 custom-scrollbar" id="dashboard-activity-feed"
             aria-live="polite">
             <article class="flex min-w-0 gap-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
               <div class="h-10 w-10 shrink-0 animate-pulse rounded-lg bg-slate-200"></div>
@@ -292,84 +291,118 @@
 
     <!-- Dynamic System Island - Expanded View Only -->
     <div id="dashboard-health-overlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/40 backdrop-blur-sm">
-      <div id="island-toggle" class="group relative flex flex-col overflow-hidden rounded-[2.5rem] bg-slate-950 text-white shadow-[0_20px_50px_rgba(0,0,0,0.5)] w-[90vw] max-w-[950px] h-[80vh] max-h-[700px]">
+      <div id="island-toggle" class="group relative flex flex-col overflow-hidden rounded-[2.5rem] bg-white text-slate-950 border border-slate-200 shadow-premium w-[90vw] max-w-[950px] h-[80vh] max-h-[700px]">
         <div id="island-expanded" class="flex w-full h-full flex-col p-6 sm:p-8 text-left">
-          <header class="flex items-center justify-between border-b border-white/10 pb-6">
+          <header class="flex items-center justify-between border-b border-slate-100 pb-6">
             <div>
-              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Real-time telemetry</p>
-              <h3 class="mt-1 text-xl font-black text-white">System health</h3>
+              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Real-time monitoring</p>
+              <h3 class="mt-1 text-xl font-black text-slate-950">System health</h3>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-[10px] font-bold text-emerald-500" id="dashboard-health-badge">Operational</span>
-              <div class="h-4 w-px bg-white/10"></div>
-              <button id="close-health-overlay" class="text-[10px] font-bold text-slate-400 hover:text-white transition-colors">Close ×</button>
+              <span class="text-[10px] font-bold text-emerald-600" id="dashboard-health-badge">Operational</span>
+              <div class="h-4 w-px bg-slate-200"></div>
+              <button id="close-health-overlay" class="text-[10px] font-bold text-slate-400 hover:text-slate-950 transition-colors">Close ×</button>
             </div>
           </header>
 
           <div class="mt-8 w-full flex-1 overflow-y-auto pr-2 custom-scrollbar island-scroll-container">
             <!-- Key Metrics Grid -->
             <div class="grid w-full grid-cols-2 gap-3 lg:grid-cols-4">
-              <div class="rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:border-white/10">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Regional Coverage</p>
-                <p class="mt-2 text-2xl font-black text-white" id="dashboard-coverage-regions">--</p>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Regional Coverage</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-regions">--</p>
               </div>
-              <div class="rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:border-white/10">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Active Signals</p>
-                <p class="mt-2 text-2xl font-black text-white" id="dashboard-coverage-active">--</p>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Active Signals</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-active">--</p>
               </div>
-              <div class="rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:border-white/10">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Event Ingestion</p>
-                <p class="mt-2 text-2xl font-black text-white" id="dashboard-coverage-events">--</p>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Event Ingestion</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-events">--</p>
               </div>
-              <div class="rounded-2xl border border-white/5 bg-white/5 p-4 transition-all hover:bg-white/10 hover:border-white/10">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Engine Precision</p>
-                <p class="mt-2 text-2xl font-black text-white" id="dashboard-coverage-confidence">--</p>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Engine Precision</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-confidence">--</p>
               </div>
             </div>
 
             <!-- Module Diagnostics -->
             <div class="mt-8">
               <div class="mb-4 flex items-center justify-between">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Module Diagnostics</p>
+                <p class="text-[10px] font-black text-slate-500">Module Diagnostics</p>
                 <p class="text-[10px] text-slate-500" id="dashboard-coverage-note">Synchronized with live feed</p>
               </div>
               <div class="flex w-full flex-col gap-3" id="dashboard-health-indicators">
                 <!-- Indicators populated by JS -->
-                <div class="flex h-16 animate-pulse items-center gap-4 rounded-xl bg-white/5 px-4">
-                  <div class="h-2 w-2 rounded-full bg-slate-700"></div>
-                  <div class="h-3 w-32 rounded bg-slate-700"></div>
+                <div class="flex h-16 animate-pulse items-center gap-4 rounded-xl bg-slate-50 px-4">
+                  <div class="h-2 w-2 rounded-full bg-slate-300"></div>
+                  <div class="h-3 w-32 rounded bg-slate-300"></div>
                 </div>
               </div>
             </div>
           </div>
           
           <footer class="mt-auto flex items-center justify-center pt-6">
-            <div class="h-1 w-12 rounded-full bg-white/10 transition-colors group-hover:bg-white/30"></div>
+            <div class="h-1 w-12 rounded-full bg-slate-200 transition-colors group-hover:bg-slate-300"></div>
           </footer>
         </div>
       </div>
     </div>
 
+    <!-- Desktop System Health Trigger (Floating Pill) -->
+    <button id="desktop-health-trigger" class="group fixed bottom-6 right-6 z-[60] hidden h-14 w-max items-center gap-2 rounded-full border border-slate-200 bg-white/95 shadow-premium backdrop-blur-2xl transition-all duration-500 hover:scale-[1.05] hover:border-saffron-300 active:scale-95 lg:flex px-4" aria-label="System health status">
+      <div class="relative flex h-2.5 w-2.5 flex-none items-center justify-center">
+        <div id="desktop-health-ping" class="absolute h-full w-full animate-ping rounded-full bg-emerald-500 opacity-40"></div>
+        <div id="desktop-health-dot" class="h-full w-full rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+      </div>
+      <span id="desktop-health-text" class="whitespace-nowrap text-xs font-black text-slate-900">System Health</span>
+      <div class="h-4 w-px flex-none bg-slate-200"></div>
+      <div class="flex h-5 w-5 flex-none items-center justify-center">
+        <svg class="h-full w-full text-slate-400 group-hover:text-slate-950 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+    </button>
+
     <style>
+      #desktop-health-trigger {
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        padding-left: 1.25rem !important;
+        padding-right: 1.75rem !important;
+        width: max-content !important;
+      }
+      #desktop-health-trigger svg {
+        overflow: visible !important;
+      }
+      #desktop-health-trigger:active {
+        transform: scale(0.92) translateY(2px) !important;
+      }
       #dashboard-health-overlay.active,
       #dashboard-health-overlay.closing {
         display: flex;
       }
-      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-      @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+      @keyframes springExpand {
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+        70% { opacity: 1; transform: scale(1.02) translateY(-2px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      @keyframes springShrink {
+        0% { opacity: 1; transform: scale(1) translateY(0); }
+        100% { opacity: 0; transform: scale(0.9) translateY(10px); }
+      }
       #dashboard-health-overlay.active {
-        animation: fadeIn 0.3s ease-out forwards;
+        animation: fadeIn 0.25s ease-out forwards;
       }
       #dashboard-health-overlay.active #island-toggle {
-        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        transform-origin: bottom center;
+        animation: springExpand 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        transform-origin: bottom right;
       }
       #dashboard-health-overlay.closing {
-        animation: fadeOut 0.5s ease-in forwards;
+        animation: fadeOut 0.2s ease-in forwards;
       }
       #dashboard-health-overlay.closing #island-toggle {
-        animation: fadeOutDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        transform-origin: bottom center;
+        animation: springShrink 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+        transform-origin: bottom right;
       }
       @media (max-width: 880px) {
         #island-toggle {
@@ -388,6 +421,68 @@
       }
     </style>
   </main>
+
+  <footer class="border-t border-slate-200 bg-slate-950 pt-16 pb-32 text-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
+        <!-- Brand Section -->
+        <div class="max-w-xs">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-saffron-500 via-white to-india-green-500 p-1">
+              <div class="h-full w-full rounded-md bg-slate-950 flex items-center justify-center">
+                <span class="text-[10px] font-black">MH</span>
+              </div>
+            </div>
+            <span class="text-lg font-black tracking-tight">Misinfo<span class="text-saffron-500">Heatmap</span></span>
+          </div>
+          <p class="mt-6 text-sm leading-7 text-slate-400">
+            Advanced AI-powered platform for real-time misinformation detection and verification across India's digital
+            landscape.
+          </p>
+          <div class="mt-6 flex items-center gap-4">
+            <!-- India Badge -->
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-white/10">
+              <span class="h-1.5 w-1.5 rounded-full bg-saffron-500"></span>
+              Monitored in India
+            </span>
+          </div>
+        </div>
+
+        <!-- Platform Links -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-saffron-500">Platform</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/heatmap.html" class="transition hover:text-white font-medium">Live Heatmap</a></li>
+            <li><a href="/dashboard.html" class="transition hover:text-white font-medium">Intelligence Dashboard</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-ashoka-blue-400">Support</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/contact.html" class="transition hover:text-white font-black text-slate-300">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="mt-16 border-t border-white/5 pt-8">
+        <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <p class="text-xs text-slate-500">
+            © 2026 Misinformation Heatmap. Powered by Advanced Neural Networks.
+          </p>
+          <div class="flex items-center gap-8">
+            <a href="/privacy-policy.html" class="text-xs text-slate-400 hover:text-white font-medium transition">Privacy Policy</a>
+            <div
+              class="h-1 w-32 rounded-full bg-gradient-to-r from-saffron-500 via-white to-india-green-500 opacity-20">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
 
 </html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://ndg07-heatmap.hf.space; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <style>
+    /* Custom spacing since global styles.css has limited utility classes */
+    .page-hero { padding-top: 80px; padding-bottom: 40px; }
+    .contact-grid { gap: 32px; display: grid; margin-top: 40px; margin-bottom: 60px; }
+    .contact-card { padding: 32px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .faq-section { margin-top: 40px; margin-bottom: 80px; padding: 48px 32px; border-radius: 40px; }
+    
+    @media (min-width: 640px) {
+      .contact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .contact-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .page-hero { padding-top: 100px; padding-bottom: 60px; }
+    }
+  </style>
+  <title>Contact Us - Misinformation Heatmap</title>
+  <meta name="description"
+    content="Connect with the team behind Misinformation Heatmap for support, feedback, or collaborations.">
+  <link rel="icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
+</head>
+
+<body data-page="contact" class="min-h-screen overflow-x-hidden antialiased bg-slate-50">
+  <div data-navbar></div>
+
+  <main id="main-content" class="page-hero">
+    <div class="mx-auto max-w-7xl px-6 lg:px-8">
+      <!-- Hero Header -->
+      <header class="mx-auto max-w-3xl text-center">
+        <p class="mb-6 text-xs font-bold uppercase tracking-[0.2em] text-saffron-500">Connect with us</p>
+        <h1 class="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+          Get in <span class="text-ashoka-blue-500">touch</span>
+        </h1>
+        <p class="mt-8 text-lg leading-relaxed text-slate-600 sm:text-xl">
+          Need assistance or looking to partner? Reach out through any of our channels below. Our team is dedicated to verifying the digital landscape across India.
+        </p>
+      </header>
+
+      <!-- Contact Grid -->
+      <section class="contact-grid">
+        <!-- Email -->
+        <article class="contact-card rounded-2xl border border-slate-200 bg-white shadow-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div>
+            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-saffron-50 text-saffron-600">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-black text-slate-950">Email Support</h2>
+            <p class="mt-2 text-sm text-slate-500 leading-relaxed">Fast response for all general inquiries.</p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-50">
+            <a href="mailto:nayandg8@gmail.com" class="text-sm font-bold text-saffron-600 hover:text-saffron-700">Send Email →</a>
+          </div>
+        </article>
+
+        <!-- LinkedIn -->
+        <article class="contact-card rounded-2xl border border-slate-200 bg-white shadow-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div>
+            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+              </svg>
+            </div>
+            <h2 class="text-xl font-black text-slate-950">LinkedIn</h2>
+            <p class="mt-2 text-sm text-slate-500 leading-relaxed">Professional networking and updates.</p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-50">
+            <a href="https://linkedin.com/in/nayandeep-goswami-b92663329" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-blue-600 hover:text-blue-700">View Profile →</a>
+          </div>
+        </article>
+
+        <!-- Website -->
+        <article class="contact-card rounded-2xl border border-slate-200 bg-white shadow-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div>
+            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-black text-slate-950">Official Site</h2>
+            <p class="mt-2 text-sm text-slate-500 leading-relaxed">Explore our research and case studies.</p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-50">
+            <a href="https://nayandeep.dev" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-emerald-600 hover:text-emerald-700">Visit Website →</a>
+          </div>
+        </article>
+
+        <!-- Instagram -->
+        <article class="contact-card rounded-2xl border border-slate-200 bg-white shadow-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <div>
+            <div class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+              <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259 0.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </div>
+            <h2 class="text-xl font-black text-slate-950">Instagram</h2>
+            <p class="mt-2 text-sm text-slate-500 leading-relaxed">Behind the scenes and live signals.</p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-50">
+            <a href="https://instagram.com/nayan_dg" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-orange-600 hover:text-orange-700">Follow Us →</a>
+          </div>
+        </article>
+      </section>
+
+      <!-- FAQ Section -->
+      <section class="faq-section bg-slate-900 text-white shadow-2xl">
+        <div class="grid grid-cols-1 gap-16 lg:grid-cols-[1fr_1.4fr] lg:items-center">
+          <div class="text-center">
+            <h2 class="text-3xl font-black sm:text-4xl leading-tight">Common <br class="hidden lg:block">inquiries</h2>
+            <p class="mt-4 text-slate-400 text-sm mx-auto max-w-xs">Find quick answers to common partnership questions.</p>
+          </div>
+          
+          <div class="grid flex-1 gap-8 sm:grid-cols-2">
+            <article>
+              <h3 class="text-xs font-black uppercase tracking-widest text-saffron-500">Media & Press</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-300">For press kits or interview requests regarding our signal monitoring, reach out via email.</p>
+            </article>
+            <article>
+              <h3 class="text-xs font-black uppercase tracking-widest text-india-green-500">Collaborations</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-300">We are open to working with research institutions across India.</p>
+            </article>
+            <article>
+              <h3 class="text-xs font-black uppercase tracking-widest text-ashoka-blue-400">API Access</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-300">Enterprise API access is available for verified government and educational entities.</p>
+            </article>
+            <article>
+              <h3 class="text-xs font-black uppercase tracking-widest text-slate-400">Support Hours</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-300">Our core team monitors signals 24/7. General responses typically arrive within 24 hours.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-slate-950 pt-16 pb-32 text-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
+        <!-- Brand Section -->
+        <div class="max-w-xs">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-saffron-500 via-white to-india-green-500 p-1">
+              <div class="h-full w-full rounded-md bg-slate-950 flex items-center justify-center">
+                <span class="text-[10px] font-black">MH</span>
+              </div>
+            </div>
+            <span class="text-lg font-black tracking-tight">Misinfo<span class="text-saffron-500">Heatmap</span></span>
+          </div>
+          <p class="mt-6 text-sm leading-7 text-slate-400">
+            Advanced AI-powered platform for real-time misinformation detection and verification across India's digital
+            landscape.
+          </p>
+          <div class="mt-6 flex items-center gap-4">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-white/10">
+              <span class="h-1.5 w-1.5 rounded-full bg-saffron-500"></span>
+              Monitored in India
+            </span>
+          </div>
+        </div>
+
+        <!-- Platform Links -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-widest text-saffron-500">Platform</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/heatmap.html" class="transition hover:text-white">Live Heatmap</a></li>
+            <li><a href="/dashboard.html" class="transition hover:text-white">Intelligence Dashboard</a></li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <h3 class="text-sm font-bold uppercase tracking-widest text-ashoka-blue-400">Support</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/contact.html" class="transition hover:text-white font-bold text-slate-300">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="mt-16 border-t border-white/5 pt-8">
+        <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <p class="text-xs text-slate-500">© 2026 Misinformation Heatmap.</p>
+          <div class="flex items-center gap-6">
+            <a href="/privacy-policy.html" class="text-xs text-slate-500 hover:text-white transition">Privacy Policy</a>
+            <div class="h-1 w-24 rounded-full bg-gradient-to-r from-saffron-500 via-white to-india-green-500 opacity-30"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+
+</html>

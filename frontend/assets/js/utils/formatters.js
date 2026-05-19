@@ -69,6 +69,23 @@ export function normalizeClassification(value) {
   return 'unknown';
 }
 
+export function getEventClassification(event) {
+  if (!event || typeof event !== 'object') return 'unknown';
+  const direct = normalizeClassification(
+    event.classification
+      ?? event.fake_news_verdict
+      ?? event.verdict
+      ?? event.status
+      ?? event.truth_status
+  );
+  if (direct !== 'unknown') return direct;
+
+  if (typeof event.is_fake === 'boolean') return event.is_fake ? 'fake' : 'real';
+  const isFake = numberOrNull(event.is_fake);
+  if (isFake !== null) return isFake > 0 ? 'fake' : 'real';
+  return 'unknown';
+}
+
 export function classificationLabel(value) {
   const classification = normalizeClassification(value);
   if (classification === 'fake') return 'Misinformation';
@@ -95,6 +112,7 @@ export function normalizeName(value) {
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\sand\s/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -121,14 +139,14 @@ export const RISK_LEVELS = {
   high: {
     key: 'high',
     label: 'High',
-    color: '#ef4444',
+    color: '#dc2626',
     badgeClass: 'border-red-200 bg-red-50 text-red-700'
   },
   insufficient: {
     key: 'insufficient-data',
-    label: 'Insufficient data',
-    color: '#94a3b8',
-    badgeClass: 'border-slate-200 bg-slate-50 text-slate-600'
+    label: 'Least risk',
+    color: '#138808',
+    badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700'
   }
 };
 

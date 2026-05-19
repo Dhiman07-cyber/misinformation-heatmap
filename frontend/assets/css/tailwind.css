@@ -129,3 +129,10 @@
     animation: pulseSoft 2s ease-in-out infinite;
   }
 }
+
+#event-detail-card {
+  border: 1.5px solid transparent !important;
+  background: linear-gradient(#fffdf4, #fffdf4) padding-box, 
+              linear-gradient(135deg, rgba(255, 153, 51, 0.4), rgba(0, 0, 128, 0.15), rgba(19, 136, 8, 0.4)) border-box !important;
+}
+
