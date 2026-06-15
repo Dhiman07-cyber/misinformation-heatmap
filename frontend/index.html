@@ -1,580 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Misinformation Heatmap — Real-Time AI Detection Across India</title>
-    <meta name="description" content="AI-powered platform detecting misinformation across all 36 Indian states in real-time using IndicBERT, satellite verification, and fact-checking networks.">
-    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="/public/Misinfo.ico">
-    <link rel="icon" type="image/vnd.microsoft.icon" href="/public/Misinfo.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --saffron:        #E87722;
-            --saffron-light:  #FF9933;
-            --saffron-dark:   #c4601a;
-            --green:          #138808;
-            --green-light:    #1ea50e;
-            --navy:           #000080;
-            --bg:             #FAFAF7;
-            --bg-card:        #FFFFFF;
-            --bg-card-hover:  #F5F5F0;
-            --border:         #E8E8E0;
-            --border-accent:  rgba(232,119,34,0.3);
-            --text-primary:   #1A1A1A;
-            --text-secondary: #555555;
-            --text-muted:     #888888;
-            --shadow-sm:      0 2px 8px rgba(0,0,0,0.08);
-            --shadow-md:      0 4px 20px rgba(0,0,0,0.10);
-            --shadow-lg:      0 8px 40px rgba(0,0,0,0.12);
-            --radius:         16px;
-            --radius-sm:      10px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://ndg07-heatmap.hf.space; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <style>
+    html,
+    body {
+      overflow-x: hidden;
+      width: 100%;
+      position: relative;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
+    /* Surface Duo and Surface Pro 7 specific enhancements */
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            max-width: 100vw;
-        }
+    /* Base styles for all targeted 'Pro' and 'Duo' viewports */
+    @media screen and (device-width: 540px) and (device-height: 720px),
+    screen and (device-width: 1114px) and (device-height: 705px),
+    screen and (device-width: 912px) and (device-height: 1368px),
+    screen and (device-width: 912px) and (device-height: 608px) {
 
-        /* ─── NAVBAR ─── */
-        .navbar {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-            padding: 0 2rem; height: 62px;
-            display: flex; align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s;
-        }
-        .navbar.scrolled { box-shadow: var(--shadow-sm); }
-        .nav-inner { width: 100%; max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
-        .logo-badge { font-size: 0.65rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 6px; border-radius: 4px; letter-spacing: 0.5px; }
-        .logo .logo-name { color: var(--saffron); }
+      .hero-btn {
+        min-width: 210px !important;
+        border-radius: 12px !important;
+        /* Moderately curvy as requested */
+        padding: 0.875rem 2rem !important;
+        font-size: 0.95rem !important;
+        letter-spacing: 0.025em !important;
+        border-width: 2px !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
 
-        .nav-links { display: flex; align-items: center; gap: 0.25rem; }
-        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
-        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); }
+      .hero-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+      }
+    }
 
-        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: var(--green); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(19,136,8,0.4);} 50%{opacity:0.8; box-shadow:0 0 0 5px rgba(19,136,8,0);} }
+    /* Surface Duo Specific: Vertical Stacking & Horizontal Centering */
+    @media screen and (device-width: 540px) and (device-height: 720px),
+    screen and (device-width: 1114px) and (device-height: 705px) {
+      #hero-buttons {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 1.25rem !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+      }
 
-        /* Hamburger Menu */
-        .hamburger-btn {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            z-index: 2001;
-            position: relative;
-        }
-        .hamburger-line {
-            width: 24px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s;
-            border-radius: 2px;
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
-        }
+      .hero-btn {
+        width: 280px !important;
+        /* Consistent width for stacked look */
+        max-width: 90% !important;
+      }
+    }
 
-        /* Mobile Menu Overlay */
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
-            z-index: 1500;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 80px 2rem 2rem;
-        }
-        .mobile-menu-overlay.active {
-            transform: translateX(0);
-        }
-        .mobile-menu-top {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .mobile-menu-link:hover {
-            padding-left: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .mobile-menu-bottom {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .mobile-menu-brand {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mobile-menu-brand .logo-badge {
-            background: #fff;
-            color: var(--saffron);
-        }
+    /* Surface Pro 7 Specific Typography & UI Enhancements (Portrait & Landscape) */
+    @media screen and (device-width: 912px) and (device-height: 1368px),
+    screen and (device-width: 912px) and (device-height: 608px) {
+      #hero-tagline {
+        font-size: 0.95rem !important;
+        /* Increased a bit */
+        letter-spacing: 0.28em !important;
+      }
 
-        /* ─── HERO ─── */
-        .hero {
-            position: relative; z-index: 1; padding: 140px 2rem 100px;
-            text-align: center;
-            /* Premium Indian Tricolor inspired gradient with smooth transitions */
-            background: linear-gradient(135deg,
-                #FF9933 0%,                    /* Saffron */
-                #FFB84D 15%,                   /* Light saffron transition */
-                #FFF5E6 30%,                   /* Warm cream */
-                #F8F8F8 45%,                   /* Soft off-white */
-                #F0F8F0 60%,                   /* Light green tint */
-                #E8F5E8 75%,                   /* Soft green */
-                #138808 100%                   /* Green */
-            );
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .hero::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                rgba(255,255,255,0.1) 0%, 
-                rgba(255,255,255,0) 70%);
-            pointer-events: none;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23FF9933" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23138808" opacity="0.1"/><circle cx="40" cy="80" r="1" fill="%23FF9933" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
-            opacity: 0.3;
-            pointer-events: none;
-        }
-        .hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 600; color: var(--saffron); background: rgba(255, 153, 51, 0.2); border: 1px solid rgba(255, 153, 51, 0.4); border-radius: 20px; padding: 6px 16px; margin-bottom: 2rem; letter-spacing: 0.5px; text-transform: uppercase; }
-        .hero h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.4rem,6vw,4rem); font-weight: 900; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.5rem; background: linear-gradient(135deg, #FF9933 0%, #B45309 50%, #138808 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 580px; margin: 0 auto 2.5rem; line-height: 1.7; }
-        .hero-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-        .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #FF9933 0%, #B45309 100%); color: white; font-weight: 700; font-size: 0.95rem; padding: 0.8rem 2rem; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255, 153, 51, 0.3); }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255, 153, 51, 0.4); }
-        .btn-outline { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-primary); font-weight: 600; font-size: 0.95rem; padding: 0.75rem 1.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); text-decoration: none; transition: all 0.2s; }
-        .btn-outline:hover { border-color: var(--saffron); color: var(--saffron); background: rgba(232,119,34,0.04); }
+      #hero-title {
+        font-size: 4rem !important;
+        /* Kept at 4rem for impact */
+        line-height: 1.1 !important;
+      }
 
-        /* ─── STATS STRIP ─── */
-        .stats-strip { position: relative; z-index: 1; padding: 5rem 2rem 5rem; background: rgba(255, 255, 255, 0.95); }
-        .stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; }
-        .stat-pill {
-            background: rgba(255, 255, 255, 0.8); border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 1.75rem 1.5rem; text-align: center; box-shadow: var(--shadow-sm);
-            transition: all 0.25s;
-        }
-        .stat-pill:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--border-accent); }
-        .stat-pill .val { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--saffron); line-height: 1; }
-        .stat-pill .lbl { font-size: 0.8rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+      #hero-description {
+        font-size: 1.35rem !important;
+        /* Increased just a bit */
+        line-height: 1.8 !important;
+        max-width: 90% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
 
-        /* ─── FEATURES ─── */
-        .features { position: relative; z-index: 1; padding: 5rem 2rem; background: rgba(255, 255, 255, 0.9); }
-        .section-header { text-align: center; margin-bottom: 3.5rem; }
-        .section-tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--green); background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.2); border-radius: 20px; padding: 4px 14px; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .section-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; }
-        .section-sub { color: var(--text-secondary); font-size: 1rem; }
+      /* Slightly larger buttons for Pro 7 */
+      .hero-btn {
+        min-width: 230px !important;
+        padding: 1rem 2.5rem !important;
+        font-size: 1.05rem !important;
+      }
 
-        .features-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-        .feature-card {
-            background: white; border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 2rem; transition: all 0.25s; box-shadow: var(--shadow-sm);
-        }
-        .feature-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-accent); transform: translateY(-2px); }
-        .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
-        .feature-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
-        .feature-desc { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; }
+      /* Pill Scaling for Pro 7 */
+      #bottom-premium-nav {
+        bottom: 3rem !important;
+        gap: 1.25rem !important;
+        padding: 0.75rem !important;
+        border-width: 2px !important;
+      }
 
-        /* ─── LIVE TICKER ─── */
-        .ticker-section { position: relative; z-index:1; padding: 3rem 2rem; }
-        .ticker-inner { max-width: 1100px; margin: 0 auto; }
-        .ticker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .ticker-title { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
-        .ticker-live { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #dc2626; }
-        .ticker-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #dc2626; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+      #bottom-premium-nav a,
+      #bottom-premium-nav button {
+        height: 3.75rem !important;
+        width: 3.75rem !important;
+      }
 
-        .ticker-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-        .ticker-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.2rem; border-left: 3px solid var(--green); box-shadow: var(--shadow-sm); }
-        .ticker-card.fake { border-left-color: #dc2626; }
-        .ticker-card.uncertain { border-left-color: #f59e0b; }
-        .ticker-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 0.6rem; }
-        .ticker-badge.real { background: rgba(19,136,8,0.1); color: var(--green); }
-        .ticker-badge.fake { background: rgba(220,38,38,0.1); color: #dc2626; }
-        .ticker-badge.uncertain { background: rgba(245,158,11,0.1); color: #d97706; }
-        .ticker-text { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 0.4rem; }
-        .ticker-meta { font-size: 0.75rem; color: var(--text-muted); }
+      #bottom-premium-nav a.w-20,
+      #bottom-premium-nav button.w-20 {
+        width: 6rem !important;
+      }
 
-        /* ─── CTA ─── */
-        .cta-section { position: relative; z-index:1; padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, rgba(232,119,34,0.06), rgba(19,136,8,0.04)); }
-        .cta-inner { max-width: 600px; margin: 0 auto; }
-        .cta-title { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem; }
-        .cta-sub { color: var(--text-secondary); margin-bottom: 2rem; font-size: 1rem; line-height: 1.6; }
+      #bottom-premium-nav svg {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+      }
+    }
 
-        /* ─── FOOTER ─── */
-        .footer { position: relative; z-index:1; border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.82rem; }
-        .footer-flag { display: inline-flex; gap: 4px; margin-bottom: 8px; }
-        .flag-stripe { width: 18px; height: 8px; border-radius: 2px; }
+    /* Large 'Pro' viewports (Duo Dual & Pro 7 Landscape) - Desktop-like layout */
+    @media screen and (device-width: 1114px) and (device-height: 705px),
+    screen and (device-width: 912px) and (device-height: 608px),
+    screen and (device-width: 1024px) and (device-height: 600px),
+    screen and (device-width: 1280px) and (device-height: 800px) {
 
-        /* ---- RESPONSIVE ---- */
-        @media (max-width: 1200px) {
-            .hero { padding: 120px 1.5rem 80px; }
-            .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .features-grid { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-        }
-        
-        @media (max-width: 768px) {
-            .navbar { padding: 0 1rem; }
-            .nav-links { gap: 0.5rem; }
-            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
-            .hero { 
-                padding: 80px 1rem 60px;
-                height: 100vh;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-            .hero h1 { font-size: 2.2rem; }
-            .hero p { font-size: 1rem; max-width: 100%; }
-            .hero-actions { gap: 0.75rem; }
-            .btn-primary, .btn-outline { font-size: 0.85rem; padding: 0.7rem 1.5rem; }
-            .stats-strip { padding: 4rem 1rem 4rem; }
-            .stats-inner { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-            .stat-pill { padding: 1.25rem 1rem; }
-            .features-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .feature-card { padding: 1.5rem; }
-            .ticker-cards { grid-template-columns: 1fr; gap: 0.75rem; }
-            .cta-section { padding: 3rem 1rem; }
-        }
-        
-        @media (max-width: 480px) {
-            .navbar { padding: 0 0.75rem; }
-            .logo { font-size: 1rem; }
-            .logo-badge { font-size: 0.55rem; }
-            .nav-links { display: none; }
-            .status-pill { display: none; }
-            .hamburger-btn { display: flex; }
-            .mobile-menu-overlay { 
-                padding: 100px 1rem 1rem;
-                z-index: 1499;
-            }
-            .mobile-menu-link { font-size: 1.3rem; padding: 0.8rem 0; }
-            .hero { 
-                padding: 60px 0.75rem 40px;
-                height: 100vh;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-            }
-            .hero h1 { font-size: 1.8rem; line-height: 1.2; }
-            .hero p { font-size: 0.9rem; }
-            .hero-actions { flex-direction: column; align-items: stretch; }
-            .btn-primary, .btn-outline { width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.8rem; }
-            .stats-strip { padding: 3rem 0.75rem 3rem; }
-            .stats-inner { grid-template-columns: 1fr; gap: 0.5rem; }
-            .stat-pill { padding: 1rem; }
-            .stat-pill .val { font-size: 1.8rem; }
-            .features { padding: 3rem 0.75rem; }
-            .feature-card { padding: 1.25rem; }
-            .ticker-section { padding: 2rem 0.75rem; }
-            .ticker-card { padding: 1rem; }
-            .footer { padding: 1.5rem 0.75rem; }
-        }
-    </style>
+      #hero-main-layout {
+        grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr) !important;
+        gap: 3rem !important;
+        padding-top: 5rem !important;
+        padding-bottom: 5rem !important;
+      }
+
+      #hero-aside {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        animation: fadeIn 0.8s ease-out forwards !important;
+      }
+
+      /* Desktop-style nav logic for non-Duo Pro devices or Duo Dual (if preferred side-by-side there, but user requested stacking for Duo) */
+      /* Note: Duo logic above overrides this for Duo specific viewports */
+      #hero-buttons {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-start !important;
+        gap: 1.5rem !important;
+        margin-top: 3rem !important;
+      }
+
+      /* Enable desktop navigation for these wider 'Pro' screens */
+      [data-desktop-nav] {
+        display: flex !important;
+      }
+
+      #menu-toggle {
+        display: none !important;
+      }
+
+      #bottom-premium-nav {
+        display: none !important;
+      }
+    }
+
+    /* Specific scaling for Nest Hub (1024x600) - Compact Desktop */
+    @media screen and (device-width: 1024px) and (device-height: 600px) {
+      #hero-main-layout {
+        gap: 2rem !important;
+        padding-top: 2.5rem !important;
+        padding-bottom: 2.5rem !important;
+      }
+
+      #hero-tagline {
+        font-size: 0.8rem !important;
+        letter-spacing: 0.2em !important;
+      }
+
+      #hero-title {
+        font-size: 2.5rem !important;
+        line-height: 1.05 !important;
+        margin-top: 0.5rem !important;
+      }
+
+      #hero-description {
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        margin-top: 0.75rem !important;
+        max-width: 85% !important;
+      }
+
+      #hero-buttons {
+        margin-top: 1.5rem !important;
+        gap: 1rem !important;
+      }
+
+      .hero-btn {
+        min-width: 180px !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.85rem !important;
+      }
+
+      #hero-aside {
+        padding: 1.125rem !important;
+        max-width: 380px !important;
+      }
+
+      #hero-aside h2 {
+        font-size: 1.25rem !important;
+      }
+
+      #hero-aside img {
+        height: 2.5rem !important;
+        width: 2.5rem !important;
+      }
+
+      #hero-aside .grid {
+        margin-top: 0.75rem !important;
+        gap: 0.5rem !important;
+      }
+
+      #hero-aside .rounded-lg {
+        padding: 0.625rem !important;
+      }
+
+      #hero-aside .text-2xl {
+        font-size: 1.25rem !important;
+      }
+
+      #hero-aside .text-xs {
+        font-size: 0.75rem !important;
+      }
+
+      #hero-aside .mt-6 {
+        margin-top: 0.75rem !important;
+      }
+
+      #home-data-state {
+        margin-top: 0.75rem !important;
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+      }
+    }
+
+    /* Specific scaling for Nest Hub Max (1280x800) - More breathing room */
+    @media screen and (device-width: 1280px) and (device-height: 800px) {
+      body #main-content {
+        padding-top: 6rem !important;
+        padding-bottom: 1.5rem !important;
+        min-height: calc(100vh - 1rem) !important;
+      }
+
+      #hero-main-layout {
+        gap: 2.75rem !important;
+      }
+    }
+
+    /* Mobile-specific fix for typewriter text wrapping (iPhone XR and similar) */
+    @media screen and (max-width: 430px) {
+      #hero-title {
+        max-width: 22ch !important;
+        /* Allow more characters per line */
+        font-size: 1.7rem !important;
+        /* Slightly smaller than text-3xl to prevent wrapping */
+      }
+
+      #hero-description {
+        font-size: 0.85rem !important;
+        /* Keep description balanced */
+      }
+    }
+
+    #hero-section {
+      background: linear-gradient(135deg, #FF9933 0%, #FFB84D 15%, #FFF5E6 30%, #F8F8F8 45%, #F0F8F0 60%, #E8F5E8 75%, #138808 100%) !important;
+    }
+
+    #hero-main-layout {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      padding-top: 5rem !important;
+      padding-bottom: 5rem !important;
+    }
+  </style>
+  <title>Misinformation Heatmap - Real-Time AI Detection Across India</title>
+  <meta name="description"
+    content="AI-powered platform detecting misinformation across Indian states in real time with multilingual analysis, source verification, and live heatmap monitoring.">
+  <link rel="icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-inner">
-            <a href="/" class="logo">
-                <span class="logo-badge">IN</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
-            </a>
-            <div class="nav-links">
-                <a href="/" class="nav-link active">Home</a>
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
-            </div>
-            <div class="status-pill">
-                <span class="status-dot"></span>
-                <span id="nav-status">System Ready</span>
-            </div>
-            <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-            </button>
-        </div>
-    </nav>
 
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu">
-        <div class="mobile-menu-top">
-            <a href="/" class="mobile-menu-link">Home</a>
-            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
-            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
+<body data-page="home" class="min-h-screen overflow-x-hidden text-slate-900 antialiased relative">
+  <div class="fixed inset-0 -z-10 bg-white"></div>
+  <a class="absolute w-[1px] h-[1px] p-0 m-[-1px] overflow-hidden clip-[rect(0,0,0,0)] whitespace-nowrap border-0 focus:static focus:w-auto focus:h-auto focus:p-0 focus:m-0 focus:overflow-visible focus:clip-auto focus:whitespace-normal focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+    href="#main-content">Skip to content</a>
+  <div data-navbar></div>
+
+  <main id="main-content" class="pt-12">
+    <section id="hero-section" class="relative isolate min-h-[calc(100svh-4rem)] overflow-hidden">
+      <!-- Premium Hero Background Layer -->
+      <div class="absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,white_90%,transparent)]">
+        <!-- Main Saffron Glow -->
+        <div
+          class="absolute -top-[15%] -left-[10%] h-[600px] w-[600px] rounded-full bg-saffron-500/30 blur-[100px] animate-float opacity-90">
         </div>
-        <div class="mobile-menu-bottom">
-            <div class="mobile-menu-brand">
-                <span class="logo-badge">IN</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
-            </div>
-            <div class="mobile-menu-tags">
-                <span class="menu-tag alpha">Alpha v1.0</span>
-                <span class="menu-tag live">● Live</span>
-            </div>
+
+        <!-- Main Green Glow -->
+        <div
+          class="absolute top-[30%] -right-[10%] h-[550px] w-[550px] rounded-full bg-india-green-500/25 blur-[110px] animate-float opacity-80"
+          style="animation-delay: 2s"></div>
+
+        <!-- Ashoka Blue Glow -->
+        <div
+          class="absolute top-1/2 left-1/4 h-[400px] w-[400px] rounded-full bg-ashoka-blue-500/15 blur-[120px] animate-pulse opacity-60"
+          style="animation-delay: 4s"></div>
+
+        <!-- Subtle Saffron/Green Accent Gradients -->
+        <div
+          class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,153,51,0.15),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(19,136,8,0.15),transparent_50%)]">
         </div>
+
+        <!-- Refined noise and pattern -->
+        <div class="absolute inset-0 opacity-[0.04]"
+          style="background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 48px 48px;">
+        </div>
+
+        <!-- Diagonal Accent Overlay -->
+        <div
+          class="absolute inset-0 bg-gradient-to-br from-saffron-500/10 via-transparent to-india-green-500/10 opacity-70">
+        </div>
+      </div>
+      <div id="hero-main-layout"
+        class="mx-auto flex flex-col justify-center items-center text-center min-h-[calc(100svh-4rem)] w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12 md:px-8 lg:py-16">
+        <div class="min-w-0 max-w-4xl flex flex-col justify-center items-center text-center mx-auto animate-fade-in-up">
+          <p id="hero-tagline" class="text-xs font-black text-saffron-500 mx-auto">
+            Ai monitoring
+            for India-wide news signals</p>
+          <h1 id="hero-title"
+            class="mt-4 max-w-[20ch] text-3xl font-black leading-tight tracking-normal sm:max-w-[25ch] sm:text-5xl lg:text-6xl mx-auto text-center">
+            <span class="block text-saffron-600">Track</span>
+            <span
+              class="block bg-clip-text text-transparent bg-gradient-to-b from-ashoka-blue-200 via-ashoka-blue-500 to-ashoka-blue-500">misinformation</span>
+            <span class="flex items-center justify-center min-h-[1.2em]">
+              <span id="typewriter-text" class="inline-block pb-2 text-india-green-500">before it spreads.</span>
+              <span class="w-[0.1em] h-[0.9em] bg-saffron-500 ml-1 animate-blink"></span>
+            </span>
+          </h1>
+          <p id="hero-description"
+            class="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-lg mx-auto text-center leading-relaxed">
+            A real-time intelligence surface for reviewing state-wise misinformation signals, live classifications, and
+            source health across Indian news coverage.
+          </p>
+          <div id="hero-buttons" class="mt-8 flex flex-wrap justify-center gap-4 mt-6">
+            <a href="/heatmap.html"
+              class="hero-btn inline-flex min-h-11 items-center justify-center rounded-lg bg-ashoka-blue-500 px-5 py-2.5 text-sm font-bold text-white shadow-premium transition hover:-translate-y-1 hover:bg-ashoka-blue-600 hover:shadow-[0_0_20px_rgba(0,0,128,0.3)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron-500 focus-visible:ring-offset-2">Explore
+              live heatmap</a>
+            <a href="/dashboard.html"
+              class="hero-btn inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron-500 focus-visible:ring-offset-2">Open
+              dashboard</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8" aria-labelledby="performance-title">
+      <div class="mb-6 max-w-3xl">
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-saffron-700">Platform performance overview</p>
+        <h2 id="performance-title" class="mt-2 text-2xl font-black tracking-normal text-slate-900 sm:text-3xl">Current
+          signal coverage in real time.</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-600 sm:text-base">Every value below is populated from API responses.
+          Empty states stay visible when data is unavailable.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <article
+          class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-ashoka-blue-500 bg-white p-4 shadow-premium sm:p-5 transition hover:-translate-y-1">
+          <p class="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Events analyzed</p>
+          <p class="mt-4 text-3xl font-black leading-none text-ashoka-blue-500 sm:text-4xl" id="home-total-events"
+            aria-live="polite">--</p>
+          <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">Processed by the live pipeline</p>
+        </article>
+        <article
+          class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-saffron-500 bg-white p-4 shadow-premium sm:p-5 transition hover:-translate-y-1">
+          <p class="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Misinformation</p>
+          <p class="mt-4 text-3xl font-black leading-none text-red-600 sm:text-4xl" id="home-misinformation-events"
+            aria-live="polite">--</p>
+          <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">High-confidence risk signals</p>
+        </article>
+        <article
+          class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-india-green-500 bg-white p-4 shadow-premium sm:p-5 transition hover:-translate-y-1">
+          <p class="text-xs font-black uppercase tracking-[0.14em] text-slate-500">Verified news</p>
+          <p class="mt-4 text-3xl font-black leading-none text-india-green-600 sm:text-4xl" id="home-verified-events"
+            aria-live="polite">--</p>
+          <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">Authenticated reporting signals</p>
+        </article>
+        <article
+          class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-ashoka-blue-400 bg-white p-4 shadow-premium sm:p-5 transition hover:-translate-y-1">
+          <p class="text-xs font-black uppercase tracking-[0.14em] text-slate-500">AI Accuracy</p>
+          <p class="mt-4 text-3xl font-black leading-none text-ashoka-blue-600 sm:text-4xl" id="home-accuracy-events"
+            aria-live="polite">--</p>
+          <p class="mt-2 text-xs font-semibold leading-5 text-slate-500">Model classification confidence</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mx-auto w-full max-w-7xl mt-10 px-4 pb-12 sm:px-6 lg:px-8" aria-labelledby="capabilities-title">
+      <div class="mb-8 max-w-3xl">
+        <p class="text-xs font-black uppercase tracking-[0.18em] text-saffron-700">Detection workflow</p>
+        <h2 id="capabilities-title" class="mt-2 text-2xl font-black tracking-normal text-slate-900 sm:text-3xl">Built
+          for fast triage and careful verification.</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-600 sm:text-base">The interface emphasizes scannable signals, clear
+          state, and traceable classifications without hiding uncertainty.</p>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">🧠</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">IndicBERT NLP</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">State-of-the-art multilingual transformer trained on
+            Indian languages including Hindi, Tamil, Telugu, and 20+ more.</p>
+        </article>
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">🔍</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">Fact-Check Engine</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">Cross-references against debunked claims from Alt News,
+            Boom Live, The Quint WebQoof, and India Today Fact Check.</p>
+        </article>
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">📡</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">Real-Time RSS Ingestion</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">Monitors 34+ Indian news sources including TOI, The
+            Hindu, NDTV, Indian Express, and regional outlets every 2 minutes.</p>
+        </article>
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">🗺️</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">Geographic Mapping</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">200+ city-to-state mappings identify the precise
+            geographic origin of each misinformation event.</p>
+        </article>
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">📊</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">Ensemble Classifier</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">5-model ensemble combining linguistic analysis, source
+            credibility, ML classification, and cross-reference scoring.</p>
+        </article>
+        <article
+          class="rounded-2xl border border-slate-200 bg-white p-6 shadow-premium transition hover:-translate-y-1 hover:border-saffron-300 hover:shadow-soft flex flex-col justify-start">
+          <div class="text-3xl leading-none" aria-hidden="true">🌐</div>
+          <h3 class="mt-4 text-lg font-black text-slate-900">GDELT Integration</h3>
+          <p class="mt-2 text-sm leading-relaxed text-slate-500">Pulls India-specific news from the Global Database of
+            Events — the world's largest open-source news index. Zero cost, unlimited volume.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8">
+      <div
+        class="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-slate-50 p-5 text-slate-900 shadow-card sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+        <div class="min-w-0">
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-saffron-600">Interactive map</p>
+          <h2 class="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">Review state-level risk on the heatmap.</h2>
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Move from the national overview into
+            geographic detail, then drill into recent activity for individual states.</p>
+        </div>
+        <a href="/heatmap.html"
+          class="hero-btn inline-flex min-h-11 shrink-0 items-center justify-center rounded-lg bg-ashoka-blue-500 px-5 py-2.5 text-sm font-bold text-white shadow-premium transition hover:-translate-y-0.5 hover:bg-ashoka-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-saffron-500 focus-visible:ring-offset-2">Open
+          heatmap</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 bg-slate-950 pt-16 pb-32 text-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
+        <!-- Brand Section -->
+        <div class="max-w-xs">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-saffron-500 via-white to-india-green-500 p-1">
+              <div class="h-full w-full rounded-md bg-slate-950 flex items-center justify-center">
+                <span class="text-[10px] font-black">MH</span>
+              </div>
+            </div>
+            <span class="text-lg font-black tracking-tight">Misinfo<span class="text-saffron-500">Heatmap</span></span>
+          </div>
+          <p class="mt-6 text-sm leading-7 text-slate-400">
+            Advanced AI-powered platform for real-time misinformation detection and verification across India's digital
+            landscape.
+          </p>
+          <div class="mt-6 flex items-center gap-4">
+            <!-- India Badge -->
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-white/10">
+              <span class="h-1.5 w-1.5 rounded-full bg-saffron-500"></span>
+              Monitored in India
+            </span>
+          </div>
+        </div>
+
+        <!-- Platform Links -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-saffron-500">Platform</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/heatmap.html" class="transition hover:text-white font-medium">Live Heatmap</a></li>
+            <li><a href="/dashboard.html" class="transition hover:text-white font-medium">Intelligence Dashboard</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Support -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-ashoka-blue-400">Support</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/contact.html" class="transition hover:text-white font-black text-slate-300">Contact Us</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar -->
+      <div class="mt-16 border-t border-white/5 pt-8">
+        <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <p class="text-xs text-slate-500">
+            © 2026 Misinformation Heatmap. Powered by Advanced Neural Networks.
+          </p>
+          <div class="flex items-center gap-8">
+            <a href="/privacy-policy.html"
+              class="text-xs text-slate-400 hover:text-white font-medium transition">Privacy Policy</a>
+            <div
+              class="h-1 w-32 rounded-full bg-gradient-to-r from-saffron-500 via-white to-india-green-500 opacity-20">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Hero -->
-    <section class="hero">
-        <div class="hero-eyebrow">⚡ Powered by IndicBERT &amp; 5-Model Ensemble AI</div>
-        <h1>
-            Combating Fake News<br>
-            Across India
-        </h1>
-        <p>An AI-powered platform that detects and tracks misinformation across <strong>34+ Indian news sources</strong>, covering all 36 states and union territories in real-time.</p>
-        <div class="hero-actions">
-            <a href="/map/enhanced-india-heatmap.html" class="btn-primary">🗺️ Explore Live Heatmap</a>
-            <a href="/dashboard" class="btn-outline">📊 View Dashboard</a>
-        </div>
-    </section>
-
-    <!-- Stats strip -->
-    <div class="stats-strip">
-        <div class="section-header">
-            <div class="section-tag">Real-Time Metrics</div>
-            <h2 class="section-title">Platform Performance Overview</h2>
-            <p class="section-sub">Live statistics showcasing our AI-powered misinformation detection capabilities across India</p>
-        </div>
-        <div class="stats-inner">
-            <div class="stat-pill">
-                <div class="val" id="stat-events">—</div>
-                <div class="lbl">Events Analyzed</div>
-            </div>
-            <div class="stat-pill">
-                <div class="val" style="color:var(--green);">91%</div>
-                <div class="lbl">Detection Accuracy</div>
-            </div>
-            <div class="stat-pill">
-                <div class="val" style="color:var(--navy);">36</div>
-                <div class="lbl">States &amp; UTs</div>
-            </div>
-            <div class="stat-pill">
-                <div class="val">34+</div>
-                <div class="lbl">News Sources</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features -->
-    <section class="features">
-        <div class="section-header">
-            <div class="section-tag">How It Works</div>
-            <h2 class="section-title">Multi-Layer Detection Engine</h2>
-            <p class="section-sub">Every article passes through 5 specialized models before a verdict is issued</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">🧠</div>
-                <div class="feature-title">IndicBERT NLP</div>
-                <div class="feature-desc">State-of-the-art multilingual transformer trained on Indian languages including Hindi, Tamil, Telugu, and 20+ more.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔍</div>
-                <div class="feature-title">Fact-Check Engine</div>
-                <div class="feature-desc">Cross-references against debunked claims from Alt News, Boom Live, The Quint WebQoof, and India Today Fact Check.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📡</div>
-                <div class="feature-title">Real-Time RSS Ingestion</div>
-                <div class="feature-desc">Monitors 34+ Indian news sources including TOI, The Hindu, NDTV, Indian Express, and regional outlets every 2 minutes.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🗺️</div>
-                <div class="feature-title">Geographic Mapping</div>
-                <div class="feature-desc">200+ city-to-state mappings identify the precise geographic origin of each misinformation event.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <div class="feature-title">Ensemble Classifier</div>
-                <div class="feature-desc">5-model ensemble combining linguistic analysis, source credibility, ML classification, and cross-reference scoring.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🌐</div>
-                <div class="feature-title">GDELT Integration</div>
-                <div class="feature-desc">Pulls India-specific news from the Global Database of Events — the world's largest open-source news index. Zero cost, unlimited volume.</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Live Ticker -->
-    <section class="ticker-section">
-        <div class="ticker-inner">
-            <div class="ticker-header">
-                <div class="ticker-title">Live Activity Feed</div>
-                <div class="ticker-live"><span class="ticker-live-dot"></span> LIVE</div>
-            </div>
-            <div class="ticker-cards" id="ticker-cards">
-                <div class="ticker-card"><div class="ticker-text" style="color:var(--text-muted); text-align:center;">⏳ Loading recent events…</div></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="cta-section">
-        <div class="cta-inner">
-            <div class="cta-title">See India's Misinformation Map</div>
-            <p class="cta-sub">Interact with the live India heatmap to explore state-wise risk levels, browse real-time alerts, and drill into individual events.</p>
-            <a href="/map/enhanced-india-heatmap.html" class="btn-primary" style="font-size:1rem; padding:1rem 2.5rem;">🗺️ Open Interactive Heatmap →</a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-flag">
-            <div class="flag-stripe" style="background:#FF9933;"></div>
-            <div class="flag-stripe" style="background:#FFFFFF; border:1px solid #ddd;"></div>
-            <div class="flag-stripe" style="background:#138808;"></div>
-        </div>
-        <div>Made with ❤️ for India &nbsp;·&nbsp; Powered by IndicBERT &amp; GDELT &nbsp;·&nbsp; Local-first, Zero-cost architecture</div>
-    </footer>
-
-    <script>
-        // ── API Configuration ──
-        // Defaults to relative paths (local). Put your HF Space URL here for Netlify deployments!
-        const API_BASE = window.location.hostname.includes('netlify.app') 
-            ? 'https://ndg07-heatmap.hf.space' 
-            : '';
-
-        // ── Navbar scroll effect ──
-        window.addEventListener('scroll', () => {
-            document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
-        });
-
-        // ── Hamburger menu toggle ──
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        hamburgerBtn.addEventListener('click', () => {
-            hamburgerBtn.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
-        });
-
-        // Close menu when clicking on a link
-        document.querySelectorAll('.mobile-menu-link').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburgerBtn.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        });
-
-        // Close menu when clicking outside
-        mobileMenu.addEventListener('click', (e) => {
-            if (e.target === mobileMenu) {
-                hamburgerBtn.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        });
-
-        // ── Fetch and display stats ──
-        async function loadStats() {
-            try {
-                const r = await fetch(API_BASE + '/api/v1/stats');
-                if (!r.ok) return;
-                const d = await r.json();
-                const el = document.getElementById('stat-events');
-                const n = d.total_events || 0;
-                el.textContent = n >= 1000 ? (n/1000).toFixed(1)+'K' : n;
-                document.getElementById('nav-status').textContent = d.ml_ready ? 'System Ready' : 'Loading…';
-            } catch(_) {}
-        }
-
-        // ── Fetch and display live ticker ──
-        async function loadTicker() {
-            try {
-                const r = await fetch(API_BASE + '/api/v1/events/live?limit=6');
-                if (!r.ok) return;
-                const d = await r.json();
-                const events = d.events || [];
-                if (events.length === 0) return;
-
-                const container = document.getElementById('ticker-cards');
-                container.innerHTML = events.slice(0,6).map(ev => {
-                    const cls = ev.classification || 'uncertain';
-                    const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
-                    const title = (ev.title || '').substring(0, 90);
-                    return `<div class="ticker-card ${cls === 'fake' ? 'fake' : cls === 'uncertain' ? 'uncertain' : ''}">
-                        <div class="ticker-badge ${cls}">${icon} ${cls.toUpperCase()}</div>
-                        <div class="ticker-text">${title}</div>
-                        <div class="ticker-meta">${ev.source || 'Unknown'} · ${ev.state || 'India'}</div>
-                    </div>`;
-                }).join('');
-            } catch(_) {}
-        }
-
-        loadStats();
-        loadTicker();
-        setInterval(loadStats, 30000);
-        setInterval(loadTicker, 15000);
-    </script>
+  </footer>
 </body>
+
 </html>

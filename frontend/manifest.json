@@ -1,0 +1,28 @@
+{
+  "name": "Misinformation Heatmap - India",
+  "short_name": "Misinfo Heatmap",
+  "description": "Real-time misinformation detection and analysis across Indian states",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF7",
+  "theme_color": "#E87722",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/ind.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/Misinfo.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["news", "education", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

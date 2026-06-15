@@ -1,750 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Misinformation Heatmap</title>
-    <meta name="description" content="Real-time analytics dashboard for misinformation detection across India.">
-    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --saffron:       #E87722;
-            --saffron-light: #FF9933;
-            --saffron-dark:  #c4601a;
-            --green:         #138808;
-            --green-light:   #1ea50e;
-            --navy:          #000080;
-            --red:           #dc2626;
-            --amber:         #d97706;
-            --blue:          #2563eb;
-            --bg:            #F8F8F4;
-            --bg-card:       #FFFFFF;
-            --border:        #E8E8E0;
-            --border-accent: rgba(232,119,34,0.25);
-            --text-primary:  #1A1A1A;
-            --text-secondary:#555555;
-            --text-muted:    #888888;
-            --shadow-sm:     0 2px 8px rgba(0,0,0,0.07);
-            --shadow-md:     0 4px 20px rgba(0,0,0,0.10);
-            --radius:        16px;
-            --radius-sm:     10px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://ndg07-heatmap.hf.space; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <style>
+    html, body { overflow-x: hidden; width: 100%; position: relative; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Surface Pro 7 Specific Enhancements */
+    @media screen and (device-width: 912px) and (device-height: 1368px),
+    screen and (device-width: 912px) and (device-height: 608px) {
+      html {
+        font-size: 18px !important;
+      }
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            max-width: 100vw;
-        }
+    /* Specific scaling for Nest Hub Max (1280x800) - More breathing room */
+    @media screen and (device-width: 1280px) and (device-height: 800px) {
+      body #main-content {
+        padding-top: 6rem !important;
+        padding-bottom: 1.5rem !important;
+        min-height: calc(100vh - 1rem) !important;
+      }
+    }
 
-        /* ─── BACKGROUND ─── */
-        .bg-blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-        .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.12; }
-        .blob-1 { width: 600px; height: 600px; top: -150px; left: -100px; background: var(--saffron-light); }
-        .blob-2 { width: 500px; height: 500px; bottom: -100px; right: -100px; background: var(--green-light); }
+    @media screen and (device-width: 912px) and (device-height: 1368px),
+    screen and (device-width: 912px) and (device-height: 608px) {
+      h1 { font-size: 3.5rem !important; line-height: 1.1 !important; }
+      .text-2xl { font-size: 2rem !important; }
+      .text-sm { font-size: 1.05rem !important; line-height: 1.6 !important; }
+      .text-xs { font-size: 0.9rem !important; letter-spacing: 0.25em !important; }
+      
+      #main-content { padding-top: 9rem !important; }
+      
+      /* Card/Island Scaling for Pro 7 */
+      #island-toggle {
+        width: 85vw !important;
+        height: 70vh !important;
+        max-width: 1000px !important;
+        max-height: 900px !important;
+      }
 
-        /* ─── NAVBAR ─── */
-        .navbar {
-            position: sticky; top: 0; z-index: 100;
-            height: 60px; display: flex; align-items: center; padding: 0 2rem;
-            background: rgba(248,248,244,0.9); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm);
-        }
-        .nav-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .logo { display: flex; align-items: center; gap: 4px; font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 800; text-decoration: none; color: var(--text-primary); }
-        .logo-badge { font-size: 0.6rem; font-weight: 700; background: var(--saffron); color: #fff; padding: 2px 5px; border-radius: 3px; }
-        .logo .logo-name { color: var(--saffron); }
-        .nav-links { display: flex; gap: 0.25rem; }
-        .nav-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.4rem 0.9rem; border-radius: var(--radius-sm); transition: all 0.2s; }
-        .nav-link:hover { color: var(--saffron); background: rgba(232,119,34,0.07); }
-        .nav-link.active { color: var(--saffron); background: rgba(232,119,34,0.1); border: 1px solid rgba(232,119,34,0.2); font-weight: 600; }
-        .nav-right { display: flex; align-items: center; gap: 0.75rem; }
-        .status-pill { display: flex; align-items: center; gap: 6px; background: rgba(19,136,8,0.08); border: 1px solid rgba(19,136,8,0.25); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; color: var(--green); }
-        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(19,136,8,0.4);}50%{opacity:0.8;box-shadow:0 0 0 5px rgba(19,136,8,0);} }
-        .refresh-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); padding: 5px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-        .refresh-btn:hover { border-color: var(--saffron); color: var(--saffron); }
+      /* Animation Overrides for Pro 7 (Less extreme surge) */
+      #dashboard-health-overlay.active #island-toggle {
+        animation: fadeInUpPro 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      #dashboard-health-overlay.closing #island-toggle {
+        animation: fadeOutDownPro 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
 
-        /* Hamburger Menu */
-        .hamburger-btn {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px;
-            z-index: 2000;
-        }
-        .hamburger-line {
-            width: 24px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-        }
-        .hamburger-btn.active .hamburger-line:nth-child(3) {
-            transform: rotate(-45deg) translate(5px, -5px);
-        }
+      @keyframes fadeInUpPro {
+        0% { opacity: 0; transform: translateY(500px) scale(0.4); border-radius: 10rem; }
+        70% { opacity: 1; transform: translateY(-15px) scale(1.01); }
+        100% { opacity: 1; transform: translateY(0) scale(1); border-radius: 2.5rem; }
+      }
+      @keyframes fadeOutDownPro {
+        0% { opacity: 1; transform: translateY(0) scale(1); border-radius: 2.5rem; }
+        100% { opacity: 0; transform: translateY(500px) scale(0.4); border-radius: 10rem; }
+      }
 
-        /* Mobile Menu Overlay */
-        .mobile-menu-overlay {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(255, 153, 51, 0.98), rgba(232, 119, 34, 0.95));
-            z-index: 1500;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 80px 2rem 2rem;
-        }
-        .mobile-menu-overlay.active {
-            transform: translateX(0);
-        }
-        .mobile-menu-top {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .mobile-menu-link {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
-        .mobile-menu-link:hover {
-            padding-left: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .mobile-menu-bottom {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .mobile-menu-brand {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .mobile-menu-brand .logo-badge {
-            background: #fff;
-            color: var(--saffron);
-        }
-        .mobile-menu-brand .logo-name {
-            color: #fff;
-        }
-        .mobile-menu-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .menu-tag {
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
-        }
-        .menu-tag.alpha {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-        .menu-tag.live {
-            background: #fff;
-            color: var(--green);
-            animation: pulse 2s infinite;
-        }
-
-        /* ─── MAIN LAYOUT ─── */
-        .main { position: relative; z-index: 1; padding: 2rem; max-width: 1400px; margin: 0 auto; }
-        .page-header { margin-bottom: 2rem; }
-        .page-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); }
-        .page-sub { color: var(--text-muted); font-size: 0.88rem; margin-top: 4px; }
-        .last-updated { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
-
-        /* ─── STAT CARDS ─── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 2rem; }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); padding: 1.5rem; position: relative;
-            overflow: hidden; transition: all 0.25s; box-shadow: var(--shadow-sm);
-        }
-        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
-        .stat-card.total::before  { background: var(--blue); }
-        .stat-card.fake::before   { background: var(--red); }
-        .stat-card.real::before   { background: var(--green); }
-        .stat-card.uncertain::before { background: var(--amber); }
-        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-        .stat-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
-        .stat-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); }
-        .stat-icon { font-size: 1.4rem; }
-        .stat-value { font-family: 'Outfit', sans-serif; font-size: 2.4rem; font-weight: 900; line-height: 1; }
-        .stat-card.total  .stat-value { color: var(--blue); }
-        .stat-card.fake   .stat-value { color: var(--red); }
-        .stat-card.real   .stat-value { color: var(--green); }
-        .stat-card.uncertain .stat-value { color: var(--amber); }
-        .stat-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; }
-        .stat-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 1rem; overflow: hidden; }
-        .stat-bar-fill { height: 100%; border-radius: 2px; transition: width 1s ease; width: 0; }
-        .stat-card.total  .stat-bar-fill { background: var(--blue); }
-        .stat-card.fake   .stat-bar-fill { background: var(--red); }
-        .stat-card.real   .stat-bar-fill { background: var(--green); }
-        .stat-card.uncertain .stat-bar-fill { background: var(--amber); }
-
-        /* ─── GRID ROWS ─── */
-        .row { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
-        .row-2 { grid-template-columns: 1fr 1.6fr; }
-        .row-2b { grid-template-columns: 1.6fr 1fr; }
-        .row-3 { grid-template-columns: 1fr 1fr 1fr; }
-
-        .panel {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm);
-            display: flex; flex-direction: column;
-        }
-        .panel-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
-        }
-        .panel-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
-        .panel-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
-        .panel-badge { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); padding: 3px 10px; border-radius: 10px; }
-        .panel-body { padding: 1.5rem; flex: 1; }
-
-        /* ─── ACCURACY RING ─── */
-        .accuracy-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 0; }
-        .ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-        .ring-label { position: absolute; text-align: center; }
-        .ring-pct { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--green); line-height: 1; }
-        .ring-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
-
-        .metric-bar-row { display: flex; align-items: center; justify-content: space-around; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-        .metric-bar-item { text-align: center; }
-        .mbi-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; }
-        .mbi-lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
-
-        /* ─── ACTIVITY FEED ─── */
-        .activity-feed { overflow-y: auto; max-height: 320px; display: flex; flex-direction: column; gap: 0.6rem; }
-        .activity-feed::-webkit-scrollbar { width: 4px; }
-        .activity-feed::-webkit-scrollbar-track { background: var(--bg); }
-        .activity-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-        .activity-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem; border-radius: var(--radius-sm); background: var(--bg); border: 1px solid var(--border); transition: all 0.2s; }
-        .activity-item:hover { border-color: var(--border-accent); background: rgba(232,119,34,0.02); }
-        .activity-dot { font-size: 1.1rem; flex-shrink: 0; }
-        .activity-info { flex: 1; min-width: 0; }
-        .activity-title { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .activity-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 3px; font-size: 0.72rem; color: var(--text-muted); }
-        .activity-tag { font-weight: 700; padding: 1px 6px; border-radius: 4px; font-size: 0.65rem; }
-        .activity-tag.fake { background: rgba(220,38,38,0.1); color: var(--red); }
-        .activity-tag.real { background: rgba(19,136,8,0.1); color: var(--green); }
-        .activity-tag.uncertain { background: rgba(217,119,6,0.1); color: var(--amber); }
-        .feed-count { font-size: 0.78rem; color: var(--text-muted); }
-
-        /* ─── COVERAGE ─── */
-        .coverage-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-        .cov-item { text-align: center; padding: 1rem; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); }
-        .cov-val { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--saffron); }
-        .cov-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-
-        /* ─── HEALTH METRICS ─── */
-        .metric-row { display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
-        .metric-row:last-child { border-bottom: none; }
-        .metric-name { font-size: 0.85rem; color: var(--text-secondary); }
-        .metric-badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 10px; }
-        .metric-badge.green { background: rgba(19,136,8,0.1); color: var(--green); }
-        .metric-badge.amber { background: rgba(217,119,6,0.1); color: var(--amber); }
-        .metric-badge.red { background: rgba(220,38,38,0.1); color: var(--red); }
-
-        /* ─── MAP LINK ─── */
-        .map-link { display: inline-flex; align-items: center; gap: 6px; background: var(--saffron); color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: var(--radius-sm); text-decoration: none; transition: all 0.2s; }
-        .map-link:hover { background: var(--saffron-dark); }
-
-        .empty-feed { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.88rem; }
-        .empty-icon { font-size: 2rem; margin-bottom: 8px; }
-
-        /* Enhanced Mobile Responsiveness */
-        @media (max-width: 1200px) {
-            .navbar { padding: 0 1rem; }
-            .main { padding: 1.5rem; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-            .row-2, .row-2b { grid-template-columns: 1fr; gap: 1rem; }
-            .coverage-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-        
-        @media (max-width: 1024px) {
-            .nav-links { gap: 0.5rem; }
-            .nav-link { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
-            .row-2, .row-2b { grid-template-columns: 1fr; }
-            .coverage-grid { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 768px) {
-            .navbar { padding: 0 1rem; height: auto; }
-            .nav-inner { flex-direction: column; gap: 0.75rem; padding: 0.75rem 0; }
-            .nav-links { order: 2; }
-            .nav-right { order: 1; }
-            .main { padding: 1rem; }
-            .page-header { margin-bottom: 1.5rem; }
-            .page-title { font-size: 1.5rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-            .stat-card { padding: 1.25rem; }
-            .stat-value { font-size: 2rem; }
-            .row-3 { grid-template-columns: 1fr; }
-            .panel-header { padding: 1rem; }
-            .panel-body { padding: 1rem; }
-            .activity-feed { max-height: 250px; }
-            .coverage-grid { grid-template-columns: 1fr; gap: 0.75rem; }
-            .cov-item { padding: 0.75rem; }
-            .metric-row { padding: 0.5rem 0; font-size: 0.8rem; }
-        }
-        
-        @media (max-width: 480px) {
-            .navbar { padding: 0 0.75rem; }
-            .logo { font-size: 0.9rem; }
-            .logo-badge { font-size: 0.55rem; }
-            .nav-inner { padding: 0.5rem 0; }
-            .nav-link { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
-            .refresh-btn { font-size: 0.7rem; padding: 4px 10px; }
-            .status-pill { display: none; }
-            .hamburger-btn { display: flex; }
-            .main { padding: 0.75rem; }
-            .page-title { font-size: 1.3rem; }
-            .page-sub { font-size: 0.8rem; }
-            .stats-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-            .stat-card { padding: 1rem; }
-            .stat-value { font-size: 1.8rem; }
-            .stat-label { font-size: 0.65rem; }
-            .stat-desc { font-size: 0.7rem; }
-            .panel-header { padding: 0.75rem; }
-            .panel-title { font-size: 0.85rem; }
-            .panel-sub { font-size: 0.75rem; }
-            .panel-body { padding: 0.75rem; }
-            .activity-feed { max-height: 200px; gap: 0.4rem; }
-            .activity-item { padding: 0.5rem; }
-            .activity-title { font-size: 0.75rem; }
-            .activity-meta { font-size: 0.65rem; }
-            .coverage-grid { grid-template-columns: 1fr; gap: 0.5rem; }
-            .cov-item { padding: 0.5rem; }
-            .cov-val { font-size: 1.5rem; }
-            .cov-label { font-size: 0.7rem; }
-            .metric-row { padding: 0.4rem 0; font-size: 0.75rem; }
-            .metric-name { font-size: 0.75rem; }
-            .metric-badge { font-size: 0.65rem; padding: 2px 6px; }
-        }
-    </style>
+      /* Pill Scaling for Pro 7 */
+      #bottom-premium-nav {
+        bottom: 3rem !important;
+        gap: 1.25rem !important;
+        padding: 0.75rem !important;
+        border-width: 2px !important;
+      }
+      #bottom-premium-nav a, #bottom-premium-nav button {
+        height: 3.75rem !important;
+        width: 3.75rem !important;
+      }
+      #bottom-premium-nav a.w-20, #bottom-premium-nav button.w-20 {
+        width: 6rem !important;
+      }
+      #bottom-premium-nav svg {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+      }
+      
+      [data-desktop-nav] {
+        display: flex !important;
+      }
+      
+      #menu-toggle {
+        display: none !important;
+      }
+      
+      #bottom-premium-nav {
+        display: none !important;
+      }
+    }
+  </style>
+  <title>Dashboard - Misinformation Heatmap</title>
+  <meta name="description"
+    content="Real-time analytics dashboard for misinformation detection, verification status, system health, and live news classifications across India.">
+  <link rel="icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
 </head>
-<body>
-    <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-    </div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="nav-inner">
-            <a href="/" class="logo">
-                <span class="logo-badge">IN</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
-            </a>
-            <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/dashboard" class="nav-link active">Dashboard</a>
-                <a href="/map/enhanced-india-heatmap.html" class="nav-link">Heatmap</a>
-            </div>
-            <div class="nav-right">
-                <div class="status-pill">
-                    <span class="status-dot"></span>
-                    <span id="system-status">Connecting…</span>
-                </div>
-                <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
-                <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
-            </div>
-        </div>
-    </nav>
+<body data-page="dashboard"
+  class="min-h-screen overflow-x-hidden text-slate-950 antialiased relative">
+  <div class="fixed inset-0 -z-10 bg-[linear-gradient(135deg,rgba(255,153,51,0.08)_0%,rgba(255,255,255,1)_50%,rgba(19,136,8,0.08)_100%)] animate-premium-fade"></div>
+  <a class="absolute w-[1px] h-[1px] p-0 m-[-1px] overflow-hidden clip-[rect(0,0,0,0)] whitespace-nowrap border-0 focus:static focus:w-auto focus:h-auto focus:p-0 focus:m-0 focus:overflow-visible focus:clip-auto focus:whitespace-normal focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+    href="#main-content">Skip to content</a>
+  <div data-navbar></div>
 
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay" id="mobile-menu">
-        <div class="mobile-menu-top">
-            <a href="/" class="mobile-menu-link">Home</a>
-            <a href="/dashboard" class="mobile-menu-link">Dashboard</a>
-            <a href="/map/enhanced-india-heatmap.html" class="mobile-menu-link">Heatmap</a>
-        </div>
-        <div class="mobile-menu-bottom">
-            <div class="mobile-menu-brand">
-                <span class="logo-badge">IN</span>
-                <span>Misinformation</span><span class="logo-name">&nbsp;Heatmap</span>
-            </div>
-            <div class="mobile-menu-tags">
-                <span class="menu-tag alpha">Alpha v1.0</span>
-                <span class="menu-tag live">● Live</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="main">
-        <!-- Header -->
-        <div class="page-header">
-            <div class="page-title">Real-Time Analytics</div>
-            <div class="page-sub">Comprehensive misinformation detection metrics across India</div>
-            <div class="last-updated" id="last-updated">Fetching data…</div>
+  <main id="main-content" class="mx-auto w-full max-w-7xl px-4 pt-24 pb-32 sm:px-6 sm:pt-28 sm:pb-32 lg:px-8">
+    <section class="mb-6 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-premium backdrop-blur-md sm:p-6 lg:p-8">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-black text-saffron-500">Real-Time Analytics</p>
+          <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl lg:text-4xl leading-tight">
+            System <span class="text-ashoka-blue-500">Overview</span>
+          </h1>
+          <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">Comprehensive misinformation detection metrics across India</p>
+          <p class="mt-2 text-xs font-medium text-slate-500" id="dashboard-last-updated" aria-live="polite">Waiting for
+            the first update</p>
         </div>
 
-        <!-- Stat Cards -->
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-header">
-                    <div class="stat-label">Total Events</div>
-                    <div class="stat-icon">📊</div>
-                </div>
-                <div class="stat-value" id="total-events">—</div>
-                <div class="stat-desc">Processed in real-time</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-total"></div></div>
-            </div>
-            <div class="stat-card fake">
-                <div class="stat-header">
-                    <div class="stat-label">Misinformation</div>
-                    <div class="stat-icon">🚨</div>
-                </div>
-                <div class="stat-value" id="fake-events">—</div>
-                <div class="stat-desc">High confidence detections</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-fake"></div></div>
-            </div>
-            <div class="stat-card real">
-                <div class="stat-header">
-                    <div class="stat-label">Verified News</div>
-                    <div class="stat-icon">✅</div>
-                </div>
-                <div class="stat-value" id="real-events">—</div>
-                <div class="stat-desc">Authenticated sources</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-real"></div></div>
-            </div>
-            <div class="stat-card uncertain">
-                <div class="stat-header">
-                    <div class="stat-label">Under Review</div>
-                    <div class="stat-icon">⚠️</div>
-                </div>
-                <div class="stat-value" id="uncertain-events">—</div>
-                <div class="stat-desc">Requires human verification</div>
-                <div class="stat-bar"><div class="stat-bar-fill" id="bar-uncertain"></div></div>
-            </div>
+        <div class="flex shrink-0 flex-col gap-2">
+          <!-- Desktop Buttons -->
+          <div class="hidden lg:flex flex-col gap-2">
+            <button
+              class="inline-flex min-h-11 w-48 items-center justify-center rounded-lg bg-slate-950 px-6 py-2.5 text-sm font-bold text-white shadow-card transition hover:-translate-y-0.5 hover:bg-slate-800"
+              type="button" id="dashboard-refresh">Refresh now</button>
+            <a href="/heatmap.html"
+              class="inline-flex min-h-11 w-48 items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 shadow-card transition hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50">View
+              heatmap</a>
+          </div>
+          <!-- Mobile Buttons -->
+          <div class="flex flex-col gap-2 lg:hidden">
+            <button
+              class="inline-flex min-h-11 items-center justify-center rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-card transition hover:-translate-y-0.5 hover:bg-slate-800"
+              type="button" id="dashboard-refresh-mobile">Refresh</button>
+            <a href="/heatmap.html"
+              class="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-800 shadow-card transition hover:-translate-y-0.5">View
+              heatmap</a>
+          </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Row: AI Performance + Live Activity -->
-        <div class="row row-2">
-            <!-- AI Performance -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <div class="panel-title">AI Detection Performance</div>
-                        <div class="panel-sub">Multi-layered analysis system accuracy</div>
-                    </div>
-                </div>
-                <div class="panel-body">
-                    <div class="accuracy-center">
-                        <div class="ring-wrap">
-                            <svg width="160" height="160" style="transform:rotate(-90deg)">
-                                <circle cx="80" cy="80" r="56" fill="none" stroke="#E8E8E0" stroke-width="10"/>
-                                <circle id="accuracy-ring-fill" cx="80" cy="80" r="56" fill="none"
-                                    stroke="#138808" stroke-width="10" stroke-linecap="round"
-                                    stroke-dasharray="351.86" stroke-dashoffset="351.86"
-                                    style="transition: stroke-dashoffset 1.5s ease"/>
-                            </svg>
-                            <div class="ring-label">
-                                <div class="ring-pct" id="accuracy-pct">91%</div>
-                                <div class="ring-sub">Overall Accuracy</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="metric-bar-row">
-                        <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--blue);">94.2%</div>
-                            <div class="mbi-lbl">Precision</div>
-                        </div>
-                        <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--green);">91.7%</div>
-                            <div class="mbi-lbl">Recall</div>
-                        </div>
-                        <div class="metric-bar-item">
-                            <div class="mbi-val" style="color:var(--saffron);">92.9%</div>
-                            <div class="mbi-lbl">F1-Score</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Live Activity -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <div class="panel-title">Live Activity</div>
-                        <div class="panel-sub">Recent classifications</div>
-                    </div>
-                    <span class="feed-count" id="events-count">Loading…</span>
-                </div>
-                <div class="panel-body" style="overflow:hidden; padding:1rem;">
-                    <div class="activity-feed" id="activity-feed">
-                        <div class="empty-feed"><div class="empty-icon">⏳</div>Loading recent activity…</div>
-                    </div>
-                </div>
-            </div>
+    <section class="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4 sm:gap-6 lg:gap-8" aria-label="Dashboard statistics">
+      <article
+        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-blue-600 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Total Events</p>
+          <span class="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-black text-blue-700 sm:text-xs lg:text-sm">All</span>
         </div>
+        <p class="mt-3 text-xl font-black leading-none text-blue-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-total-events"
+          aria-live="polite">--</p>
+        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">Processed live</p>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 sm:mt-4 sm:h-2"><span
+            class="block h-full w-0 rounded-full bg-blue-600 transition-[width] duration-500 ease-out"
+            id="dashboard-total-bar"></span></div>
+      </article>
 
-        <!-- Row: Coverage + Health -->
-        <div class="row row-2b">
-            <!-- Geographic Coverage -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div>
-                        <div class="panel-title">Geographic Coverage</div>
-                        <div class="panel-sub">Monitoring across all Indian states and union territories</div>
-                    </div>
-                    <a href="/map/enhanced-india-heatmap.html" class="map-link">🗺️ View Interactive Map</a>
-                </div>
-                <div class="panel-body">
-                    <div class="coverage-grid">
-                        <div class="cov-item">
-                            <div class="cov-val" id="total-states">36</div>
-                            <div class="cov-label">States &amp; UTs</div>
-                        </div>
-                        <div class="cov-item">
-                            <div class="cov-val">34+</div>
-                            <div class="cov-label">News Sources</div>
-                        </div>
-                        <div class="cov-item">
-                            <div class="cov-val">100+</div>
-                            <div class="cov-label">Articles/Second</div>
-                        </div>
-                    </div>
-                    <div style="margin-top:1.25rem; padding:1rem; background:rgba(232,119,34,0.05); border:1px solid rgba(232,119,34,0.15); border-radius:12px; font-size:0.85rem; color:var(--text-secondary); line-height:1.6;">
-                        🌐 Monitoring <strong style="color:var(--saffron)">all 28 states + 8 union territories</strong> with concurrent RSS ingestion, processed through our 5-model ML ensemble, IndicBERT NLP pipeline, and GDELT global news index.
-                    </div>
-                </div>
-            </div>
-
-            <!-- System Health -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="panel-title">System Health</div>
-                    <div class="panel-badge" id="health-badge">Checking…</div>
-                </div>
-                <div class="panel-body">
-                    <div class="metric-row">
-                        <span class="metric-name">API Server</span>
-                        <span class="metric-badge green" id="health-api">● Online</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">Data Processing</span>
-                        <span class="metric-badge amber" id="health-proc">● Checking</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">Database</span>
-                        <span class="metric-badge green" id="health-db">● Connected</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">ML Models</span>
-                        <span class="metric-badge green" id="health-ml">● Checking</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">RSS Feeds</span>
-                        <span class="metric-badge green">● 34+ Active</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-name">GDELT Source</span>
-                        <span class="metric-badge green">● Connected</span>
-                    </div>
-                </div>
-            </div>
+      <article
+        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-red-500 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Misinformation</p>
+          <span class="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black text-red-700 sm:text-xs lg:text-sm">Risk</span>
         </div>
-    </div>
+        <p class="mt-3 text-xl font-black leading-none text-red-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-fake-events"
+          aria-live="polite">--</p>
+        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">High-confidence</p>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 sm:mt-4 sm:h-2"><span
+            class="block h-full w-0 rounded-full bg-red-500 transition-[width] duration-500 ease-out"
+            id="dashboard-fake-bar"></span></div>
+      </article>
 
-    <script>
-        // ── API Configuration ──
-        const API_BASE = window.location.hostname.includes('netlify.app') 
-            ? 'https://ndg07-heatmap.hf.space' 
-            : '';
+      <article
+        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-emerald-600 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Verified News</p>
+          <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700 sm:text-xs lg:text-sm">Clear</span>
+        </div>
+        <p class="mt-3 text-xl font-black leading-none text-emerald-700 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-real-events"
+          aria-live="polite">--</p>
+        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">Authenticated</p>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 sm:mt-4 sm:h-2"><span
+            class="block h-full w-0 rounded-full bg-emerald-600 transition-[width] duration-500 ease-out"
+            id="dashboard-real-bar"></span></div>
+      </article>
 
-        // ── Hamburger menu toggle ──
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+      <article
+        class="min-w-0 rounded-xl border border-t-4 border-slate-200 border-t-amber-500 bg-white p-3.5 shadow-card sm:p-5 lg:p-6 transition-all duration-300 hover:shadow-lg">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <p class="text-[10px] font-black uppercase tracking-wider text-slate-500 sm:text-xs lg:text-sm">Under Review</p>
+          <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 sm:text-xs lg:text-sm">Pending</span>
+        </div>
+        <p class="mt-3 text-xl font-black leading-none text-amber-600 sm:mt-4 sm:text-2xl lg:text-3xl xl:text-4xl" id="dashboard-under-review-events"
+          aria-live="polite">--</p>
+        <p class="mt-1.5 text-[10px] font-medium text-slate-500 sm:text-sm">Requires verification</p>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 sm:mt-4 sm:h-2"><span
+            class="block h-full w-0 rounded-full bg-amber-500 transition-[width] duration-500 ease-out"
+            id="dashboard-under-review-bar"></span></div>
+      </article>
+    </section>
+
+    <section class="grid gap-6 lg:grid-cols-[1fr_1.4fr] xl:grid-cols-[0.9fr_1.1fr]">
+      <article class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card flex flex-col justify-between">
+        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4">
+          <div class="min-w-0">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Model accuracy</p>
+            <h2 class="mt-1 text-lg font-black text-slate-950">AI Precision</h2>
+          </div>
+          <span class="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black text-emerald-700" id="dashboard-accuracy-badge">Healthy</span>
+        </div>
         
-        hamburgerBtn.addEventListener('click', () => {
-            hamburgerBtn.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
-        });
+        <div class="p-6 pb-4 flex-1 flex flex-col items-center justify-center">
+          <div class="relative flex h-40 w-40 items-center justify-center">
+            <!-- Background Ring -->
+            <svg class="absolute h-full w-full -rotate-90" viewBox="0 0 180 180">
+              <circle cx="90" cy="90" r="74" fill="none" stroke="#f1f5f9" stroke-width="14"></circle>
+            </svg>
+            <!-- Progress Ring -->
+            <svg class="absolute h-full w-full -rotate-90" viewBox="0 0 180 180" role="img">
+              <defs>
+                <linearGradient id="accuracy-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#138808" />
+                  <stop offset="100%" stop-color="#22c55e" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+              <circle id="dashboard-accuracy-ring" cx="90" cy="90" r="74" fill="none" stroke="url(#accuracy-gradient)"
+                stroke-width="14" stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465"
+                class="transition-all duration-1000 ease-out" filter="url(#glow)">
+              </circle>
+            </svg>
+            <div class="relative text-center animate-fade-in flex flex-col items-center">
+              <p class="text-4xl font-black tracking-tighter text-emerald-600" id="dashboard-accuracy-pct">--</p>
+              <p class="mt-1 text-[10px] font-medium text-slate-400">Overall Accuracy</p>
+            </div>
+          </div>
+        </div>
+        
+        <dl class="grid grid-cols-3 gap-0 divide-x divide-slate-100 border-t border-slate-100 bg-slate-50/50 py-4">
+          <div class="px-2 text-center flex flex-col items-center">
+            <dd class="text-2xl font-black tracking-tight text-blue-600" id="dashboard-precision">--</dd>
+            <dt class="mt-1 text-xs font-medium text-slate-500">Precision</dt>
+          </div>
+          <div class="px-2 text-center flex flex-col items-center">
+            <dd class="text-2xl font-black tracking-tight text-emerald-600" id="dashboard-recall">--</dd>
+            <dt class="mt-1 text-xs font-medium text-slate-500">Recall</dt>
+          </div>
+          <div class="px-2 text-center flex flex-col items-center">
+            <dd class="text-2xl font-black tracking-tight text-saffron-600" id="dashboard-f1">--</dd>
+            <dt class="mt-1 text-xs font-medium text-slate-500">F1-Score</dt>
+          </div>
+        </dl>
+      </article>
 
-        // Close menu when clicking on a link
-        document.querySelectorAll('.mobile-menu-link').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburgerBtn.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        });
+      <article
+        class="min-h-[22rem] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div class="min-w-0">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Live activity</p>
+            <h2 class="mt-1 text-lg font-black text-slate-950">Recent feed</h2>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="h-2 w-2 animate-pulse rounded-full bg-red-500"></span>
+            <span
+              class="text-[10px] font-black uppercase tracking-wider text-slate-500"
+              id="dashboard-events-count">Loading</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex max-h-[20rem] min-h-[16rem] flex-col gap-4 overflow-y-auto pt-1.5 pr-2 custom-scrollbar" id="dashboard-activity-feed"
+            aria-live="polite">
+            <article class="flex min-w-0 gap-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+              <div class="h-10 w-10 shrink-0 animate-pulse rounded-lg bg-slate-200"></div>
+              <div class="min-w-0 flex-1">
+                <div class="h-4 w-full animate-pulse rounded bg-slate-200"></div>
+                <div class="mt-3 h-4 w-2/3 animate-pulse rounded bg-slate-200"></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </article>
+    </section>
 
-        // Close menu when clicking outside
-        mobileMenu.addEventListener('click', (e) => {
-            if (e.target === mobileMenu) {
-                hamburgerBtn.classList.remove('active');
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        });
+    <!-- Dynamic System Island - Expanded View Only -->
+    <div id="dashboard-health-overlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/40 backdrop-blur-sm">
+      <div id="island-toggle" class="group relative flex flex-col overflow-hidden rounded-[2.5rem] bg-white text-slate-950 border border-slate-200 shadow-premium w-[90vw] max-w-[950px] h-[80vh] max-h-[700px]">
+        <div id="island-expanded" class="flex w-full h-full flex-col p-6 sm:p-8 text-left">
+          <header class="flex items-center justify-between border-b border-slate-100 pb-6">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Real-time monitoring</p>
+              <h3 class="mt-1 text-xl font-black text-slate-950">System health</h3>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-[10px] font-bold text-emerald-600" id="dashboard-health-badge">Operational</span>
+              <div class="h-4 w-px bg-slate-200"></div>
+              <button id="close-health-overlay" class="text-[10px] font-bold text-slate-400 hover:text-slate-950 transition-colors">Close ×</button>
+            </div>
+          </header>
 
-        const fmt = n => n >= 1000000 ? (n/1e6).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : String(n);
+          <div class="mt-8 w-full flex-1 overflow-y-auto pr-2 custom-scrollbar island-scroll-container">
+            <!-- Key Metrics Grid -->
+            <div class="grid w-full grid-cols-2 gap-3 lg:grid-cols-4">
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Regional Coverage</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-regions">--</p>
+              </div>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Active Signals</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-active">--</p>
+              </div>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Event Ingestion</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-events">--</p>
+              </div>
+              <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition-all hover:bg-slate-100 hover:border-slate-200">
+                <p class="text-[10px] font-bold text-slate-500">Engine Precision</p>
+                <p class="mt-2 text-2xl font-black text-slate-950" id="dashboard-coverage-confidence">--</p>
+              </div>
+            </div>
 
-        function animateNum(el, to) {
-            if (!el) return;
-            const from = parseInt(el.textContent.replace(/[^0-9]/g,'')) || 0;
-            if (from === to) return;
-            const step = Math.max(1, Math.ceil(Math.abs(to - from) / 25));
-            let cur = from;
-            const timer = setInterval(() => {
-                cur += (to > from ? step : -step);
-                if ((to > from && cur >= to) || (to < from && cur <= to)) { cur = to; clearInterval(timer); }
-                el.textContent = fmt(cur);
-            }, 25);
+            <!-- Module Diagnostics -->
+            <div class="mt-8">
+              <div class="mb-4 flex items-center justify-between">
+                <p class="text-[10px] font-black text-slate-500">Module Diagnostics</p>
+                <p class="text-[10px] text-slate-500" id="dashboard-coverage-note">Synchronized with live feed</p>
+              </div>
+              <div class="flex w-full flex-col gap-3" id="dashboard-health-indicators">
+                <!-- Indicators populated by JS -->
+                <div class="flex h-16 animate-pulse items-center gap-4 rounded-xl bg-slate-50 px-4">
+                  <div class="h-2 w-2 rounded-full bg-slate-300"></div>
+                  <div class="h-3 w-32 rounded bg-slate-300"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <footer class="mt-auto flex items-center justify-center pt-6">
+            <div class="h-1 w-12 rounded-full bg-slate-200 transition-colors group-hover:bg-slate-300"></div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop System Health Trigger (Floating Pill) -->
+    <button id="desktop-health-trigger" class="group fixed bottom-6 right-6 z-[60] hidden h-14 w-max items-center gap-2 rounded-full border border-slate-200 bg-white/95 shadow-premium backdrop-blur-2xl transition-all duration-500 hover:scale-[1.05] hover:border-saffron-300 active:scale-95 lg:flex px-4" aria-label="System health status">
+      <div class="relative flex h-2.5 w-2.5 flex-none items-center justify-center">
+        <div id="desktop-health-ping" class="absolute h-full w-full animate-ping rounded-full bg-emerald-500 opacity-40"></div>
+        <div id="desktop-health-dot" class="h-full w-full rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+      </div>
+      <span id="desktop-health-text" class="whitespace-nowrap text-xs font-black text-slate-900">System Health</span>
+      <div class="h-4 w-px flex-none bg-slate-200"></div>
+      <div class="flex h-5 w-5 flex-none items-center justify-center">
+        <svg class="h-full w-full text-slate-400 group-hover:text-slate-950 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+      </div>
+    </button>
+
+    <style>
+      #desktop-health-trigger {
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+        padding-left: 1.25rem !important;
+        padding-right: 1.75rem !important;
+        width: max-content !important;
+      }
+      #desktop-health-trigger svg {
+        overflow: visible !important;
+      }
+      #desktop-health-trigger:active {
+        transform: scale(0.92) translateY(2px) !important;
+      }
+      #dashboard-health-overlay.active,
+      #dashboard-health-overlay.closing {
+        display: flex;
+      }
+      @keyframes springExpand {
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+        70% { opacity: 1; transform: scale(1.02) translateY(-2px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      @keyframes springShrink {
+        0% { opacity: 1; transform: scale(1) translateY(0); }
+        100% { opacity: 0; transform: scale(0.9) translateY(10px); }
+      }
+      #dashboard-health-overlay.active {
+        animation: fadeIn 0.25s ease-out forwards;
+      }
+      #dashboard-health-overlay.active #island-toggle {
+        animation: springExpand 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        transform-origin: bottom right;
+      }
+      #dashboard-health-overlay.closing {
+        animation: fadeOut 0.2s ease-in forwards;
+      }
+      #dashboard-health-overlay.closing #island-toggle {
+        animation: springShrink 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+        transform-origin: bottom right;
+      }
+      @media (max-width: 880px) {
+        #island-toggle {
+          width: calc(100vw - 24px) !important;
+          height: 80vh !important;
+          max-height: 700px !important;
         }
+      }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+      
+      .island-scroll-container {
+        scrollbar-gutter: stable;
+      }
+    </style>
+  </main>
 
-        async function updateStats(d) {
-            try {
-                if (!d) {
-                    const res = await fetch(API_BASE + '/api/v1/stats');
-                    if (!res.ok) throw new Error();
-                    d = await res.json();
-                }
+  <footer class="border-t border-slate-200 bg-slate-950 pt-16 pb-32 text-white">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-12 md:grid-cols-3">
+        <!-- Brand Section -->
+        <div class="max-w-xs">
+          <div class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-saffron-500 via-white to-india-green-500 p-1">
+              <div class="h-full w-full rounded-md bg-slate-950 flex items-center justify-center">
+                <span class="text-[10px] font-black">MH</span>
+              </div>
+            </div>
+            <span class="text-lg font-black tracking-tight">Misinfo<span class="text-saffron-500">Heatmap</span></span>
+          </div>
+          <p class="mt-6 text-sm leading-7 text-slate-400">
+            Advanced AI-powered platform for real-time misinformation detection and verification across India's digital
+            landscape.
+          </p>
+          <div class="mt-6 flex items-center gap-4">
+            <!-- India Badge -->
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-white/10">
+              <span class="h-1.5 w-1.5 rounded-full bg-saffron-500"></span>
+              Monitored in India
+            </span>
+          </div>
+        </div>
 
-                animateNum(document.getElementById('total-events'), d.total_events || 0);
-                animateNum(document.getElementById('fake-events'), d.fake_events || 0);
-                animateNum(document.getElementById('real-events'), d.real_events || 0);
-                animateNum(document.getElementById('uncertain-events'), d.uncertain_events || 0);
-                document.getElementById('total-states').textContent = d.total_states || 36;
+        <!-- Platform Links -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-saffron-500">Platform</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/heatmap.html" class="transition hover:text-white font-medium">Live Heatmap</a></li>
+            <li><a href="/dashboard.html" class="transition hover:text-white font-medium">Intelligence Dashboard</a></li>
+          </ul>
+        </div>
 
-                const total = d.total_events || 1;
-                setTimeout(() => {
-                    document.getElementById('bar-total').style.width = '100%';
-                    document.getElementById('bar-fake').style.width = ((d.fake_events||0)/total*100) + '%';
-                    document.getElementById('bar-real').style.width = ((d.real_events||0)/total*100) + '%';
-                    document.getElementById('bar-uncertain').style.width = ((d.uncertain_events||0)/total*100) + '%';
-                }, 200);
+        <!-- Support -->
+        <div>
+          <h3 class="text-sm font-black uppercase tracking-[0.2em] text-ashoka-blue-400">Support</h3>
+          <ul class="mt-6 space-y-4 text-sm text-slate-400">
+            <li><a href="/contact.html" class="transition hover:text-white font-black text-slate-300">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
 
-                const statusEl = document.getElementById('system-status');
-                const procEl   = document.getElementById('health-proc');
-                const mlEl     = document.getElementById('health-ml');
-                const badge    = document.getElementById('health-badge');
-
-                statusEl.textContent = d.processing_active ? 'Live Processing' : (d.ml_ready ? 'System Ready' : 'Loading…');
-                procEl.textContent   = d.processing_active ? '● Active' : '● Idle';
-                procEl.className     = `metric-badge ${d.processing_active ? 'green' : 'amber'}`;
-                mlEl.textContent     = d.ml_ready ? '● Loaded' : '● Loading…';
-                mlEl.className       = `metric-badge ${d.ml_ready ? 'green' : 'amber'}`;
-                badge.textContent    = d.processing_active ? 'All Systems Go' : 'Standby';
-                badge.style.color    = d.processing_active ? 'var(--green)' : 'var(--text-muted)';
-
-                // Accuracy ring
-                const acc = d.classification_accuracy || 0.91;
-                document.getElementById('accuracy-pct').textContent = Math.round(acc * 100) + '%';
-                setTimeout(() => {
-                    document.getElementById('accuracy-ring-fill').style.strokeDashoffset = 351.86 * (1 - acc);
-                }, 300);
-
-                document.getElementById('last-updated').textContent =
-                    'Last updated: ' + new Date().toLocaleTimeString('en-IN', { hour12: true });
-
-            } catch(_) {
-                document.getElementById('system-status').textContent = 'Connecting…';
-            }
-        }
-
-        async function updateActivity(eventsPayload) {
-            try {
-                let events;
-                if (!eventsPayload) {
-                    const res = await fetch(API_BASE + '/api/v1/events/live?limit=15');
-                    if (!res.ok) throw new Error();
-                    const d = await res.json();
-                    events = d.events || [];
-                } else {
-                    events = eventsPayload.events || [];
-                }
-
-                document.getElementById('events-count').textContent = events.length + ' events';
-
-                const feed = document.getElementById('activity-feed');
-                if (events.length === 0) {
-                    feed.innerHTML = `<div class="empty-feed"><div class="empty-icon">📭</div><p>No recent events</p></div>`;
-                    return;
-                }
-
-                feed.innerHTML = events.map(ev => {
-                    const cls  = ev.classification || 'uncertain';
-                    const icon = cls === 'fake' ? '🚨' : cls === 'real' ? '✅' : '⚠️';
-                    const time = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit', hour12:true}) : '—';
-                    const title = (ev.title || 'Processing event…').substring(0, 90);
-                    const conf  = ev.confidence ? Math.round(ev.confidence * 100) + '%' : '';
-                    return `<div class="activity-item">
-                        <div class="activity-dot">${icon}</div>
-                        <div class="activity-info">
-                            <div class="activity-title" title="${(ev.title||'').replace(/"/g,'&quot;')}">${title}</div>
-                            <div class="activity-meta">
-                                <span class="activity-tag ${cls}">${cls.toUpperCase()}</span>
-                                <span>${ev.source || 'Unknown'}</span>
-                                <span>📍 ${ev.state || 'India'}</span>
-                                ${conf ? `<span>${conf}</span>` : ''}
-                                <span>🕐 ${time}</span>
-                            </div>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch(_) {}
-        }
-
-        function refreshAll() { updateStats(); updateActivity(); }
-
-        // Initial load
-        updateStats();
-        updateActivity();
-
-        // SSE for real-time updates
-        const sse = new EventSource(API_BASE + '/api/v1/stream');
-        sse.addEventListener('stats', e => updateStats(JSON.parse(e.data)));
-        sse.addEventListener('live_events', e => updateActivity(JSON.parse(e.data)));
-        sse.onerror = () => { document.getElementById('system-status').textContent = 'Reconnecting…'; };
-
-        // Fallback polling every 15s in case SSE stalls
-        setInterval(refreshAll, 15000);
-    </script>
+      <!-- Bottom Bar -->
+      <div class="mt-16 border-t border-white/5 pt-8">
+        <div class="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <p class="text-xs text-slate-500">
+            © 2026 Misinformation Heatmap. Powered by Advanced Neural Networks.
+          </p>
+          <div class="flex items-center gap-8">
+            <a href="/privacy-policy.html" class="text-xs text-slate-400 hover:text-white font-medium transition">Privacy Policy</a>
+            <div
+              class="h-1 w-32 rounded-full bg-gradient-to-r from-saffron-500 via-white to-india-green-500 opacity-20">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 </body>
+
 </html>

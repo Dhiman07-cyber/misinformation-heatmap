@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://ndg07-heatmap.hf.space; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+  <style>
+    html,
+    body {
+      overflow-x: hidden;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Surface Pro 7 & Asus Zenbook Fold Specific Enhancements */
+    @media screen and (device-width: 912px) and (device-height: 1368px),
+    screen and (device-width: 912px) and (device-height: 608px),
+    screen and (device-width: 853px) and (device-height: 1280px) {
+      body #main-content {
+        padding-top: 5.75rem !important;
+      }
+
+      html {
+        font-size: 18px !important;
+      }
+
+      h2 {
+        font-size: 1.5rem !important;
+      }
+
+      p {
+        font-size: 1.1rem !important;
+      }
+
+      /* Pill and Scroll Button Alignment for Pro 7 */
+      #bottom-premium-nav,
+      #scroll-down-btn {
+        bottom: 3rem !important;
+        gap: 1.25rem !important;
+        padding: 0.75rem !important;
+        border-width: 2px !important;
+      }
+
+      #bottom-premium-nav a,
+      #bottom-premium-nav button {
+        height: 3.75rem !important;
+        width: 3.75rem !important;
+      }
+
+      #bottom-premium-nav a.w-20,
+      #bottom-premium-nav button.w-20 {
+        width: 6rem !important;
+      }
+
+      #bottom-premium-nav svg {
+        width: 1.75rem !important;
+        height: 1.75rem !important;
+      }
+
+      [data-desktop-nav] {
+        display: flex !important;
+      }
+
+      #menu-toggle {
+        display: none !important;
+      }
+
+      #bottom-premium-nav,
+      #scroll-down-btn {
+        display: none !important;
+      }
+
+      /* Heatmap Specific Text Scaling for Pro 7 */
+      #heatmap-header-refresh {
+        font-size: 0.85rem !important;
+        padding: 0.4rem 0.8rem !important;
+      }
+
+      #heatmap-zoom-controls button {
+        font-size: 1.2rem !important;
+        min-height: 3.25rem !important;
+        min-width: 3.25rem !important;
+      }
+
+      #risk-legend-toggle {
+        font-size: 0.9rem !important;
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+      }
+
+      #risk-legend-panel .grid {
+        font-size: 0.85rem !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+      }
+
+      aside h3 {
+        font-size: 0.75rem !important;
+        letter-spacing: 0.15em !important;
+      }
+
+      #heatmap-misinformation-count,
+      #heatmap-real-news-count {
+        font-size: 0.75rem !important;
+        padding: 0.25rem 0.6rem !important;
+      }
+
+      .feed-filter-control {
+        font-size: 0.7rem !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+      }
+    }
+
+    /* Short Viewport Adjustments (Nest Hub, Surface Duo) - Only for non-desktop widths */
+    @media (max-height: 720px) and (max-width: 1299px) {
+      #main-content {
+        padding-top: 6.5rem !important;
+        padding-bottom: 5rem !important;
+      }
+
+      .sm\:pt-26 {
+        padding-top: 6.5rem !important;
+      }
+    }
+
+    /* Desktop Only Scaling (Wider than Nest Hub Max) - Reinforced */
+    @media screen and (min-width: 1300px) {
+      #main-content {
+        height: calc(100vh - 1rem) !important;
+        padding-top: 5.25rem !important;
+        padding-bottom: 1.25rem !important;
+        max-width: 1650px !important;
+      }
+
+      #main-content>section,
+      #main-content>section>article,
+      #main-content>section>aside {
+        height: 100% !important;
+      }
+    }
+
+    /* Target tall map ONLY for narrow phones (Pixel, iPhone, etc.) */
+    @media (max-width: 500px) {
+      #india-map-container {
+        min-height: 650px !important;
+      }
+
+      /* Shift pill left to avoid overlap with scroll button on narrow screens */
+      #bottom-premium-nav {
+        left: 40% !important;
+      }
+    }
+
+    /* Samsung Galaxy S8+ / S28+ Specific Adjustment (360x740) */
+    @media screen and (device-width: 360px) and (device-height: 740px) {
+      #india-map-container {
+        min-height: 470px !important;
+      }
+
+      h2 {
+        font-size: 1rem !important;
+      }
+    }
+
+    /* Specific scaling for Nest Hub (1024x600) - Compact Heatmap */
+    @media screen and (device-width: 1024px) and (device-height: 600px) {
+      html {
+        font-size: 17px !important;
+      }
+
+      #main-content {
+        height: calc(100vh - 0.5rem) !important;
+        padding-top: 5rem !important;
+        padding-bottom: 0.75rem !important;
+      }
+
+      #main-content>section,
+      #main-content>section>article,
+      #main-content>section>aside {
+        height: 100% !important;
+      }
+
+      h2 {
+        font-size: 1.2rem !important;
+      }
+
+      p.text-\[10px\] {
+        font-size: 9px !important;
+      }
+
+      #heatmap-header-refresh {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 9px !important;
+      }
+
+      #main-content>section {
+        gap: 1rem !important;
+      }
+
+      #heatmap-zoom-controls {
+        scale: 0.85 !important;
+        transform-origin: right top !important;
+      }
+
+      #heatmap-svg-root {
+        padding: 3rem !important;
+      }
+
+      [data-desktop-nav] {
+        display: flex !important;
+      }
+
+      #menu-toggle {
+        display: none !important;
+      }
+
+      #bottom-premium-nav {
+        display: none !important;
+      }
+    }
+
+    /* Specific scaling for Nest Hub Max (1280x800) - More breathing room */
+    @media screen and (device-width: 1280px) and (device-height: 800px) {
+      html {
+        font-size: 18px !important;
+      }
+
+      body #main-content {
+        height: calc(100vh - 1rem) !important;
+        padding-top: 6rem !important;
+        padding-bottom: 1.5rem !important;
+      }
+
+      #main-content>section,
+      #main-content>section>article,
+      #main-content>section>aside {
+        height: 100% !important;
+      }
+
+      [data-desktop-nav] {
+        display: flex !important;
+      }
+
+      #menu-toggle {
+        display: none !important;
+      }
+
+      #bottom-premium-nav {
+        display: none !important;
+      }
+    }
+
+    /* Surface Duo Specific Fix (Custom) */
+    @media screen and (max-width: 600px) and (max-height: 720px) {
+      #main-content {
+        padding-top: 5.5rem !important;
+        padding-bottom: 2rem !important;
+      }
+
+      #india-map-container {
+        min-height: 600px !important;
+        height: 600px !important;
+        flex: none !important;
+      }
+
+      #heatmap-svg-root {
+        padding: 3rem 5rem 7.5rem 5rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      #heatmap-svg-root>svg {
+        transform: translateY(-25px) !important;
+      }
+
+      #risk-legend-container {
+        bottom: 6rem !important;
+        left: 0.75rem !important;
+        scale: 0.9;
+        transform-origin: left bottom;
+      }
+
+      #risk-legend-toggle {
+        padding: 0.25rem 0.5rem !important;
+      }
+
+      #risk-legend-panel {
+        max-height: none;
+      }
+
+      #heatmap-zoom-controls {
+        scale: 0.8;
+        transform-origin: right center;
+      }
+    }
+
+    /* Premium Hover & Select Scale Effects for Heatmap Paths */
+    .heatmap-path {
+      transform-box: fill-box !important;
+      transform-origin: center !important;
+      transition: fill 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  stroke-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  filter 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      will-change: transform, filter !important;
+    }
+
+    .heatmap-path:hover {
+      transform: scale(1.045) translateY(-2px) !important;
+      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.12)) brightness(1.04) !important;
+      z-index: 50 !important;
+    }
+
+    .heatmap-path.selected {
+      transform: scale(1.06) translateY(-3px) !important;
+      filter: drop-shadow(0 12px 20px rgba(251, 146, 60, 0.22)) brightness(1.06) !important;
+      z-index: 60 !important;
+    }
+  </style>
+  <title>Heatmap - Misinformation Heatmap</title>
+  <meta name="description"
+    content="Interactive India heatmap for monitoring state-wise misinformation risk, live alerts, verified news, and AI confidence signals.">
+  <link rel="icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="/assets/Misinfo.ico">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <script type="module" src="/assets/js/main.js"></script>
+</head>
+
+<body data-page="heatmap" class="min-h-screen overflow-x-hidden text-slate-950 antialiased relative">
+  <div class="fixed inset-0 -z-10 bg-white"></div>
+  <div
+    class="fixed inset-0 -z-10 overflow-hidden pointer-events-none [mask-image:linear-gradient(to_bottom,white_90%,transparent)]"
+    style="contain: strict;">
+    <!-- Main Saffron Glow -->
+    <div
+      class="absolute -top-[15%] -left-[10%] h-[650px] w-[650px] rounded-full bg-[radial-gradient(circle,rgba(255,153,51,0.28)_0%,transparent_70%)] animate-float will-change-transform transform-gpu">
+    </div>
+
+    <!-- Main Green Glow -->
+    <div
+      class="absolute top-[25%] -right-[10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(19,136,8,0.22)_0%,transparent_70%)] animate-float will-change-transform transform-gpu"
+      style="animation-delay: 2s"></div>
+
+    <!-- Ashoka Blue Glow -->
+    <div
+      class="absolute top-1/2 left-1/4 h-[450px] w-[450px] rounded-full bg-[radial-gradient(circle,rgba(0,0,128,0.12)_0%,transparent_70%)] animate-pulse will-change-transform transform-gpu"
+      style="animation-delay: 4s"></div>
+
+    <!-- Subtle Saffron/Green Accent Gradients -->
+    <div
+      class="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,153,51,0.2),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(19,136,8,0.2),transparent_50%)]">
+    </div>
+
+    <!-- Refined noise and pattern -->
+    <div class="absolute inset-0 opacity-[0.05]"
+      style="background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 48px 48px;">
+    </div>
+
+    <!-- Diagonal Accent Overlay -->
+    <div
+      class="absolute inset-0 bg-gradient-to-br from-saffron-500/15 via-transparent to-india-green-500/15 opacity-80">
+    </div>
+  </div>
+  <a class="absolute w-[1px] h-[1px] p-0 m-[-1px] overflow-hidden clip-[rect(0,0,0,0)] whitespace-nowrap border-0 focus:static focus:w-auto focus:h-auto focus:p-0 focus:m-0 focus:overflow-visible focus:clip-auto focus:whitespace-normal focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-slate-950 focus:px-4 focus:py-2 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+    href="#main-content">Skip to content</a>
+  <!-- Scroll Down Helper (Mobile/Tablet Only) -->
+  <button id="scroll-down-btn"
+    class="fixed bottom-6 right-4 z-[70] flex h-16 w-16 animate-bounce-scroll items-center justify-center rounded-full bg-[#fffdf4]/95 text-slate-950 shadow-[0_10px_40px_rgba(0,0,0,0.15)] backdrop-blur-md transition-all hover:scale-110 active:scale-95 lg:hidden"
+    aria-label="Scroll down to news">
+    <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 13l-7 7-7-7M12 5v15"></path>
+    </svg>
+  </button>
+
+  <div data-navbar></div>
+
+  <main id="main-content"
+    class="mx-auto w-full max-w-[1550px] px-4 pt-24 pb-32 sm:px-6 sm:pt-26 lg:px-4 lg:h-[calc(100vh-1rem)] lg:pt-20 lg:overflow-hidden">
+    <section
+      class="grid gap-6 lg:grid-cols-[1fr_480px] xl:grid-cols-[1fr_560px] animate-fade-in-up lg:h-full lg:overflow-hidden">
+      <article id="india-map-container"
+        class="relative overflow-hidden bg-[#fffdf4] shadow-premium sm:rounded-2xl rounded-2xl sm:border sm:border-slate-200 flex flex-col lg:h-full isolate">
+        <div class="flex items-center justify-between gap-4 border-b border-slate-200 bg-[#fdfaf0] px-5 py-4 sm:px-6">
+          <div class="min-w-0">
+            <p class="text-[10px] font-bold text-slate-500">Live risk map</p>
+            <h2 class="mt-0.5 text-lg font-extrabold text-slate-950">State intensity surface</h2>
+          </div>
+          <button
+            class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-700"
+            type="button" id="heatmap-header-refresh">
+            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+              </path>
+            </svg>
+            Refresh
+          </button>
+        </div>
+
+        <div
+          class="relative flex-1 min-h-[350px] overflow-hidden bg-[#fffdf4] rounded-b-2xl sm:min-h-[450px] lg:min-h-0"
+          style="contain: layout paint;" id="india-map-viewport">
+
+          <div id="heatmap-zoom-controls" class="absolute right-4 top-4 z-20 flex flex-col gap-2"
+            aria-label="Map controls">
+            <button
+              class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-base font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
+              type="button" id="heatmap-zoom-in" aria-label="Zoom in">+</button>
+            <button
+              class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 px-2 text-[10px] font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
+              type="button" id="heatmap-zoom-reset" aria-label="Reset zoom">Reset</button>
+            <button
+              class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 text-base font-extrabold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
+              type="button" id="heatmap-zoom-out" aria-label="Zoom out">-</button>
+            <button
+              class="mt-2 inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-slate-200 bg-white/95 px-3 text-[10px] font-bold text-slate-800 shadow-card outline-none transition-all duration-150 hover:-translate-y-0.5 hover:border-saffron-300 hover:bg-saffron-50 hover:text-saffron-800 focus-visible:ring-2 focus-visible:ring-saffron-500"
+              type="button" id="heatmap-state-clear" aria-label="Clear state selection">Clear</button>
+          </div>
+
+          <div id="heatmap-svg-root"
+            class="flex h-full w-full touch-none select-none items-center justify-center overflow-hidden p-4 sm:p-6 rounded-b-2xl"
+            tabindex="0" aria-label="Interactive India heatmap">
+            <div id="heatmap-loading"
+              class="flex max-w-sm flex-col items-center justify-center px-6 text-center animate-pulse-soft">
+              <div class="h-14 w-14 animate-spin rounded-full border-4 border-ashoka-blue-200 border-t-ashoka-blue-500">
+              </div>
+              <p class="mt-6 text-lg font-extrabold text-slate-950 tracking-tight">Analyzing Signals</p>
+              <p class="mt-2 text-sm leading-6 text-slate-600 font-medium">Fetching real-time state risk indicators...
+              </p>
+            </div>
+          </div>
+
+          <div id="risk-legend-container" class="absolute bottom-4 left-4 z-20 w-40">
+            <div
+              class="overflow-hidden rounded-2xl border border-slate-200 bg-white/95 shadow-[0_10px_40px_rgba(0,0,0,0.1)] backdrop-blur-xl">
+              <button
+                class="flex w-full items-center justify-between gap-4 px-4 py-2.5 text-left text-[11px] font-bold text-slate-800 focus-visible:outline-none"
+                type="button" id="risk-legend-toggle" aria-expanded="true" aria-controls="risk-legend-panel">
+                <span>Risk levels</span>
+                <svg id="risk-legend-icon" class="h-3 w-3 transition-transform duration-300" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <div class="max-h-[500px] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                id="risk-legend-panel">
+                <div class="grid gap-2 border-t border-slate-100 px-4 py-3 text-[11px] font-bold text-slate-600">
+                  <div class="flex items-center gap-3"><span
+                      class="h-3 w-3 shrink-0 rounded-full shadow-[0_0_8px_rgba(19,136,8,0.4)]" style="background-color: #138808;"></span><span>Least
+                      risk</span></div>
+                  <div class="flex items-center gap-3"><span
+                      class="h-3 w-3 shrink-0 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.4)]"></span><span>Low-Medium</span>
+                  </div>
+                  <div class="flex items-center gap-3"><span
+                      class="h-3 w-3 shrink-0 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.4)]"></span><span>Medium-High</span>
+                  </div>
+                  <div class="flex items-center gap-3"><span
+                      class="h-3 w-3 shrink-0 rounded-full bg-red-600 shadow-[0_0_8px_rgba(220,38,38,0.4)]"></span><span>High
+                      risk</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+      </article>
+
+      <aside class="flex flex-col gap-6 lg:h-full lg:overflow-hidden" aria-label="Heatmap details">
+        <div
+          class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-[#fffdf4] shadow-premium isolate">
+          <!-- Tab Header -->
+          <div class="flex border-b border-slate-200 bg-[#fefcf8] p-1.5">
+            <button id="tab-alerts"
+              class="flex-1 rounded-lg px-4 py-2.5 text-xs font-bold transition-all duration-200 bg-white text-red-600 shadow-sm border border-slate-200">
+              Alerts
+            </button>
+            <button id="tab-news"
+              class="flex-1 rounded-lg px-4 py-2.5 text-xs font-bold transition-all duration-200 text-slate-500 hover:text-slate-700">
+              Verified
+            </button>
+          </div>
+
+          <!-- Tab Content Containers -->
+          <div class="flex-1 lg:overflow-hidden flex flex-col lg:h-full">
+            <!-- Alerts Panel -->
+            <div class="flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 custom-scrollbar lg:h-full"
+              id="panel-alerts">
+              <div class="mb-5 flex items-center justify-between">
+                <h3 class="text-[10px] font-bold text-red-600">Misinformation alerts</h3>
+                <div class="flex items-center gap-2">
+                  <span class="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-600"
+                    id="heatmap-misinformation-count">--</span>
+                </div>
+              </div>
+              <div class="grid gap-4" id="heatmap-misinformation-feed"></div>
+            </div>
+
+            <!-- Verified News Panel (Hidden by default) -->
+            <div class="hidden flex-1 lg:overflow-y-auto px-4 py-5 sm:px-6 custom-scrollbar lg:h-full"
+              id="panel-news">
+              <div class="mb-5 flex items-center justify-between">
+                <h3 class="text-[10px] font-bold text-emerald-600">Verified reporting</h3>
+                <div class="flex items-center gap-2">
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-600"
+                    id="heatmap-real-news-count">--</span>
+                </div>
+              </div>
+              <div class="grid gap-4" id="heatmap-real-news-feed"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #e2e8f0 transparent;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      contain: content;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
+
+    .feed-filter-control {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      background: white !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+      font-size: 10px !important;
+      letter-spacing: 0.05em !important;
+      color: #475569 !important;
+      cursor: pointer !important;
+    }
+
+    .feed-filter-control:hover {
+      border-color: #fb923c !important;
+      background: #fffaf5 !important;
+      color: #9a3412 !important;
+      box-shadow: 0 4px 12px rgba(251, 146, 60, 0.08) !important;
+    }
+
+    .feed-filter-control:focus {
+      outline: none !important;
+      border-color: #FF9933 !important;
+      box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.15) !important;
+    }
+
+    /* Premium Tricolor Border for Scroll Button */
+    #scroll-down-btn {
+      border: 3.5px solid transparent !important;
+      background: linear-gradient(#fffdf4, #fffdf4) padding-box, 
+                  linear-gradient(to right, rgba(255, 153, 51, 0.65), #ffffff, rgba(19, 136, 8, 0.65)) border-box !important;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    #scroll-down-btn:hover {
+      background: linear-gradient(#fffaf5, #fffaf5) padding-box, 
+                  linear-gradient(to right, rgba(255, 153, 51, 0.9), #ffffff, rgba(19, 136, 8, 0.9)) border-box !important;
+      box-shadow: 0 15px 45px rgba(255, 153, 51, 0.15) !important;
+    }
+
+    @media (max-width: 1023px) {
+
+      #heatmap-misinformation-count,
+      #heatmap-real-news-count {
+        display: none !important;
+      }
+    }
+
+    #event-detail-card {
+      border: 1.5px solid transparent !important;
+      background: linear-gradient(to bottom, #fffdf4, #fffdf4) padding-box, 
+                  linear-gradient(135deg, rgba(255, 153, 51, 0.4), rgba(0, 0, 128, 0.15), rgba(19, 136, 8, 0.4)) border-box !important;
+    }
+  </style>
+  <div id="heatmap-tooltip"
+    class="pointer-events-none fixed z-[60] hidden max-w-xs rounded-xl border border-slate-800 bg-slate-950/95 px-4 py-3 text-[11px] font-semibold leading-relaxed text-white shadow-2xl backdrop-blur-md"
+    role="status" aria-hidden="true"></div>
+
+  <!-- Event Details Modal -->
+  <div id="event-detail-modal"
+    class="fixed inset-0 z-[200] flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300"
+    role="dialog" aria-modal="true" aria-labelledby="event-detail-title" aria-hidden="true">
+    <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" id="event-detail-overlay"></div>
+    <div
+      class="relative w-full max-w-2xl scale-95 transform rounded-3xl bg-[#fffdf4] shadow-2xl transition-transform duration-300"
+      style="border: 1.5px solid transparent !important; background: linear-gradient(to bottom, #fffdf4, #fffdf4) padding-box, linear-gradient(135deg, rgba(255, 153, 51, 0.4), rgba(0, 0, 128, 0.15), rgba(19, 136, 8, 0.4)) border-box !important;"
+      id="event-detail-card">
+      <div class="p-6 sm:p-8">
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div class="flex flex-wrap items-center gap-2" id="event-detail-badges">
+            <!-- Badges injected here -->
+          </div>
+          <button type="button" id="event-detail-close" aria-label="Close event details"
+            class="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-950 leading-tight mb-4" id="event-detail-title"></h2>
+
+        <div class="prose prose-sm prose-slate max-w-none max-h-[40vh] overflow-y-auto custom-scrollbar pr-2"
+          id="event-detail-content">
+          <!-- Content injected here -->
+        </div>
+
+        <div class="mt-8 flex justify-end">
+          <a id="event-detail-link" target="_blank" rel="noopener noreferrer"
+            class="hidden rounded-xl bg-slate-950 px-6 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-slate-800 hover:-translate-y-0.5">
+            Read Full Article
+            <svg class="ml-2 inline-block h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
