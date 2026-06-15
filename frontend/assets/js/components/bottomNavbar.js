@@ -25,7 +25,7 @@ const ICON_PATHS = {
 
 function createTooltip(label) {
   const span = document.createElement('span');
-  span.className = 'absolute -top-10 scale-0 rounded bg-slate-900 px-2 py-1 text-[10px] font-bold text-white transition-all group-hover:scale-100 whitespace-nowrap';
+  span.className = 'absolute -top-10 scale-0 rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-bold text-slate-800 shadow-md transition-all group-hover:scale-100 whitespace-nowrap';
   span.textContent = label;
   return span;
 }
@@ -34,7 +34,7 @@ export function mountBottomNavbar(options = {}) {
   const { activeRoute } = options;
 
   const container = createElement('div', {
-    className: 'fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 transform-gpu lg:hidden flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/90 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02]',
+    className: 'fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 transform-gpu lg:hidden flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 p-2 shadow-lg backdrop-blur-2xl transition-all duration-500 hover:scale-[1.02]',
     attrs: { id: 'bottom-premium-nav' }
   });
 
@@ -44,14 +44,11 @@ export function mountBottomNavbar(options = {}) {
     { key: 'heatmap', href: '/heatmap.html', label: 'Heatmap' }
   ];
 
-  if (activeRoute === 'dashboard') {
-    routes.push({ key: 'health', id: 'bottom-nav-health-trigger', label: 'System Health' });
-  }
 
   routes.forEach(route => {
     const isActive = route.key === activeRoute;
     const btnBaseClass = 'group relative flex h-12 items-center justify-center rounded-full transition-all duration-500 active:scale-95';
-    const activeClass = isActive ? 'w-20 bg-white/10 text-white border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.15)]' : 'w-14 text-slate-400 hover:bg-white/5 hover:text-white';
+    const activeClass = isActive ? 'w-20 bg-saffron-50 text-saffron-600 border border-saffron-200 shadow-sm' : 'w-14 text-slate-500 hover:bg-slate-100 hover:text-ashoka-blue-600';
 
     let element;
     if (route.href) {

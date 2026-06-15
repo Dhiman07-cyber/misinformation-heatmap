@@ -1,5 +1,5 @@
 import { createElement, qs, replaceChildren, setText } from '../utils/dom.js';
-import { createMobileMenu, bindHamburger, ROUTES } from './hamburger.js';
+import { ROUTES } from './hamburger.js';
 import { createStatPanel, STATUS_CLASSES } from './ui.js';
 import { mountBottomNavbar } from './bottomNavbar.js';
 
@@ -91,31 +91,12 @@ export function mountNavbar(options = {}) {
       ]),
       createElement('div', { className: 'hidden items-center gap-1 lg:flex', attrs: { 'data-desktop-nav': '' } }, ROUTES.map((route) => createDesktopLink(route, page))),
       createElement('div', { className: 'flex items-center gap-3' }, [
-        createElement('div', { className: 'hidden sm:flex' }, [
-          createStatusPill(statusId, options.initialStatus || 'Checking')
-        ]),
-        page === 'heatmap' ? createStatsPopover() : null,
-        createElement('button', {
-          className: 'inline-flex h-11 w-11 flex-col items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white text-slate-950 shadow-md outline-none outline-offset-2 transition-all duration-150 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 lg:hidden',
-          attrs: {
-            type: 'button',
-            id: 'menu-toggle',
-            'aria-controls': 'mobile-menu',
-            'aria-expanded': 'false',
-            'aria-label': 'Open navigation menu'
-          }
-        }, [
-          createElement('span', { className: 'h-0.5 w-5 rounded-full bg-current transition-all duration-150' }),
-          createElement('span', { className: 'h-0.5 w-5 rounded-full bg-current transition-all duration-150' }),
-          createElement('span', { className: 'h-0.5 w-5 rounded-full bg-current transition-all duration-150' })
-        ])
+        page === 'heatmap' ? createStatsPopover() : null
       ])
     ])
   ]);
 
-  const mobileMenu = createMobileMenu({ activeRoute: page, showStats });
-  replaceChildren(mount, [header, mobileMenu]);
-  bindHamburger(qs('#menu-toggle', header), mobileMenu);
+  replaceChildren(mount, [header]);
 
   mountBottomNavbar({ activeRoute: page });
 }
