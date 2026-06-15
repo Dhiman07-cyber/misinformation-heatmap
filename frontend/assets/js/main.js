@@ -4,8 +4,6 @@ import { initHeatmap } from './pages/heatmap.js';
 import { initHome } from './pages/home.js';
 
 const PAGE_INIT = {
-  home: initHome,
-  dashboard: initDashboard,
   heatmap: initHeatmap,
   contact: () => { console.log('[contact] initialized'); }
 };
