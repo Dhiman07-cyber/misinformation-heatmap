@@ -70,6 +70,8 @@ dmypy.json
 
 # Cloud credentials and secrets
 *.json
+!package.json
+!package-lock.json
 !data/india_states_geojson.json
 !cloud/bigquery_schema.sql
 service-account*.json
