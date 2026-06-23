@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Misinformation Heatmap - India</title>
-    <link rel="icon" type="image/x-icon" href="/public/Misinfo.ico">
+    <link rel="icon" type="image/x-icon" href="/Misinfo.ico">
     <style>
         :root {
             --saffron:       #E87722;
@@ -1315,7 +1315,7 @@
         
         async function loadSVGMap() {
             try {
-                const response = await fetch('./in.svg');
+                const response = await fetch('/assets/map/in.svg');
                 const svgText = await response.text();
                 
                 const svgRoot = document.getElementById('svgroot');
