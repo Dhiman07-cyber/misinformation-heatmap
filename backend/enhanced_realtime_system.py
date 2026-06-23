@@ -562,7 +562,14 @@ def init_enhanced_database():
         )
     ''')
     
-    # State aggregations
+    # Create indexes for fast querying by state and timestamp
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_state ON events(state)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_verdict ON events(fake_news_verdict)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_state_verdict ON events(state, fake_news_verdict)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_timestamp_desc ON events(timestamp DESC)')
+
+    # Table for state aggregations
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS state_aggregations (
             state TEXT PRIMARY KEY,

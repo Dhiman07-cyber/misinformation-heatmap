@@ -457,7 +457,8 @@ function showTooltip(event, record, fallbackName) {
   }
 
   replaceChildren(tooltip, children);
-  tooltip.style.display = 'block';
+  tooltip.classList.remove('hidden', 'opacity-0', 'invisible');
+  tooltip.classList.add('opacity-100', 'visible');
   tooltip.setAttribute('aria-hidden', 'false');
 
   // Dynamic positioning to prevent clipping
@@ -487,7 +488,8 @@ function showTooltip(event, record, fallbackName) {
 function hideTooltip() {
   const tooltip = qs('#heatmap-tooltip');
   if (!tooltip) return;
-  tooltip.style.display = 'none';
+  tooltip.classList.remove('opacity-100', 'visible');
+  tooltip.classList.add('opacity-0', 'invisible');
   tooltip.setAttribute('aria-hidden', 'true');
 }
 
