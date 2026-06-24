@@ -469,6 +469,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
             "classification":   r["fake_news_verdict"] or "uncertain",
             "confidence":       round(r["fake_news_confidence"] or 0.5, 2),
             "timestamp":        r["timestamp"],
+            "state":            state,
         })
 
     result = {"state": state, "events": events, "total_count": len(events)}
