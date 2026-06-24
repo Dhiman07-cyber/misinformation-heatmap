@@ -274,8 +274,8 @@ async def heatmap():
 async def get_stats(response: Response = None):
     """Aggregate stats for the last 24 hours (30 s cache)."""
     if response:
-        response.headers["Cache-Control"] = "public, max-age=30"
-    cached = _cache_get("stats", 30)
+        response.headers["Cache-Control"] = "public, max-age=5"
+    cached = _cache_get("stats", 5)
     if cached:
         return cached
 
@@ -315,9 +315,9 @@ async def get_stats(response: Response = None):
 async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1, le=30)):
     """State-wise misinformation event counts (60 s cache)."""
     if response:
-        response.headers["Cache-Control"] = "public, max-age=60"
+        response.headers["Cache-Control"] = "public, max-age=10"
     cache_key = f"heatmap_{days}"
-    cached = _cache_get(cache_key, 60)
+    cached = _cache_get(cache_key, 10)
     if cached:
         return cached
 
@@ -376,10 +376,10 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
 async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=100)):
     """Recent events from the last hour."""
     if response:
-        response.headers["Cache-Control"] = "public, max-age=30"
+        response.headers["Cache-Control"] = "public, max-age=5"
         
     cache_key = f"live_events_{limit}"
-    cached = _cache_get(cache_key, 30)
+    cached = _cache_get(cache_key, 5)
     if cached:
         return cached
 
@@ -387,7 +387,7 @@ async def get_live_events(response: Response = None, limit: int = Query(10, ge=1
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, SUBSTR(content, 1, 150) as content, source, state,
+                SELECT title, content, source, state,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events
                 WHERE timestamp > datetime('now', '-24 hours')
@@ -402,7 +402,7 @@ async def get_live_events(response: Response = None, limit: int = Query(10, ge=1
         body = r["content"] or ""
         events.append({
             "title":            (r["title"] or "Processing…")[:120],
-            "content":          body[:200] + ("…" if len(body) > 200 else ""),
+            "content":          body,
             "source":           r["source"] or "Unknown",
             "state":            r["state"]  or "India",
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
@@ -439,10 +439,10 @@ async def sse_stream():
 @app.get("/api/v1/events/state/{state}", tags=["Events"])
 async def get_state_events(state: str, response: Response = None, limit: int = Query(10, ge=1, le=50)):
     if response:
-        response.headers["Cache-Control"] = "public, max-age=30"
+        response.headers["Cache-Control"] = "public, max-age=5"
         
     cache_key = f"state_events_{state}_{limit}"
-    cached = _cache_get(cache_key, 30)
+    cached = _cache_get(cache_key, 5)
     if cached:
         return cached
 
@@ -450,7 +450,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, SUBSTR(content, 1, 150) as content, source,
+                SELECT title, content, source,
                        fake_news_confidence, fake_news_verdict, timestamp
                 FROM events WHERE state = ?
                 ORDER BY timestamp DESC LIMIT ?
@@ -463,7 +463,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
         body = r["content"] or ""
         events.append({
             "title":            r["title"] or "Processing…",
-            "content":          body[:200] + ("…" if len(body) > 200 else ""),
+            "content":          body,
             "source":           r["source"] or "Unknown",
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
             "classification":   r["fake_news_verdict"] or "uncertain",
