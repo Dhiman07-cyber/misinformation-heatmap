@@ -243,7 +243,7 @@ function configureSvg() {
 function bindMapPaths() {
   qsa('path', svgMap).forEach((path) => {
     const fallbackName = path.getAttribute('name') || path.getAttribute('title') || path.id || 'Map region';
-    const pathClasses = 'heatmap-path cursor-pointer stroke-white outline-none transition-[fill,stroke,stroke-width] duration-200 ease-out';
+    const pathClasses = 'heatmap-path cursor-pointer stroke-white outline-none transition-all duration-300 ease-out';
     path.classList.add(...pathClasses.split(' '));
     path.style.strokeWidth = '0.75';
     path.setAttribute('tabindex', '0');
@@ -260,6 +260,8 @@ function bindMapPaths() {
       if (!path.classList.contains('selected')) {
         path.style.stroke = '#FF9933';
         path.style.strokeWidth = '2.5';
+        path.style.transform = 'translateY(-3px)';
+        path.style.filter = 'drop-shadow(0 6px 8px rgba(0,0,0,0.3))';
       }
       handleStateHover(event);
     });
@@ -268,18 +270,24 @@ function bindMapPaths() {
       if (!path.classList.contains('selected')) {
         path.style.stroke = '#ffffff';
         path.style.strokeWidth = '0.75';
+        path.style.transform = 'none';
+        path.style.filter = 'none';
       }
       hideTooltip();
     });
     path.addEventListener('focus', (event) => {
       if (!path.classList.contains('selected')) {
         path.style.stroke = '#E87722';
+        path.style.transform = 'translateY(-3px)';
+        path.style.filter = 'drop-shadow(0 6px 8px rgba(0,0,0,0.3))';
       }
       handleStateHover(event);
     });
     path.addEventListener('blur', (event) => {
       if (!path.classList.contains('selected')) {
         path.style.stroke = '#ffffff';
+        path.style.transform = 'none';
+        path.style.filter = 'none';
       }
       hideTooltip();
     });
@@ -399,10 +407,14 @@ function handleStateClick(event) {
     element.classList.remove('selected');
     element.style.strokeWidth = '0.75';
     element.style.stroke = '#ffffff';
+    element.style.transform = 'none';
+    element.style.filter = 'none';
   });
   path.classList.add('selected');
   path.style.strokeWidth = '3.5';
   path.style.stroke = '#FF9933';
+  path.style.transform = 'translateY(-3px)';
+  path.style.filter = 'drop-shadow(0 6px 8px rgba(0,0,0,0.4))';
   selectedStateRecord = record;
   selectedState = stateName;
   mapInteractionActive = true;
@@ -420,6 +432,8 @@ function clearStateSelection() {
       element.classList.remove('selected');
       element.style.strokeWidth = '0.75';
       element.style.stroke = '#ffffff';
+      element.style.transform = 'none';
+      element.style.filter = 'none';
     });
   }
 
