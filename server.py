@@ -373,27 +373,34 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
 
 # ─── API: LIVE EVENTS ────────────────────────────────────────────────────────
 @app.get("/api/v1/events/live", tags=["Events"])
-async def get_live_events(response: Response = None, limit: int = Query(10, ge=1, le=100)):
-    """Recent events from the last hour."""
+async def get_live_events(response: Response = None, limit: int = Query(20, ge=1, le=100), page: int = Query(1, ge=1)):
+    """Recent events from the last 72 hours."""
     if response:
         response.headers["Cache-Control"] = "public, max-age=5"
         
-    cache_key = f"live_events_{limit}"
+    cache_key = f"live_events_{limit}_p{page}"
     cached = _cache_get(cache_key, 5)
     if cached:
         return cached
 
+    offset = (page - 1) * limit
     rows = []
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, content, source, state,
-                       fake_news_confidence, fake_news_verdict, timestamp
-                FROM events
-                WHERE timestamp > datetime('now', '-24 hours')
+                WITH RankedEvents AS (
+                    SELECT title, content, source, state,
+                           fake_news_confidence, fake_news_verdict, timestamp,
+                           ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
+                    FROM events
+                    WHERE timestamp > datetime('now', '-72 hours')
+                )
+                SELECT title, content, source, state, fake_news_confidence, fake_news_verdict, timestamp
+                FROM RankedEvents
+                WHERE rn <= 3
                 ORDER BY timestamp DESC
-                LIMIT ?
-            """, (limit,)).fetchall()
+                LIMIT ? OFFSET ?
+            """, (limit, offset)).fetchall()
     except Exception as exc:
         logger.error(f"Live events error: {exc}")
 
@@ -428,7 +435,7 @@ async def sse_stream():
             stats = await get_stats()
             yield f"event: stats\ndata: {safe_json_dumps(stats)}\n\n"
             
-            events_data = await get_live_events(limit=12)
+            events_data = await get_live_events(limit=12, page=1)
             yield f"event: live_events\ndata: {safe_json_dumps(events_data)}\n\n"
             
             await asyncio.sleep(5)
@@ -437,24 +444,32 @@ async def sse_stream():
 
 # ─── API: STATE EVENTS ───────────────────────────────────────────────────────
 @app.get("/api/v1/events/state/{state}", tags=["Events"])
-async def get_state_events(state: str, response: Response = None, limit: int = Query(10, ge=1, le=50)):
+async def get_state_events(state: str, response: Response = None, limit: int = Query(20, ge=1, le=50), page: int = Query(1, ge=1)):
     if response:
         response.headers["Cache-Control"] = "public, max-age=5"
         
-    cache_key = f"state_events_{state}_{limit}"
+    cache_key = f"state_events_{state}_{limit}_p{page}"
     cached = _cache_get(cache_key, 5)
     if cached:
         return cached
 
+    offset = (page - 1) * limit
     rows = []
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT title, content, source,
-                       fake_news_confidence, fake_news_verdict, timestamp
-                FROM events WHERE state = ?
-                ORDER BY timestamp DESC LIMIT ?
-            """, (state, limit)).fetchall()
+                WITH RankedEvents AS (
+                    SELECT title, content, source,
+                           fake_news_confidence, fake_news_verdict, timestamp,
+                           ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
+                    FROM events WHERE state = ?
+                )
+                SELECT title, content, source, fake_news_confidence, fake_news_verdict, timestamp
+                FROM RankedEvents
+                WHERE rn <= 3
+                ORDER BY timestamp DESC
+                LIMIT ? OFFSET ?
+            """, (state, limit, offset)).fetchall()
     except Exception as exc:
         logger.error(f"State events error [{state}]: {exc}")
 
