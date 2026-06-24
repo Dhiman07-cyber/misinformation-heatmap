@@ -212,7 +212,8 @@ export async function getHeatmapData(options = {}) {
 
 export async function getLiveEvents(limit = 20, options = {}) {
   const safeLimit = Math.max(1, Math.min(500, Math.floor(Number(limit) || 20)));
-  const path = `/api/v1/events/live?limit=${safeLimit}`;
+  const page = Math.max(1, Math.floor(Number(options.page) || 1));
+  const path = `/api/v1/events/live?limit=${safeLimit}&page=${page}`;
   const payload = await fetchJson(path, { cacheMs: 8000, ...options });
   return extractArray(payload, 'events', 'data');
 }
@@ -221,8 +222,9 @@ export async function getStateEvents(state, options = {}) {
   const safeState = sanitizeStateParam(state);
   if (!safeState) return [];
   const encoded = encodeURIComponent(safeState);
-  const { limit = 100, ...fetchOptions } = options;
+  const { limit = 100, page = 1, ...fetchOptions } = options;
   const safeLimit = Math.max(1, Math.min(100, Math.floor(Number(limit) || 100)));
-  const payload = await fetchJson(`/api/v1/events/state/${encoded}?limit=${safeLimit}`, { cacheMs: 8000, ...fetchOptions });
+  const safePage = Math.max(1, Math.floor(Number(page) || 1));
+  const payload = await fetchJson(`/api/v1/events/state/${encoded}?limit=${safeLimit}&page=${safePage}`, { cacheMs: 8000, ...fetchOptions });
   return extractArray(payload, 'events', 'data');
 }

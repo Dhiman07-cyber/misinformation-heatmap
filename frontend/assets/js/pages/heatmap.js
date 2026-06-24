@@ -58,6 +58,8 @@ let pinchStartZoom = 1;
 let mapInteractionActive = false;
 let refreshInFlight = false;
 let feedsGeneration = 0;
+let currentFeedPage = 1;
+const ITEMS_PER_PAGE = 20;
 let globalEventsPool = null;
 
 const FEED_DISPLAY_LIMIT = 10;
@@ -388,6 +390,7 @@ function applyHeatmapColors() {
 
 function handleStateClick(event) {
   event.stopPropagation();
+  currentFeedPage = 1;
   const path = event.currentTarget || event.target;
   if (!path || !svgMap) return;
 
@@ -427,6 +430,7 @@ function handleStateClick(event) {
 function clearStateSelection() {
   selectedState = null;
   selectedStateRecord = null;
+  currentFeedPage = 1;
   if (svgMap) {
     qsa('.selected', svgMap).forEach((element) => {
       element.classList.remove('selected');
@@ -599,11 +603,9 @@ async function updateFeeds(forceState = false, options = {}) {
   const stateAtRequest = selectedState;
   const generation = ++feedsGeneration;
 
-  // Immediately show loading placeholder in Alerts/Verified when state is selected/clicked
-  if (stateAtRequest) {
-    if (feedAlerts) replaceChildren(feedAlerts, [createFeedLoadingSpinner()]);
-    if (feedNews) replaceChildren(feedNews, [createFeedLoadingSpinner()]);
-  }
+  // Immediately show loading placeholder
+  if (feedAlerts) replaceChildren(feedAlerts, [createFeedLoadingSpinner()]);
+  if (feedNews) replaceChildren(feedNews, [createFeedLoadingSpinner()]);
 
   const forceRefresh = Boolean(options.forceRefresh);
 
@@ -611,44 +613,36 @@ async function updateFeeds(forceState = false, options = {}) {
     clearStateEventsCache(stateAtRequest);
   }
 
+  const paginationControls = qs('#feed-pagination-controls');
+  if (paginationControls) paginationControls.style.display = 'flex';
+  const prevBtn = qs('#feed-prev-page');
+  const nextBtn = qs('#feed-next-page');
+  const pageLabel = qs('#feed-current-page');
+  
+  if (prevBtn) prevBtn.disabled = currentFeedPage <= 1;
+  if (pageLabel) pageLabel.textContent = `Page ${currentFeedPage}`;
+
   try {
+    let events = [];
+    const fetchOptions = forceRefresh ? { cacheMs: 0, force: true, page: currentFeedPage } : { page: currentFeedPage };
+
     if (stateAtRequest) {
-      // 1. Fetch latest 10 quickly
-      const fetchOptions = forceRefresh ? { cacheMs: 0, force: true } : {};
-      const events10 = await getStateEvents(stateAtRequest, { ...fetchOptions, limit: 10 });
-      if (generation !== feedsGeneration) return;
-
-      const deduped10 = dedupeEvents(events10);
-      const filtered10 = deduped10.filter((event) => eventMatchesState(event, stateAtRequest));
-      const fake10 = filtered10.filter((event) => getEventClassification(event) === 'fake');
-      const real10 = filtered10.filter((event) => getEventClassification(event) === 'real');
-
-      await renderFeedsProgressively(fake10, real10, generation, stateAtRequest);
-
-      // 2. Fetch up to 20 in the background
-      getStateEvents(stateAtRequest, { ...fetchOptions, limit: 20 })
-        .then(async (events20) => {
-          if (generation !== feedsGeneration) return;
-          const deduped20 = dedupeEvents(events20);
-          const filtered20 = deduped20.filter((event) => eventMatchesState(event, stateAtRequest));
-          const fake20 = filtered20.filter((event) => getEventClassification(event) === 'fake');
-          const real20 = filtered20.filter((event) => getEventClassification(event) === 'real');
-          await renderFeedsProgressively(fake20, real20, generation, stateAtRequest);
-        })
-        .catch((err) => {
-          console.warn('Background feed fetch failed:', err);
-        });
+      events = await getStateEvents(stateAtRequest, { ...fetchOptions, limit: ITEMS_PER_PAGE });
     } else {
-      // No state selected: fetch only live events (global pool)
-      const fetchOptions = forceRefresh ? { cacheMs: 0, force: true } : {};
-      const events = await getLiveEvents(LIVE_EVENTS_FETCH_LIMIT, fetchOptions);
-      if (generation !== feedsGeneration) return;
-
-      const deduped = dedupeEvents(events);
-      const fakeEvents = deduped.filter((event) => getEventClassification(event) === 'fake');
-      const realEvents = deduped.filter((event) => getEventClassification(event) === 'real');
-      await renderFeedsProgressively(fakeEvents, realEvents, generation, stateAtRequest);
+      events = await getLiveEvents(ITEMS_PER_PAGE, fetchOptions);
     }
+
+    if (generation !== feedsGeneration) return;
+
+    // Next button disabled if we got fewer items than requested (end of data)
+    if (nextBtn) nextBtn.disabled = events.length < ITEMS_PER_PAGE;
+
+    const deduped = dedupeEvents(events);
+    const filtered = stateAtRequest ? deduped.filter((event) => eventMatchesState(event, stateAtRequest)) : deduped;
+    const fakeEvents = filtered.filter((event) => getEventClassification(event) === 'fake');
+    const realEvents = filtered.filter((event) => getEventClassification(event) === 'real');
+
+    await renderFeedsProgressively(fakeEvents, realEvents, generation, stateAtRequest);
   } catch (error) {
     if (generation !== feedsGeneration) return;
     console.error('Feed update failed:', error);
@@ -767,6 +761,25 @@ function setupControls() {
 
   setupEventModal();
   document.addEventListener('keydown', handleHeatmapShortcuts);
+
+  const prevPageBtn = qs('#feed-prev-page');
+  const nextPageBtn = qs('#feed-next-page');
+
+  if (prevPageBtn) {
+    prevPageBtn.addEventListener('click', () => {
+      if (currentFeedPage > 1) {
+        currentFeedPage--;
+        updateFeeds(false, { forceRefresh: true });
+      }
+    });
+  }
+
+  if (nextPageBtn) {
+    nextPageBtn.addEventListener('click', () => {
+      currentFeedPage++;
+      updateFeeds(false, { forceRefresh: true });
+    });
+  }
 }
 
 function setupEventModal() {

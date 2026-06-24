@@ -513,8 +513,21 @@
                 </div>
               </div>
               <div class="grid gap-4" id="heatmap-real-news-feed"></div>
-            </div>
           </div>
+        </div>
+
+        <!-- Feed Pagination Controls -->
+        <div class="mt-2 mb-4 flex items-center justify-between border-t border-slate-200/60 pt-4" id="feed-pagination-controls" style="display: none;">
+          <button id="feed-prev-page" class="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-600 shadow-sm border border-slate-200 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition" disabled>
+            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            Previous
+          </button>
+          <span id="feed-current-page" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Page 1</span>
+          <button id="feed-next-page" class="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-slate-600 shadow-sm border border-slate-200 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 disabled:cursor-not-allowed transition">
+            Next
+            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
         </div>
       </aside>
     </section>
