@@ -393,7 +393,7 @@ async def get_live_events(response: Response = None, limit: int = Query(20, ge=1
                            fake_news_confidence, fake_news_verdict, timestamp,
                            ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
                     FROM events
-                    WHERE timestamp > datetime('now', '-72 hours')
+                    WHERE timestamp > datetime('now', '-3 days')
                 )
                 SELECT title, content, source, state, fake_news_confidence, fake_news_verdict, timestamp
                 FROM RankedEvents
@@ -462,7 +462,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
                     SELECT title, content, source,
                            fake_news_confidence, fake_news_verdict, timestamp,
                            ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
-                    FROM events WHERE state = ?
+                    FROM events WHERE LOWER(state) = LOWER(?)
                 )
                 SELECT title, content, source, fake_news_confidence, fake_news_verdict, timestamp
                 FROM RankedEvents

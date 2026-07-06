@@ -29,10 +29,8 @@ def _translate_query(query: str) -> str:
     # datetime() → INTERVAL
     if "datetime('now'" in pg:
         import re
-        pg = pg.replace("datetime('now', '-24 hours')", "NOW() - INTERVAL '24 hours'")
-        pg = pg.replace("datetime('now', '-6 hours')",  "NOW() - INTERVAL '6 hours'")
-        pg = pg.replace("datetime('now', '-7 days')",   "NOW() - INTERVAL '7 days'")
         pg = re.sub(r"datetime\('now', '-(\d+) days'\)", r"NOW() - INTERVAL '\1 days'", pg)
+        pg = re.sub(r"datetime\('now', '-(\d+) hours'\)", r"NOW() - INTERVAL '\1 hours'", pg)
 
     # INSERT OR REPLACE → INSERT ... ON CONFLICT DO NOTHING
     if "INSERT OR REPLACE INTO" in pg:
