@@ -255,16 +255,10 @@ export function populateEventDetailModal(detail = {}) {
   const contentContainer = document.getElementById('event-detail-content');
   if (contentContainer) {
     const bodyText = toPlainText(detail.bodyText, '');
-    const hasContent = Boolean(bodyText || detail.mlResultText || detail.factCheckText || detail.scoreText);
+    const hasContent = Boolean(bodyText || detail.mlResultText || detail.factCheckText);
     contentContainer.classList.toggle('hidden', !hasContent);
     
     const elements = [];
-    
-    if (detail.scoreText) {
-      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-saffron-200 bg-saffron-50 p-3' }, [
-        createElement('p', { className: 'text-sm font-bold text-saffron-900', text: `Confidence Score: ${detail.scoreText}` })
-      ]));
-    }
     
     if (detail.mlResultText) {
       elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3' }, [

@@ -581,7 +581,7 @@ async function renderFeedsProgressively(fakeEvents, realEvents, generation, stat
 
   if (alertsEl) {
     if (fakeList.length) {
-      replaceChildren(alertsEl, fakeList.map(event => createEventItem(event, { type: 'fake' })));
+      replaceChildren(alertsEl, fakeList.map(event => createEventItem(event)));
     } else {
       renderEventList('#heatmap-misinformation-feed', [], feedEmptyOptions('fake', stateName));
     }
@@ -589,7 +589,7 @@ async function renderFeedsProgressively(fakeEvents, realEvents, generation, stat
   }
   if (newsEl) {
     if (realList.length) {
-      replaceChildren(newsEl, realList.map(event => createEventItem(event, { type: 'real' })));
+      replaceChildren(newsEl, realList.map(event => createEventItem(event)));
     } else {
       renderEventList('#heatmap-real-news-feed', [], feedEmptyOptions('real', stateName));
     }
@@ -1038,17 +1038,6 @@ function hydrateFeedsFromCache() {
   const realEvents = events.filter((event) => getEventClassification(event) === 'real');
   renderEventList('#heatmap-misinformation-feed', fakeEvents, { limit: FEED_DISPLAY_LIMIT });
   renderEventList('#heatmap-real-news-feed', realEvents, { limit: FEED_DISPLAY_LIMIT });
-  setText('#heatmap-misinformation-count', `${Math.min(fakeEvents.length, FEED_DISPLAY_LIMIT)} items`);
-  setText('#heatmap-real-news-count', `${Math.min(realEvents.length, FEED_DISPLAY_LIMIT)} items`);
-}
-
-async function renderFeedsProgressively(fakeEvents, realEvents, generation, stateName) {
-  if (generation !== feedsGeneration) return;
-
-  renderEventList('#heatmap-misinformation-feed', fakeEvents, { limit: FEED_DISPLAY_LIMIT });
-  renderEventList('#heatmap-real-news-feed', realEvents, { limit: FEED_DISPLAY_LIMIT });
-
-  if (generation !== feedsGeneration) return;
   setText('#heatmap-misinformation-count', `${Math.min(fakeEvents.length, FEED_DISPLAY_LIMIT)} items`);
   setText('#heatmap-real-news-count', `${Math.min(realEvents.length, FEED_DISPLAY_LIMIT)} items`);
 }
