@@ -623,24 +623,34 @@ async function updateFeeds(forceState = false, options = {}) {
   if (pageLabel) pageLabel.textContent = `Page ${currentFeedPage}`;
 
   try {
-    let events = [];
+    let fakeEventsData = [];
+    let realEventsData = [];
     const fetchOptions = forceRefresh ? { cacheMs: 0, force: true, page: currentFeedPage } : { page: currentFeedPage };
+    const fakeFetchOptions = { ...fetchOptions, classification: 'fake' };
+    const realFetchOptions = { ...fetchOptions, classification: 'real' };
 
     if (stateAtRequest) {
-      events = await getStateEvents(stateAtRequest, { ...fetchOptions, limit: ITEMS_PER_PAGE });
+      [fakeEventsData, realEventsData] = await Promise.all([
+        getStateEvents(stateAtRequest, { ...fakeFetchOptions, limit: ITEMS_PER_PAGE }),
+        getStateEvents(stateAtRequest, { ...realFetchOptions, limit: ITEMS_PER_PAGE })
+      ]);
     } else {
-      events = await getLiveEvents(ITEMS_PER_PAGE, fetchOptions);
+      [fakeEventsData, realEventsData] = await Promise.all([
+        getLiveEvents(ITEMS_PER_PAGE, fakeFetchOptions),
+        getLiveEvents(ITEMS_PER_PAGE, realFetchOptions)
+      ]);
     }
 
     if (generation !== feedsGeneration) return;
 
-    // Next button disabled if we got fewer items than requested (end of data)
-    if (nextBtn) nextBtn.disabled = events.length < ITEMS_PER_PAGE;
+    // Next button disabled if we got fewer items than requested (end of data) for both feeds
+    if (nextBtn) nextBtn.disabled = fakeEventsData.length < ITEMS_PER_PAGE && realEventsData.length < ITEMS_PER_PAGE;
 
-    const deduped = dedupeEvents(events);
-    const filtered = stateAtRequest ? deduped.filter((event) => eventMatchesState(event, stateAtRequest)) : deduped;
-    const fakeEvents = filtered.filter((event) => getEventClassification(event) === 'fake');
-    const realEvents = filtered.filter((event) => getEventClassification(event) === 'real');
+    const fakeDeduped = dedupeEvents(fakeEventsData);
+    const realDeduped = dedupeEvents(realEventsData);
+    
+    const fakeEvents = stateAtRequest ? fakeDeduped.filter((e) => eventMatchesState(e, stateAtRequest)) : fakeDeduped;
+    const realEvents = stateAtRequest ? realDeduped.filter((e) => eventMatchesState(e, stateAtRequest)) : realDeduped;
 
     await renderFeedsProgressively(fakeEvents, realEvents, generation, stateAtRequest);
   } catch (error) {

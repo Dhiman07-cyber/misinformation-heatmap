@@ -373,12 +373,12 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
 
 # ─── API: LIVE EVENTS ────────────────────────────────────────────────────────
 @app.get("/api/v1/events/live", tags=["Events"])
-async def get_live_events(response: Response = None, limit: int = Query(20, ge=1, le=100), page: int = Query(1, ge=1)):
+async def get_live_events(response: Response = None, limit: int = Query(20, ge=1, le=100), page: int = Query(1, ge=1), classification: str = Query(None)):
     """Recent events from the last 72 hours."""
     if response:
         response.headers["Cache-Control"] = "public, max-age=5"
         
-    cache_key = f"live_events_{limit}_p{page}"
+    cache_key = f"live_events_{limit}_p{page}_{classification or 'all'}"
     cached = _cache_get(cache_key, 5)
     if cached:
         return cached
@@ -387,20 +387,20 @@ async def get_live_events(response: Response = None, limit: int = Query(20, ge=1
     rows = []
     try:
         with get_db() as conn:
-            rows = conn.execute("""
-                WITH RankedEvents AS (
-                    SELECT title, content, source, state,
-                           fake_news_confidence, fake_news_verdict, timestamp,
-                           ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
-                    FROM events
-                    WHERE timestamp > datetime('now', '-3 days')
-                )
+            query = """
                 SELECT title, content, source, state, fake_news_confidence, fake_news_verdict, timestamp
-                FROM RankedEvents
-                WHERE rn <= 3
-                ORDER BY timestamp DESC
-                LIMIT ? OFFSET ?
-            """, (limit, offset)).fetchall()
+                FROM events
+                WHERE timestamp > datetime('now', '-3 days')
+            """
+            params = []
+            if classification:
+                query += " AND fake_news_verdict = ?"
+                params.append(classification)
+            
+            query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+            params.extend([limit, offset])
+            
+            rows = conn.execute(query, params).fetchall()
     except Exception as exc:
         logger.error(f"Live events error: {exc}")
 
@@ -444,11 +444,11 @@ async def sse_stream():
 
 # ─── API: STATE EVENTS ───────────────────────────────────────────────────────
 @app.get("/api/v1/events/state/{state}", tags=["Events"])
-async def get_state_events(state: str, response: Response = None, limit: int = Query(20, ge=1, le=50), page: int = Query(1, ge=1)):
+async def get_state_events(state: str, response: Response = None, limit: int = Query(20, ge=1, le=50), page: int = Query(1, ge=1), classification: str = Query(None)):
     if response:
         response.headers["Cache-Control"] = "public, max-age=5"
         
-    cache_key = f"state_events_{state}_{limit}_p{page}"
+    cache_key = f"state_events_{state}_{limit}_p{page}_{classification or 'all'}"
     cached = _cache_get(cache_key, 5)
     if cached:
         return cached
@@ -457,19 +457,20 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
     rows = []
     try:
         with get_db() as conn:
-            rows = conn.execute("""
-                WITH RankedEvents AS (
-                    SELECT title, content, source,
-                           fake_news_confidence, fake_news_verdict, timestamp,
-                           ROW_NUMBER() OVER(PARTITION BY source, fake_news_verdict ORDER BY timestamp DESC) as rn
-                    FROM events WHERE LOWER(state) = LOWER(?)
-                )
+            query = """
                 SELECT title, content, source, fake_news_confidence, fake_news_verdict, timestamp
-                FROM RankedEvents
-                WHERE rn <= 3
-                ORDER BY timestamp DESC
-                LIMIT ? OFFSET ?
-            """, (state, limit, offset)).fetchall()
+                FROM events 
+                WHERE LOWER(state) = LOWER(?)
+            """
+            params = [state]
+            if classification:
+                query += " AND fake_news_verdict = ?"
+                params.append(classification)
+                
+            query += " ORDER BY timestamp DESC LIMIT ? OFFSET ?"
+            params.extend([limit, offset])
+            
+            rows = conn.execute(query, params).fetchall()
     except Exception as exc:
         logger.error(f"State events error [{state}]: {exc}")
 
