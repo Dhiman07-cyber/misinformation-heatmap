@@ -115,6 +115,10 @@ export function createEventItem(event, options = {}) {
     ])
   ]);
 
+  const scoreText = event && event.score ? String(event.score) : null;
+  const mlResultText = event && event.ml_result ? toPlainText(event.ml_result, '') : '';
+  const factCheckText = event && event.fact_check ? toPlainText(event.fact_check, '') : '';
+
   article.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('openEventModal', {
       detail: {
@@ -127,7 +131,10 @@ export function createEventItem(event, options = {}) {
         hasSource,
         hasState,
         hasTimestamp,
-        bodyText
+        bodyText,
+        scoreText,
+        mlResultText,
+        factCheckText
       }
     }));
   });
@@ -248,13 +255,36 @@ export function populateEventDetailModal(detail = {}) {
   const contentContainer = document.getElementById('event-detail-content');
   if (contentContainer) {
     const bodyText = toPlainText(detail.bodyText, '');
-    contentContainer.classList.toggle('hidden', !bodyText);
-    replaceChildren(contentContainer, bodyText ? [
-      createElement('p', {
-        className: 'whitespace-pre-wrap',
-        text: bodyText
-      })
-    ] : []);
+    const hasContent = Boolean(bodyText || detail.mlResultText || detail.factCheckText || detail.scoreText);
+    contentContainer.classList.toggle('hidden', !hasContent);
+    
+    const elements = [];
+    
+    if (detail.scoreText) {
+      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-saffron-200 bg-saffron-50 p-3' }, [
+        createElement('p', { className: 'text-sm font-bold text-saffron-900', text: `Confidence Score: ${detail.scoreText}` })
+      ]));
+    }
+    
+    if (detail.mlResultText) {
+      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3' }, [
+        createElement('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'AI Analysis' }),
+        createElement('p', { className: 'mt-1 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed', text: detail.mlResultText })
+      ]));
+    }
+    
+    if (detail.factCheckText) {
+      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3' }, [
+        createElement('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'Fact Check' }),
+        createElement('p', { className: 'mt-1 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed', text: detail.factCheckText })
+      ]));
+    }
+    
+    if (bodyText) {
+      elements.push(createElement('p', { className: 'whitespace-pre-wrap text-sm leading-relaxed text-slate-600', text: bodyText }));
+    }
+    
+    replaceChildren(contentContainer, elements);
   }
 
   const linkBtn = document.getElementById('event-detail-link');

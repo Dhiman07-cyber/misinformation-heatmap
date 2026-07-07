@@ -388,7 +388,7 @@ async def get_live_events(response: Response = None, limit: int = Query(20, ge=1
     try:
         with get_db() as conn:
             query = """
-                SELECT title, content, source, state, fake_news_confidence, fake_news_verdict, timestamp
+                SELECT title, content, source, state, fake_news_confidence, fake_news_verdict, fake_news_score, ml_classification_result, fact_check_result, timestamp
                 FROM events
                 WHERE timestamp > datetime('now', '-3 days')
             """
@@ -415,6 +415,9 @@ async def get_live_events(response: Response = None, limit: int = Query(20, ge=1
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
             "classification":   r["fake_news_verdict"] or "uncertain",
             "confidence":       round(r["fake_news_confidence"] or 0.5, 2),
+            "score":            r["fake_news_score"],
+            "ml_result":        r["ml_classification_result"],
+            "fact_check":       r["fact_check_result"],
             "timestamp":        r["timestamp"].isoformat() if hasattr(r["timestamp"], "isoformat") else str(r["timestamp"] or ""),
         })
 
@@ -458,7 +461,7 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
     try:
         with get_db() as conn:
             query = """
-                SELECT title, content, source, fake_news_confidence, fake_news_verdict, timestamp
+                SELECT title, content, source, fake_news_confidence, fake_news_verdict, fake_news_score, ml_classification_result, fact_check_result, timestamp
                 FROM events 
                 WHERE LOWER(state) = LOWER(?)
             """
@@ -484,6 +487,9 @@ async def get_state_events(state: str, response: Response = None, limit: int = Q
             "fake_probability": round(r["fake_news_confidence"] or 0.5, 2),
             "classification":   r["fake_news_verdict"] or "uncertain",
             "confidence":       round(r["fake_news_confidence"] or 0.5, 2),
+            "score":            r["fake_news_score"],
+            "ml_result":        r["ml_classification_result"],
+            "fact_check":       r["fact_check_result"],
             "timestamp":        r["timestamp"],
             "state":            state,
         })
