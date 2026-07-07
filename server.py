@@ -346,7 +346,7 @@ async def get_heatmap_data(response: Response = None, days: int = Query(7, ge=1,
         count = r["event_count"] or 0
         fake_c = r["fake_count"] or 0
         ratio = fake_c / count if count else 0
-        if count < 5:
+        if count < 2:
             risk = "insufficient_data"
         elif ratio > 0.15:
             risk = "high"

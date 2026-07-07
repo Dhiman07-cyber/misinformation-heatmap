@@ -20,7 +20,9 @@ import {
   getEventTitle,
   normalizeName,
   numberOrNull,
-  riskFromRecord
+  riskColorFromRatio,
+  riskFromRecord,
+  riskLabelFromRatio
 } from '../utils/formatters.js';
 import { isInteractiveInput, toSafeText } from '../utils/security.js';
 
@@ -165,6 +167,15 @@ function updateStatsPopover() {
     { label: 'Last Update', value: timeString },
     { label: 'Accuracy', value: accuracy }
   ]);
+
+  // Populate overall counter bar
+  const fakeCount = numberOrNull(latestStats && latestStats.fake_events) ?? 0;
+  const realCount = numberOrNull(latestStats && latestStats.real_events) ?? 0;
+  const fakeRatio = total > 0 ? ((fakeCount / total) * 100).toFixed(1) : '0.0';
+  setText('#overall-total-events', formatCount(total));
+  setText('#overall-fake-count', formatCount(fakeCount));
+  setText('#overall-real-count', formatCount(realCount));
+  setText('#overall-fake-ratio', `${fakeRatio}%`);
 }
 
 function updateProgressBar(percent) {
@@ -379,8 +390,13 @@ function applyHeatmapColors() {
   qsa('path', svgMap).forEach((path) => {
     const record = findStateData(path);
     const risk = riskFromRecord(record || { risk_level: 'insufficient_data' });
-    path.setAttribute('fill', risk.color);
-    path.style.fill = risk.color;
+    // Use continuous color spectrum based on actual fake ratio
+    const ratio = record ? getFakeRatio(record) : null;
+    const fillColor = (ratio !== null && risk.key !== 'insufficient-data')
+      ? riskColorFromRatio(ratio)
+      : risk.color;
+    path.setAttribute('fill', fillColor);
+    path.style.fill = fillColor;
     path.style.stroke = '#ffffff';
     path.style.strokeWidth = '0.75';
     path.dataset.risk = risk.key;

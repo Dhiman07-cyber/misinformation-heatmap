@@ -115,9 +115,21 @@ export function createEventItem(event, options = {}) {
     ])
   ]);
 
-  const scoreText = event && event.score ? String(event.score) : null;
-  const mlResultText = event && event.ml_result ? toPlainText(event.ml_result, '') : '';
-  const factCheckText = event && event.fact_check ? toPlainText(event.fact_check, '') : '';
+  // Parse ml_result and fact_check from JSON strings into structured objects
+  let mlParsed = null;
+  let factParsed = null;
+  try {
+    if (event && event.ml_result) {
+      const raw = typeof event.ml_result === 'string' ? JSON.parse(event.ml_result) : event.ml_result;
+      mlParsed = raw;
+    }
+  } catch (_) { /* ignore parse errors */ }
+  try {
+    if (event && event.fact_check) {
+      const raw = typeof event.fact_check === 'string' ? JSON.parse(event.fact_check) : event.fact_check;
+      factParsed = raw;
+    }
+  } catch (_) { /* ignore parse errors */ }
 
   article.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('openEventModal', {
@@ -132,9 +144,8 @@ export function createEventItem(event, options = {}) {
         hasState,
         hasTimestamp,
         bodyText,
-        scoreText,
-        mlResultText,
-        factCheckText
+        mlParsed,
+        factParsed
       }
     }));
   });
@@ -255,27 +266,126 @@ export function populateEventDetailModal(detail = {}) {
   const contentContainer = document.getElementById('event-detail-content');
   if (contentContainer) {
     const bodyText = toPlainText(detail.bodyText, '');
-    const hasContent = Boolean(bodyText || detail.mlResultText || detail.factCheckText);
+    const ml = detail.mlParsed;
+    const fc = detail.factParsed;
+    const hasContent = Boolean(bodyText || ml || fc);
     contentContainer.classList.toggle('hidden', !hasContent);
     
     const elements = [];
-    
-    if (detail.mlResultText) {
-      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3' }, [
-        createElement('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'AI Analysis' }),
-        createElement('p', { className: 'mt-1 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed', text: detail.mlResultText })
-      ]));
+
+    // ─── AI Analysis Card ───────────────────────────────────
+    if (ml && typeof ml === 'object') {
+      const prediction = (ml.prediction || '').toLowerCase();
+      const confidence = ml.confidence ?? ml.fake_probability ?? 0;
+      const confPct = Math.round(confidence * 100);
+      const isFake = prediction === 'fake';
+      
+      // Color scheme based on prediction
+      const borderColor = isFake 
+        ? 'border-red-200' 
+        : 'border-emerald-200';
+      const bgColor = isFake 
+        ? 'bg-gradient-to-br from-red-50 to-rose-50/50' 
+        : 'bg-gradient-to-br from-emerald-50 to-green-50/50';
+      const verdictBg = isFake 
+        ? 'bg-red-600' 
+        : 'bg-emerald-600';
+      const verdictText = isFake 
+        ? 'Likely Misinformation' 
+        : 'Likely Authentic';
+      const barBg = isFake 
+        ? 'bg-red-500' 
+        : 'bg-emerald-500';
+      const barTrack = isFake 
+        ? 'bg-red-100' 
+        : 'bg-emerald-100';
+
+      const aiCard = createElement('div', { className: `mb-4 rounded-xl border ${borderColor} ${bgColor} p-4` }, [
+        // Header row: icon + label
+        createElement('div', { className: 'flex items-center gap-2 mb-3' }, [
+          createElement('div', { className: 'flex h-5 w-5 items-center justify-center rounded-md bg-slate-900 text-[9px] font-bold text-white', text: 'AI' }),
+          createElement('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'AI Analysis' })
+        ]),
+        // Verdict badge
+        createElement('div', { className: 'mb-3' }, [
+          createElement('span', { className: `inline-flex items-center gap-1.5 rounded-full ${verdictBg} px-3 py-1 text-xs font-bold text-white shadow-sm`, text: verdictText })
+        ]),
+        // Confidence bar
+        createElement('div', { className: 'flex items-center gap-3' }, [
+          createElement('span', { className: 'text-[11px] font-bold text-slate-600 shrink-0', text: 'Confidence' }),
+          createElement('div', { className: `flex-1 h-2 rounded-full ${barTrack} overflow-hidden` }, [
+            createElement('div', { className: `h-full rounded-full ${barBg} transition-all duration-500`, style: `width: ${confPct}%` })
+          ]),
+          createElement('span', { className: 'text-[11px] font-extrabold text-slate-800 tabular-nums shrink-0', text: `${confPct}%` })
+        ])
+      ]);
+      elements.push(aiCard);
     }
-    
-    if (detail.factCheckText) {
-      elements.push(createElement('div', { className: 'mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3' }, [
-        createElement('p', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'Fact Check' }),
-        createElement('p', { className: 'mt-1 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed', text: detail.factCheckText })
-      ]));
+
+    // ─── Fact Check Card ────────────────────────────────────
+    if (fc && typeof fc === 'object') {
+      const checked = fc.checked === true;
+      const verdict = (fc.verdict || 'unknown').toLowerCase();
+      const fcSource = fc.source || null;
+      const fcDetails = fc.details || '';
+      
+      if (checked && verdict !== 'unknown') {
+        // Active fact-check found
+        const verdictColors = {
+          'false':      { border: 'border-red-200', bg: 'bg-gradient-to-br from-red-50 to-orange-50/30', badge: 'bg-red-600', label: 'FALSE' },
+          'misleading': { border: 'border-amber-200', bg: 'bg-gradient-to-br from-amber-50 to-yellow-50/30', badge: 'bg-amber-600', label: 'MISLEADING' },
+          'true':       { border: 'border-emerald-200', bg: 'bg-gradient-to-br from-emerald-50 to-green-50/30', badge: 'bg-emerald-600', label: 'TRUE' },
+        };
+        const style = verdictColors[verdict] || verdictColors['false'];
+
+        const fcChildren = [
+          // Header
+          createElement('div', { className: 'flex items-center gap-2 mb-3' }, [
+            createElement('div', { className: 'flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-[9px] font-bold text-white', text: '✓' }),
+            createElement('span', { className: 'text-[10px] font-bold text-slate-500 uppercase tracking-wider', text: 'Fact Check' })
+          ]),
+          // Verdict badge
+          createElement('div', { className: 'mb-2' }, [
+            createElement('span', { className: `inline-flex items-center rounded-full ${style.badge} px-3 py-1 text-xs font-bold text-white shadow-sm`, text: style.label })
+          ])
+        ];
+
+        // Source attribution
+        if (fcSource) {
+          fcChildren.push(
+            createElement('p', { className: 'text-[11px] text-slate-500 mb-1.5' }, [
+              createElement('span', { className: 'font-bold', text: 'Source: ' }),
+              createElement('span', { className: 'text-blue-700 font-bold', text: fcSource })
+            ])
+          );
+        }
+
+        // Details
+        if (fcDetails && fcDetails !== 'No matching fact-checks found') {
+          fcChildren.push(
+            createElement('p', { className: 'text-sm text-slate-600 leading-relaxed', text: fcDetails })
+          );
+        }
+
+        elements.push(createElement('div', { className: `mb-4 rounded-xl border ${style.border} ${style.bg} p-4` }, fcChildren));
+      } else {
+        // No fact-check match
+        elements.push(createElement('div', { className: 'mb-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4' }, [
+          createElement('div', { className: 'flex items-center gap-2' }, [
+            createElement('div', { className: 'flex h-5 w-5 items-center justify-center rounded-md bg-slate-400 text-[9px] font-bold text-white', text: '?' }),
+            createElement('span', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider', text: 'Fact Check' })
+          ]),
+          createElement('p', { className: 'mt-2 text-sm text-slate-400 italic', text: 'No matching fact-checks found for this article.' })
+        ]));
+      }
     }
-    
+
+    // ─── Article Excerpt ────────────────────────────────────
     if (bodyText) {
-      elements.push(createElement('p', { className: 'whitespace-pre-wrap text-sm leading-relaxed text-slate-600', text: bodyText }));
+      elements.push(createElement('div', { className: 'rounded-xl border border-slate-200/60 bg-white/60 p-4' }, [
+        createElement('p', { className: 'text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2', text: 'Article excerpt' }),
+        createElement('p', { className: 'whitespace-pre-wrap text-sm leading-relaxed text-slate-600', text: bodyText })
+      ]));
     }
     
     replaceChildren(contentContainer, elements);

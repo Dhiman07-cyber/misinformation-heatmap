@@ -120,13 +120,13 @@ export function normalizeName(value) {
 export const RISK_LEVELS = {
   least: {
     key: 'least',
-    label: 'Least',
+    label: 'Low',
     color: '#138808',
     badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700'
   },
   leastMedium: {
     key: 'least-medium',
-    label: 'Least-Medium',
+    label: 'Low-Medium',
     color: '#facc15',
     badgeClass: 'border-yellow-200 bg-yellow-50 text-yellow-700'
   },
@@ -144,11 +144,56 @@ export const RISK_LEVELS = {
   },
   insufficient: {
     key: 'insufficient-data',
-    label: 'Least risk',
-    color: '#138808',
-    badgeClass: 'border-emerald-200 bg-emerald-50 text-emerald-700'
+    label: 'No data',
+    color: '#94a3b8',
+    badgeClass: 'border-slate-200 bg-slate-50 text-slate-600'
   }
 };
+
+/**
+ * Compute a continuous heatmap color from a fake ratio (0..1).
+ * Interpolates through green → yellow-green → yellow → orange → red
+ * using HSL color space for a smooth temperature-style gradient.
+ * @param {number} ratio - fake_count / event_count (0 to 1)
+ * @returns {string} CSS hex color
+ */
+export function riskColorFromRatio(ratio) {
+  // Clamp ratio to 0-1
+  const t = Math.max(0, Math.min(1, ratio));
+  // Map ratio to hue: 0% fake → 120° (green), 100% fake → 0° (red)
+  // Use a power curve so small fake ratios stay greener longer
+  const curved = Math.pow(t, 0.6);
+  const hue = 120 * (1 - curved);
+  const saturation = 70 + 15 * curved; // slightly more saturated toward red
+  const lightness = 38 + 8 * Math.sin(curved * Math.PI); // brighter in the middle
+  return hslToHex(hue, saturation, lightness);
+}
+
+/**
+ * Convert HSL to hex color string.
+ */
+function hslToHex(h, s, l) {
+  s /= 100;
+  l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+/**
+ * Get the risk label string for a given ratio.
+ */
+export function riskLabelFromRatio(ratio) {
+  if (ratio === null || ratio === undefined) return 'No data';
+  if (ratio < 0.05) return 'Low';
+  if (ratio < 0.15) return 'Low-Medium';
+  if (ratio < 0.30) return 'Medium-High';
+  return 'High';
+}
 
 export function getFakeRatio(record = {}) {
   const candidates = [
